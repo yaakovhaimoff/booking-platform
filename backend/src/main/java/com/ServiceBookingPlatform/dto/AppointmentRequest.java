@@ -17,4 +17,6 @@ public class AppointmentRequest {
 
     @NotBlank
     private String startTime;
+
+    private String clientAuth0Sub;
 }

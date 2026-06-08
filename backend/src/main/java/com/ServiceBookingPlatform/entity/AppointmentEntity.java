@@ -25,6 +25,13 @@ public class AppointmentEntity {
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Column(nullable = false)
-    private String status;
+    @Column(name = "end_time", nullable = false)
+    private LocalDateTime endTime;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private AppointmentStatus status;
+
+    @Column(name = "client_auth0_sub")
+    private String clientAuth0Sub;
 }

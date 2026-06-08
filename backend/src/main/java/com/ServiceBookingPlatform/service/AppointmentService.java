@@ -3,6 +3,7 @@ package com.ServiceBookingPlatform.service;
 import com.ServiceBookingPlatform.dto.AppointmentRequest;
 import com.ServiceBookingPlatform.dto.AppointmentResponse;
 import com.ServiceBookingPlatform.entity.AppointmentEntity;
+import com.ServiceBookingPlatform.entity.AppointmentStatus;
 import com.ServiceBookingPlatform.entity.ServiceEntity;
 import com.ServiceBookingPlatform.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,19 +30,13 @@ public class AppointmentService {
             .clientName(request.getClientName())
             .clientPhone(request.getClientPhone())
             .startTime(startTime)
-            .status("CONFIRMED")
+            .endTime(endTime)
+            .status(AppointmentStatus.CONFIRMED)
+            .clientAuth0Sub(request.getClientAuth0Sub())
             .build();
 
         AppointmentEntity saved = appointmentRepository.save(entity);
 
-        return AppointmentResponse.builder()
-            .id(saved.getId())
-            .serviceId(saved.getServiceId())
-            .clientName(saved.getClientName())
-            .clientPhone(saved.getClientPhone())
-            .startTime(startTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-            .endTime(endTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-            .status(saved.getStatus())
-            .build();
+        return AppointmentResponse.from(saved);
     }
 }

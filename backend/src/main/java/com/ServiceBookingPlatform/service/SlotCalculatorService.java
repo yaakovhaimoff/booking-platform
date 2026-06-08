@@ -1,6 +1,7 @@
 package com.ServiceBookingPlatform.service;
 
 import com.ServiceBookingPlatform.entity.AppointmentEntity;
+import com.ServiceBookingPlatform.entity.AppointmentStatus;
 import com.ServiceBookingPlatform.exception.InvalidDateException;
 import com.ServiceBookingPlatform.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class SlotCalculatorService {
         List<AppointmentEntity> blocking = appointmentRepository.findByStartTimeBetweenAndStatusIn(
             date.atTime(DAY_START),
             date.atTime(DAY_END),
-            List.of("CONFIRMED", "PENDING")
+            List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING)
         );
         Set<LocalDateTime> blocked = blocking.stream()
             .map(AppointmentEntity::getStartTime)

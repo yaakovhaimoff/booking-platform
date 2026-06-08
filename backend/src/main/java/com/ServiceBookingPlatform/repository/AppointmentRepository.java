@@ -1,6 +1,7 @@
 package com.ServiceBookingPlatform.repository;
 
 import com.ServiceBookingPlatform.entity.AppointmentEntity;
+import com.ServiceBookingPlatform.entity.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,6 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
     List<AppointmentEntity> findByStartTimeBetweenAndStatusIn(
         LocalDateTime from,
         LocalDateTime to,
-        List<String> statuses
+        List<AppointmentStatus> statuses
     );
 }

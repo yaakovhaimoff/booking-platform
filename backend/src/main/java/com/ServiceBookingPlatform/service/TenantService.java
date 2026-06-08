@@ -86,7 +86,7 @@ public class TenantService {
         tenant.setSchemaName(schemaName);
         tenant = tenantRepository.save(tenant);
 
-        schemaProvisioningService.provision(schemaName);
+        schemaProvisioningService.provision(schemaName, tenant.getId());
 
         DataSource ds = DataSourceConfig.createTenantDataSource(
                 jdbcUrl, dbUsername, dbPassword, schemaName);
