@@ -22,14 +22,22 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain jwtChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/api/v1/tenants")
+            .securityMatcher(
+                "/api/v1/tenants",
+                "/api/v1/tenants/me",
+                "/api/v1/appointments",
+                "/api/v1/appointments/me",
+                "/api/v1/appointments/*/status",
+                "/api/v1/operating-hours",
+                "/api/v1/services"
+            )
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/v1/tenants").authenticated()
-                .anyRequest().denyAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/services").permitAll()
+                .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();
