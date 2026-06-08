@@ -16,7 +16,7 @@ public class ServiceEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "duration_minutes", nullable = false)
     private int durationMinutes;
 
     @Column(nullable = false, precision = 10, scale = 2)

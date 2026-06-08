@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.ServiceBookingPlatform.exception.TenantNotFoundException;
+import com.ServiceBookingPlatform.exception.SlugAlreadyTakenException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -39,5 +41,17 @@ public class GlobalExceptionHandler {
         body.put("error", "INVALID_DATE");
         body.put("message", ex.getMessage());
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(TenantNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleTenantNotFound(TenantNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(Map.of("error", "TENANT_NOT_FOUND", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(SlugAlreadyTakenException.class)
+    public ResponseEntity<Map<String, String>> handleSlugTaken(SlugAlreadyTakenException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(Map.of("error", "SLUG_TAKEN", "message", ex.getMessage()));
     }
 }
