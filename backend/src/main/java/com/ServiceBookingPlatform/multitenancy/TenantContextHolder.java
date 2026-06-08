@@ -11,6 +11,12 @@ public class TenantContextHolder {
         return CURRENT_SCHEMA.get();
     }
 
+    public static Long getTenantId() {
+        String schema = getCurrentSchema();
+        if (schema == null) return null;
+        return Long.parseLong(schema.substring("tenant_".length()));
+    }
+
     public static void clear() {
         CURRENT_SCHEMA.remove();
     }

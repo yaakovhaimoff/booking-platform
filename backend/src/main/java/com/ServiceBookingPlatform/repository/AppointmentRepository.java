@@ -9,8 +9,14 @@ import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<AppointmentEntity, Long> {
     List<AppointmentEntity> findByStartTimeBetweenAndStatusIn(
-        LocalDateTime from,
-        LocalDateTime to,
-        List<AppointmentStatus> statuses
+            LocalDateTime from,
+            LocalDateTime to,
+            List<AppointmentStatus> statuses
     );
+
+    List<AppointmentEntity> findByStatus(AppointmentStatus status);
+
+    List<AppointmentEntity> findByStatusNot(AppointmentStatus status);
+
+    List<AppointmentEntity> findByClientAuth0SubOrderByStartTimeDesc(String clientAuth0Sub);
 }

@@ -51,10 +51,14 @@ public class TenantService {
         });
     }
 
-    // Resolves a slug to a tenant entity. Throws TenantNotFoundException if not found.
     public TenantEntity getTenantBySlug(String slug) {
         return tenantRepository.findBySlug(slug)
                 .orElseThrow(() -> new TenantNotFoundException(slug));
+    }
+
+    public TenantEntity getTenantByOwnerAuth0Id(String auth0Id) {
+        return tenantRepository.findByOwnerAuth0Id(auth0Id)
+                .orElseThrow(() -> new TenantNotFoundException(auth0Id));
     }
 
     // Registers a new business:

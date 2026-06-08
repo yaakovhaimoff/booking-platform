@@ -28,8 +28,13 @@ public class TenantController {
         return ResponseEntity.ok(TenantResponse.from(tenant));
     }
 
-    // POST /api/v1/tenants
-    // Requires a valid Auth0 JWT. Extracts the owner's Auth0 user ID from the JWT sub claim.
+    @GetMapping("/me")
+    public ResponseEntity<TenantResponse> getMyTenant(JwtAuthenticationToken authentication) {
+        String auth0Id = authentication.getToken().getSubject();
+        TenantEntity tenant = tenantService.getTenantByOwnerAuth0Id(auth0Id);
+        return ResponseEntity.ok(TenantResponse.from(tenant));
+    }
+
     @PostMapping
     public ResponseEntity<TenantResponse> createTenant(
             @Valid @RequestBody TenantRequest request,

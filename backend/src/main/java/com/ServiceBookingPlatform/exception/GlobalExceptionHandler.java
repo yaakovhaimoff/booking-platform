@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 import com.ServiceBookingPlatform.exception.TenantNotFoundException;
 import com.ServiceBookingPlatform.exception.SlugAlreadyTakenException;
+import com.ServiceBookingPlatform.exception.AppointmentNotFoundException;
+import com.ServiceBookingPlatform.exception.InvalidTransitionException;
+import com.ServiceBookingPlatform.exception.ForbiddenException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -53,5 +56,31 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleSlugTaken(SlugAlreadyTakenException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(Map.of("error", "SLUG_TAKEN", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AppointmentNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAppointmentNotFound(AppointmentNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(Map.of("error", "APPOINTMENT_NOT_FOUND", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidTransitionException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidTransition(InvalidTransitionException ex) {
+        return ResponseEntity.badRequest()
+            .body(Map.of("error", "INVALID_TRANSITION", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, String>> handleForbidden(ForbiddenException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(Map.of("error", "FORBIDDEN", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "VALIDATION_ERROR");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.badRequest().body(body);
     }
 }
