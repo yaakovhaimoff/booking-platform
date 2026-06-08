@@ -5,9 +5,8 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jpa.autoconfigure.JpaProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -24,10 +23,22 @@ import java.util.Properties;
 @Configuration
 public class DataSourceConfig {
 
+    @Value("${spring.datasource.url}")
+    private String jdbcUrl;
+
+    @Value("${spring.datasource.username}")
+    private String dbUsername;
+
+    @Value("${spring.datasource.password}")
+    private String dbPassword;
+
     @Bean(name = "publicDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource")
     public HikariDataSource publicDataSource() {
-        return DataSourceBuilder.create().type(HikariDataSource.class).build();
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(dbUsername);
+        config.setPassword(dbPassword);
+        return new HikariDataSource(config);
     }
 
     @Bean(name = "publicJdbcTemplate")

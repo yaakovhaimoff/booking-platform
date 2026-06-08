@@ -13,16 +13,16 @@ public class AppointmentEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "service_id", nullable = false)
     private Long serviceId;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "client_name", nullable = false, length = 100)
     private String clientName;
 
-    @Column(nullable = false)
+    @Column(name = "client_phone", nullable = false)
     private String clientPhone;
 
-    @Column(nullable = false)
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
     @Column(nullable = false)
