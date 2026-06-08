@@ -1,26 +1,34 @@
 const BASE = 'http://localhost:8080/api/v1'
 
-async function handleResponse(res) {
-  if (res.ok) return res.json()
-  const body = await res.json().catch(() => ({ error: 'UNKNOWN_ERROR' }))
-  throw body
+// Set once by PublicStorePage after slug resolution.
+// All functions below read this variable — no callers need to change.
+let _tenantId = null
+export function setTenantId(id) {
+  _tenantId = id
+}
+
+function tenantHeaders(extra = {}) {
+  return { 'Content-Type': 'application/json', 'X-Tenant-ID': _tenantId, ...extra }
 }
 
 export async function getServices() {
-  const res = await fetch(`${BASE}/services`)
-  return handleResponse(res)
+  const res = await fetch(`${BASE}/services`, { headers: tenantHeaders() })
+  if (!res.ok) throw await res.json()
+  return res.json()
 }
 
 export async function getSlots(date) {
-  const res = await fetch(`${BASE}/slots?date=${date}`)
-  return handleResponse(res)
+  const res = await fetch(`${BASE}/slots?date=${date}`, { headers: tenantHeaders() })
+  if (!res.ok) throw await res.json()
+  return res.json()
 }
 
 export async function createAppointment(payload) {
   const res = await fetch(`${BASE}/appointments`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    headers: tenantHeaders(),
+    body: JSON.stringify(payload)
   })
-  return handleResponse(res)
+  if (!res.ok) throw await res.json()
+  return res.json()
 }
