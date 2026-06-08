@@ -1,0 +1,30 @@
+import { useEffect } from 'react'
+import { useAuth0 } from '@auth0/auth0-react'
+import { useNavigate } from 'react-router-dom'
+import { getMyTenant } from '../api/ownerApi'
+
+export default function AuthRoutingPage() {
+  const { getAccessTokenSilently } = useAuth0()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    let cancelled = false
+
+    getAccessTokenSilently()
+      .then(token => getMyTenant(token))
+      .then(() => {
+        if (!cancelled) navigate('/owner/dashboard', { replace: true })
+      })
+      .catch(() => {
+        if (!cancelled) navigate('/owner/onboard', { replace: true })
+      })
+
+    return () => { cancelled = true }
+  }, [getAccessTokenSilently, navigate])
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}

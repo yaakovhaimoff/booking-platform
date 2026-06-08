@@ -6,17 +6,17 @@ import BookingPage from './BookingPage'
 
 export default function PublicStorePage() {
   const { slug } = useParams()
-  const [state, setState] = useState({ loading: true, notFound: false })
+  const [state, setState] = useState({ loading: true, notFound: false, tenant: null })
 
   useEffect(() => {
     getTenantBySlug(slug)
       .then(tenant => {
         setTenantId(tenant.id)
-        setState({ loading: false, notFound: false })
+        setState({ loading: false, notFound: false, tenant })
       })
       .catch(err => {
         const notFound = err?.error === 'TENANT_NOT_FOUND'
-        setState({ loading: false, notFound })
+        setState({ loading: false, notFound, tenant: null })
       })
   }, [slug])
 
@@ -37,5 +37,10 @@ export default function PublicStorePage() {
     )
   }
 
-  return <BookingPage />
+  return (
+    <BookingPage
+      tenantName={state.tenant.slug}
+      tenantSlug={state.tenant.slug}
+    />
+  )
 }

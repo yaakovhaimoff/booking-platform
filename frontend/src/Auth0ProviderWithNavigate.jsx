@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom'
 export default function Auth0ProviderWithNavigate({ children }) {
   const navigate = useNavigate()
 
-  const onRedirectCallback = (appState) => {
-    navigate(appState?.returnTo || '/owner/dashboard')
+  const onRedirectCallback = () => {
+    navigate('/auth/routing', { replace: true })
   }
 
   return (
@@ -14,7 +14,7 @@ export default function Auth0ProviderWithNavigate({ children }) {
       clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
       authorizationParams={{
         redirect_uri: window.location.origin,
-        audience: "https://api.servicebooking.com"  // must match Auth0 API audience
+        audience: 'https://api.servicebooking.com',
       }}
       onRedirectCallback={onRedirectCallback}
     >

@@ -5,8 +5,9 @@ import DatePicker from '../components/DatePicker'
 import SlotGrid from '../components/SlotGrid'
 import CheckoutForm from '../components/CheckoutForm'
 import ConfirmationScreen from '../components/ConfirmationScreen'
+import StoreHeader from '../components/StoreHeader'
 
-export default function BookingPage() {
+export default function BookingPage({ tenantName, tenantSlug }) {
   const [step, setStep] = useState('service')
   const [selectedService, setSelectedService] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
@@ -67,10 +68,27 @@ export default function BookingPage() {
     setError(null)
   }
 
+  function goBack() {
+    if (step === 'date') { setStep('service') }
+    else if (step === 'slot') { setStep('date'); setSelectedSlot(null); setSlots([]) }
+    else if (step === 'form') { setStep('slot'); setSelectedSlot(null) }
+  }
+
+  const showBack = step === 'date' || step === 'slot' || step === 'form'
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center pt-12 px-4">
       <div className="w-full max-w-xl">
-        <h1 className="text-3xl font-semibold text-gray-800 mb-8 text-center">Book an Appointment</h1>
+        <StoreHeader name={tenantName} slug={tenantSlug} />
+
+        {showBack && (
+          <button
+            onClick={goBack}
+            className="mb-4 text-sm text-indigo-600 hover:text-indigo-800 transition"
+          >
+            ← Back
+          </button>
+        )}
 
         {step === 'service' && (
           <ServiceList onSelect={handleServiceSelect} />
