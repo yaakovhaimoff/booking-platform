@@ -8,3 +8,11 @@ export async function getTenantBySlug(slug) {
   if (!res.ok) throw await res.json()
   return res.json()
 }
+
+// GET /api/v1/tenants
+// Returns: PublicTenant[] = [{ id: number, slug: string, name: string }, ...]
+export async function listTenants() {
+  const res = await fetch(`${BASE}/tenants`)
+  if (!res.ok) throw await res.json()
+  return res.json()
+}

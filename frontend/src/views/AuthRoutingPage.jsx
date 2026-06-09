@@ -4,11 +4,17 @@ import { useNavigate } from 'react-router-dom'
 import { getMyTenant } from '../api/ownerApi'
 
 export default function AuthRoutingPage() {
-  const { getAccessTokenSilently } = useAuth0()
+  const { getAccessTokenSilently, user } = useAuth0()
   const navigate = useNavigate()
 
   useEffect(() => {
     let cancelled = false
+
+    const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim())
+    if (user?.email && adminEmails.includes(user.email)) {
+      navigate('/admin', { replace: true })
+      return
+    }
 
     getAccessTokenSilently()
       .then(token => getMyTenant(token))
@@ -20,7 +26,7 @@ export default function AuthRoutingPage() {
       })
 
     return () => { cancelled = true }
-  }, [getAccessTokenSilently, navigate])
+  }, [getAccessTokenSilently, navigate, user])
 
   return (
     <div className="min-h-screen flex items-center justify-center">
