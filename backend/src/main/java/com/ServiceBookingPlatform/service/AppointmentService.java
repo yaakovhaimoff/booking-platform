@@ -14,12 +14,14 @@ import com.ServiceBookingPlatform.multitenancy.TenantContextHolder;
 import com.ServiceBookingPlatform.repository.AppointmentRepository;
 import com.ServiceBookingPlatform.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AppointmentService {
@@ -40,11 +42,15 @@ public class AppointmentService {
                 .clientPhone(request.getClientPhone())
                 .startTime(startTime)
                 .endTime(endTime)
-                .status(AppointmentStatus.CONFIRMED)
+                .status(AppointmentStatus.PENDING)
                 .clientAuth0Sub(request.getClientAuth0Sub())
                 .build();
 
-        return AppointmentResponse.from(appointmentRepository.save(entity));
+        AppointmentResponse saved = AppointmentResponse.from(appointmentRepository.save(entity));
+        log.info("Appointment booked: id={} client='{}' service={} start={} tenant={}",
+                saved.getId(), request.getClientName(), request.getServiceId(),
+                request.getStartTime(), TenantContextHolder.getTenantId());
+        return saved;
     }
 
     public List<AppointmentEntity> getAppointments(String statusFilter) {
@@ -95,7 +101,10 @@ public class AppointmentService {
         }
 
         entity.setStatus(parsed);
-        return appointmentRepository.save(entity);
+        AppointmentEntity updated = appointmentRepository.save(entity);
+        log.info("Appointment status updated: id={} {} → {} by={}",
+                id, current, parsed, callerAuth0Sub);
+        return updated;
     }
 
     public List<AppointmentEntity> getMyAppointments(String clientAuth0Sub) {

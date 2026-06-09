@@ -7,6 +7,7 @@ import com.ServiceBookingPlatform.exception.TenantNotFoundException;
 import com.ServiceBookingPlatform.multitenancy.TenantRoutingDataSource;
 import com.ServiceBookingPlatform.repository.TenantRepository;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 public class TenantService {
 
@@ -45,9 +47,12 @@ public class TenantService {
     @PostConstruct
     public void initTenantDataSources() {
         tenantRepository.findAll().forEach(tenant -> {
+            log.info("Migrating schema: {} (tenant {})", tenant.getSchemaName(), tenant.getId());
+            schemaProvisioningService.migrate(tenant.getSchemaName(), tenant.getId());
             DataSource ds = DataSourceConfig.createTenantDataSource(
                     jdbcUrl, dbUsername, dbPassword, tenant.getSchemaName());
             tenantRoutingDataSource.addTenantDataSource(tenant.getSchemaName(), ds);
+            log.info("Registered datasource for schema: {}", tenant.getSchemaName());
         });
     }
 
@@ -76,6 +81,9 @@ public class TenantService {
         if (tenantRepository.existsBySlug(slug)) {
             throw new SlugAlreadyTakenException(slug);
         }
+        if (tenantRepository.findByOwnerAuth0Id(ownerAuth0Id).isPresent()) {
+            throw new IllegalStateException("Owner already has a registered tenant");
+        }
 
         String schemaName = "tenant_" + System.currentTimeMillis(); // temp placeholder until saved
         TenantEntity tenant = TenantEntity.builder()
@@ -96,6 +104,7 @@ public class TenantService {
                 jdbcUrl, dbUsername, dbPassword, schemaName);
         tenantRoutingDataSource.addTenantDataSource(schemaName, ds);
 
+        log.info("Tenant onboarded: id={} slug={} schema={}", tenant.getId(), tenant.getSlug(), schemaName);
         return tenant;
     }
 }

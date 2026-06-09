@@ -18,7 +18,7 @@ public class TenantEntity {
     @Column(name = "schema_name", nullable = false, unique = true)
     private String schemaName;
 
-    @Column(name = "owner_auth0_id", nullable = false)
+    @Column(name = "owner_auth0_id", nullable = false, unique = true)
     private String ownerAuth0Id;
 
     @Column(name = "created_at", nullable = false)
