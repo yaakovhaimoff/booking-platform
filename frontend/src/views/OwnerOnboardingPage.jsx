@@ -8,6 +8,7 @@ const SLUG_REGEX = /^[a-z0-9-]+$/
 export default function OwnerOnboardingPage() {
   const { getAccessTokenSilently } = useAuth0()
   const navigate = useNavigate()
+  const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
@@ -24,7 +25,7 @@ export default function OwnerOnboardingPage() {
     setSubmitting(true)
     try {
       const token = await getAccessTokenSilently()
-      await createTenant(token, slug)
+      await createTenant(token, slug, name)
       navigate('/owner/dashboard')
     } catch (err) {
       if (err?.status === 409 || err?.error === 'SLUG_TAKEN') {
@@ -46,6 +47,22 @@ export default function OwnerOnboardingPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">
+              Business name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Mike's Barbershop"
+              maxLength={100}
+              required
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="slug">
               Store slug
