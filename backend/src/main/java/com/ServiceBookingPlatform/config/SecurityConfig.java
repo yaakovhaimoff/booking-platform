@@ -3,7 +3,6 @@ package com.ServiceBookingPlatform.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,6 +17,10 @@ public class SecurityConfig {
     // with 401 before permitAll() is evaluated. Two chains isolate JWT validation to only
     // the one endpoint that actually needs it.
 
+    // DEV MODE: JWT validation disabled. To re-enable real auth:
+    //   1. Restore .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+    //   2. Replace .anyRequest().permitAll() with the original per-method rules
+    //   3. Restore JwtAuthenticationToken params in TenantController + AppointmentController
     @Bean
     @Order(1)
     public SecurityFilterChain jwtChain(HttpSecurity http) throws Exception {
@@ -37,15 +40,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/api/v1/services").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/appointments").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/tenants").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/admin/tenants").authenticated()
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/tenants/*/enabled").authenticated()
-                .anyRequest().authenticated()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();
     }
 

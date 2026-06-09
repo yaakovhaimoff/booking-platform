@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth0 } from '../mockAuth'
 import { getMyTenant } from '../api/ownerApi'
 import DashboardNav from '../components/owner/DashboardNav'
 import StoreSettingsTab from '../components/owner/StoreSettingsTab'

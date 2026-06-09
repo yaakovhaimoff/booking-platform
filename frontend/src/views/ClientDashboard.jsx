@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth0 } from '../mockAuth'
 import { getTenantBySlug } from '../api/tenantApi'
 import { getMyAppointments, cancelMyAppointment } from '../api/clientApi'
 import AppointmentHistoryRow from '../components/client/AppointmentHistoryRow'

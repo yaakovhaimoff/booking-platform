@@ -8,7 +8,8 @@ import com.ServiceBookingPlatform.service.TenantService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+// DEV MODE: JwtAuthenticationToken removed; identity passed via X-Dev-User-Sub / X-Dev-User-Email headers.
+// To re-enable: restore the JwtAuthenticationToken import and swap @RequestHeader params back.
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,8 +34,8 @@ public class TenantController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<TenantResponse> getMyTenant(JwtAuthenticationToken authentication) {
-        String auth0Id = authentication.getToken().getSubject();
+    public ResponseEntity<TenantResponse> getMyTenant(
+            @RequestHeader(value = "X-Dev-User-Sub", defaultValue = "dev|owner1") String auth0Id) {
         TenantEntity tenant = tenantService.getTenantByOwnerAuth0Id(auth0Id);
         return ResponseEntity.ok(TenantResponse.from(tenant));
     }
@@ -42,9 +43,8 @@ public class TenantController {
     @PostMapping
     public ResponseEntity<TenantResponse> createTenant(
             @Valid @RequestBody TenantRequest request,
-            JwtAuthenticationToken authentication) {
-        String ownerAuth0Id = authentication.getToken().getSubject();
-        String ownerEmail = authentication.getToken().getClaimAsString("email");
+            @RequestHeader(value = "X-Dev-User-Sub", defaultValue = "dev|owner1") String ownerAuth0Id,
+            @RequestHeader(value = "X-Dev-User-Email", defaultValue = "dev@example.com") String ownerEmail) {
         TenantEntity tenant = tenantService.onboardTenant(
                 request.getSlug(), request.getName(), ownerAuth0Id, ownerEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(TenantResponse.from(tenant));

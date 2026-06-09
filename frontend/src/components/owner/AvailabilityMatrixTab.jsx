@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth0 } from '../../mockAuth'
 import { getOperatingHours, updateOperatingHours } from '../../api/ownerApi'
 import HoursRowInput from './HoursRowInput'
 

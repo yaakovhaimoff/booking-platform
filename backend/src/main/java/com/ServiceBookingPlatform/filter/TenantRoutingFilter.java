@@ -64,10 +64,12 @@ public class TenantRoutingFilter extends OncePerRequestFilter {
         }
     }
 
-    // Returns true for all /api/v1/** requests EXCEPT /api/v1/tenants/**
+    // Returns true for all /api/v1/** requests EXCEPT /api/v1/tenants/** and /api/v1/admin/**
     private boolean requiresTenantContext(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/api/v1/") && !path.startsWith("/api/v1/tenants");
+        return path.startsWith("/api/v1/")
+                && !path.startsWith("/api/v1/tenants")
+                && !path.startsWith("/api/v1/admin");
     }
 
     private void writeErrorResponse(HttpServletResponse response, int status,

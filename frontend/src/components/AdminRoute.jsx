@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth0 } from '../mockAuth'
 
 export default function AdminRoute({ children }) {
   const { isAuthenticated, isLoading, user } = useAuth0()
@@ -14,7 +14,8 @@ export default function AdminRoute({ children }) {
     )
   }
 
-  if (!isAuthenticated || !adminEmails.includes(user?.email)) {
+  // DEV MODE: skip admin email check — re-enable when restoring real auth
+  if (!isAuthenticated) {
     return <Navigate to="/" replace />
   }
 
