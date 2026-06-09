@@ -1,5 +1,6 @@
 package com.ServiceBookingPlatform.controller;
 
+import com.ServiceBookingPlatform.dto.PublicTenantResponse;
 import com.ServiceBookingPlatform.dto.TenantRequest;
 import com.ServiceBookingPlatform.dto.TenantResponse;
 import com.ServiceBookingPlatform.entity.TenantEntity;
@@ -9,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/tenants")
@@ -40,7 +44,18 @@ public class TenantController {
             @Valid @RequestBody TenantRequest request,
             JwtAuthenticationToken authentication) {
         String ownerAuth0Id = authentication.getToken().getSubject();
-        TenantEntity tenant = tenantService.onboardTenant(request.getSlug(), ownerAuth0Id);
+        String ownerEmail = authentication.getToken().getClaimAsString("email");
+        TenantEntity tenant = tenantService.onboardTenant(
+                request.getSlug(), request.getName(), ownerAuth0Id, ownerEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(TenantResponse.from(tenant));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PublicTenantResponse>> listTenants() {
+        return ResponseEntity.ok(
+            tenantService.listAllTenants().stream()
+                .map(PublicTenantResponse::from)
+                .collect(Collectors.toList())
+        );
     }
 }
