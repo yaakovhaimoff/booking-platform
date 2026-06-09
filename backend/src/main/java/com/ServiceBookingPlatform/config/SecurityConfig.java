@@ -25,6 +25,8 @@ public class SecurityConfig {
             .securityMatcher(
                 "/api/v1/tenants",
                 "/api/v1/tenants/me",
+                "/api/v1/admin/tenants",
+                "/api/v1/admin/tenants/*/enabled",
                 "/api/v1/appointments",
                 "/api/v1/appointments/me",
                 "/api/v1/appointments/*/status",
@@ -38,6 +40,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/api/v1/services").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/appointments").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/tenants").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/admin/tenants").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/admin/tenants/*/enabled").authenticated()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));

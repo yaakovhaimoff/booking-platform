@@ -3,6 +3,7 @@ package com.ServiceBookingPlatform.service;
 import com.ServiceBookingPlatform.config.DataSourceConfig;
 import com.ServiceBookingPlatform.entity.TenantEntity;
 import com.ServiceBookingPlatform.exception.SlugAlreadyTakenException;
+import com.ServiceBookingPlatform.exception.TenantDisabledException;
 import com.ServiceBookingPlatform.exception.TenantNotFoundException;
 import com.ServiceBookingPlatform.multitenancy.TenantRoutingDataSource;
 import com.ServiceBookingPlatform.repository.TenantRepository;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -57,8 +59,24 @@ public class TenantService {
     }
 
     public TenantEntity getTenantBySlug(String slug) {
-        return tenantRepository.findBySlug(slug)
+        TenantEntity tenant = tenantRepository.findBySlug(slug)
                 .orElseThrow(() -> new TenantNotFoundException(slug));
+        if (!tenant.isEnabled()) {
+            throw new TenantDisabledException(slug);
+        }
+        return tenant;
+    }
+
+    public List<TenantEntity> listAllTenants() {
+        return tenantRepository.findAll();
+    }
+
+    @Transactional
+    public TenantEntity setTenantEnabled(Long id, boolean enabled) {
+        TenantEntity tenant = tenantRepository.findById(id)
+                .orElseThrow(() -> new TenantNotFoundException(String.valueOf(id)));
+        tenant.setEnabled(enabled);
+        return tenantRepository.save(tenant);
     }
 
     public TenantEntity getTenantByOwnerAuth0Id(String auth0Id) {
@@ -74,7 +92,7 @@ public class TenantService {
     // 5. Registers the new DataSource in TenantRoutingDataSource
     // 6. Returns the saved TenantEntity
     @Transactional
-    public TenantEntity onboardTenant(String slug, String ownerAuth0Id) {
+    public TenantEntity onboardTenant(String slug, String name, String ownerAuth0Id, String ownerEmail) {
         if (!slug.matches("^[a-z0-9-]{3,50}$")) {
             throw new IllegalArgumentException("Invalid slug format");
         }
@@ -88,8 +106,10 @@ public class TenantService {
         String schemaName = "tenant_" + System.currentTimeMillis(); // temp placeholder until saved
         TenantEntity tenant = TenantEntity.builder()
                 .slug(slug)
+                .name(name)
                 .schemaName("pending")  // will be updated after save gives us the ID
                 .ownerAuth0Id(ownerAuth0Id)
+                .ownerEmail(ownerEmail)
                 .createdAt(LocalDateTime.now())
                 .build();
         tenant = tenantRepository.save(tenant);

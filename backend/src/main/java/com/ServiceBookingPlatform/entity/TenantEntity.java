@@ -15,11 +15,21 @@ public class TenantEntity {
     @Column(nullable = false, unique = true, length = 50)
     private String slug;
 
+    @Column(length = 100)
+    private String name;
+
     @Column(name = "schema_name", nullable = false, unique = true)
     private String schemaName;
 
     @Column(name = "owner_auth0_id", nullable = false, unique = true)
     private String ownerAuth0Id;
+
+    @Column(name = "owner_email")
+    private String ownerEmail;
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean enabled = true;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 import com.ServiceBookingPlatform.exception.TenantNotFoundException;
+import com.ServiceBookingPlatform.exception.TenantDisabledException;
 import com.ServiceBookingPlatform.exception.SlugAlreadyTakenException;
 import com.ServiceBookingPlatform.exception.AppointmentNotFoundException;
 import com.ServiceBookingPlatform.exception.InvalidTransitionException;
@@ -50,6 +51,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleTenantNotFound(TenantNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(Map.of("error", "TENANT_NOT_FOUND", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(TenantDisabledException.class)
+    public ResponseEntity<Map<String, String>> handleTenantDisabled(TenantDisabledException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(Map.of("error", "TENANT_DISABLED"));
     }
 
     @ExceptionHandler(SlugAlreadyTakenException.class)
