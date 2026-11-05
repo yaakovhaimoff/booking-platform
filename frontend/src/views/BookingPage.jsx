@@ -88,7 +88,7 @@ export default function BookingPage({ tenant }) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center sm:pt-6 sm:px-4">
       <div className="w-full max-w-xl">
-        <StoreHeader tenant={tenant} />
+        <StoreHeader tenant={tenant} compact={step !== 'service'} />
         <div className="px-4 sm:px-0 pb-12">
 
         {stepIndex >= 0 && (

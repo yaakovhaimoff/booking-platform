@@ -88,12 +88,12 @@ export default function AppointmentQueueTab({ tenant }) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold text-gray-800">{t('tabAppointments')}</h2>
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1 max-w-full overflow-x-auto">
+        <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-full sm:w-auto">
           {FILTERS.map(f => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
-              className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition ${
+              className={`flex-1 sm:flex-none px-1.5 sm:px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition ${
                 filter === f.id
                   ? 'bg-white text-indigo-600 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'

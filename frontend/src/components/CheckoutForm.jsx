@@ -48,7 +48,7 @@ export default function CheckoutForm({ onSubmit, error }) {
           type="text"
           value={clientName}
           onChange={(e) => setClientName(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
         {fieldErrors.clientName && (
           <p className="text-red-600 text-xs mt-1">{t(fieldErrors.clientName)}</p>
@@ -61,7 +61,7 @@ export default function CheckoutForm({ onSubmit, error }) {
           type="text"
           value={clientPhone}
           onChange={(e) => setClientPhone(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
         {fieldErrors.clientPhone && (
           <p className="text-red-600 text-xs mt-1">{t(fieldErrors.clientPhone)}</p>
@@ -78,19 +78,22 @@ export default function CheckoutForm({ onSubmit, error }) {
           maxLength={500}
           rows={3}
           placeholder={t('notesPlaceholder')}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="bg-purple-600 text-white rounded-md py-2 font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {submitting ? t('booking') : t('confirmBooking')}
-      </button>
+      <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 bg-white/95 backdrop-blur border-t border-gray-100 rounded-b-lg flex flex-col gap-2">
+        <p className="text-xs text-gray-500 text-center">{t('approvalNote')}</p>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="bg-indigo-600 text-white rounded-lg py-3 font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {submitting ? t('booking') : t('confirmBooking')}
+        </button>
+      </div>
     </form>
   )
 }

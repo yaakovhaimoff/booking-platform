@@ -26,18 +26,38 @@ function ActionButton({ href, label, color, children }) {
   )
 }
 
-export default function StoreHeader({ tenant }) {
+export default function StoreHeader({ tenant, compact = false }) {
   const { t } = useI18n()
   const { name, slug, address, phone, whatsappNumber, logoUrl, coverUrl } = tenant
   const title = name || slug
   const wa = waNumber(whatsappNumber)
+  // A cover that is just the logo image again makes the avatar sit on top of itself: use the gradient instead.
+  const cover = coverUrl && coverUrl !== logoUrl ? coverUrl : null
   const tel = phone ? phone.replace(/[^\d+]/g, '') : ''
+
+  if (compact) {
+    return (
+      <div className="bg-white sm:rounded-2xl shadow-sm mb-4 px-4 py-3 flex items-center gap-3">
+        {logoUrl ? (
+          <img src={logoUrl} alt="" className="w-10 h-10 rounded-full object-cover border border-gray-100" />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center">
+            {title.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div className="min-w-0">
+          <p className="font-semibold text-gray-900 truncate">{title}</p>
+          {address && <p className="text-xs text-gray-500 truncate">{address}</p>}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white sm:rounded-2xl shadow-sm overflow-hidden mb-6">
       <div
-        className="h-36 sm:h-44 bg-gradient-to-br from-indigo-500 to-purple-600 bg-cover bg-center"
-        style={coverUrl ? { backgroundImage: `url("${coverUrl}")` } : undefined}
+        className="h-36 sm:h-44 bg-gradient-to-br from-indigo-500 to-indigo-800 bg-cover bg-center"
+        style={cover ? { backgroundImage: `url("${cover}")` } : undefined}
       />
       <div className="px-5 pb-5 text-center">
         <div className="-mt-12 mb-3 flex justify-center">

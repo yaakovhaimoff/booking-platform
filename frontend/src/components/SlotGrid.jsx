@@ -21,7 +21,7 @@ export default function SlotGrid({ slots, loading, onSelect }) {
         <button
           key={slot}
           onClick={() => onSelect(slot)}
-          className="bg-white border border-gray-200 rounded-md py-2 text-sm font-medium text-gray-700 hover:border-purple-400 hover:text-purple-600 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-md py-2 text-sm font-medium text-gray-700 hover:border-indigo-400 hover:text-indigo-600 hover:shadow-sm transition-all"
         >
           {slot.substring(11, 16)}
         </button>
