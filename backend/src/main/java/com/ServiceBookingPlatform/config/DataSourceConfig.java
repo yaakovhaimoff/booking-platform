@@ -65,7 +65,10 @@ public class DataSourceConfig {
         config.setJdbcUrl(jdbcUrl);
         config.setUsername(username);
         config.setPassword(password);
-        config.setConnectionInitSql("SET search_path TO " + schemaName);
+        // Fall back to public so shared tables (e.g. tenants) resolve from tenant connections,
+        // e.g. AppointmentService.updateStatus loads the tenant to check ownership.
+        // Tenant tables (appointments, services, ...) still win because the schema is first.
+        config.setConnectionInitSql("SET search_path TO " + schemaName + ", public");
         config.setMaximumPoolSize(5);
         return new HikariDataSource(config);
     }

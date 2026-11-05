@@ -8,15 +8,23 @@
 const DEV_TOKEN = 'dev-bypass-token'
 const DEV_USER = { sub: 'dev|owner1', email: 'dev@example.com', name: 'Dev User' }
 
+// Module-level so references are stable across renders. Real Auth0 returns a stable
+// getAccessTokenSilently; a new function each render made every
+// useEffect([getAccessTokenSilently]) refetch in an infinite loop.
+const loginWithRedirect = () => {}
+const logout = () => {}
+const getAccessTokenSilently = async () => DEV_TOKEN
+const AUTH = {
+  isAuthenticated: true,
+  isLoading: false,
+  user: DEV_USER,
+  loginWithRedirect,
+  logout,
+  getAccessTokenSilently,
+}
+
 export function useAuth0() {
-  return {
-    isAuthenticated: true,
-    isLoading: false,
-    user: DEV_USER,
-    loginWithRedirect: () => {},
-    logout: () => {},
-    getAccessTokenSilently: async () => DEV_TOKEN,
-  }
+  return AUTH
 }
 
 export function Auth0Provider({ children }) {

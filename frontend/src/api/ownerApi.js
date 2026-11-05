@@ -61,6 +61,24 @@ export async function getPendingAppointments(token, tenantId) {
   return res.json()
 }
 
+// status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | null (null = all except cancelled)
+export async function getAppointments(token, tenantId, status = null) {
+  const qs = status ? `?status=${status}` : ''
+  const res = await fetch(`${BASE}/appointments${qs}`, {
+    headers: authHeaders(token, tenantId),
+  })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}
+
+export async function getServices(token, tenantId) {
+  const res = await fetch(`${BASE}/services`, {
+    headers: authHeaders(token, tenantId),
+  })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}
+
 export async function updateAppointmentStatus(token, tenantId, id, status) {
   const res = await fetch(`${BASE}/appointments/${id}/status`, {
     method: 'PATCH',
