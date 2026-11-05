@@ -9,6 +9,7 @@ import OwnerDashboard from './views/OwnerDashboard'
 import OwnerOnboardingPage from './views/OwnerOnboardingPage'
 import ClientDashboard from './views/ClientDashboard'
 import AuthRoutingPage from './views/AuthRoutingPage'
+import LoginPage from './views/LoginPage'
 import NotFoundPage from './views/NotFoundPage'
 
 export default function App() {
@@ -36,6 +37,8 @@ export default function App() {
             path="/client/dashboard"
             element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>}
           />
+          {['/login', '/auth/login'].map(p => <Route key={p} path={p} element={<LoginPage mode="login" />} />)}
+          {['/signup', '/auth/signup'].map(p => <Route key={p} path={p} element={<LoginPage mode="signup" />} />)}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

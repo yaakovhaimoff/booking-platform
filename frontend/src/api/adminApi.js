@@ -1,7 +1,8 @@
+import { http } from './http'
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 export async function getAdminTenants(token) {
-  const res = await fetch(`${BASE}/admin/tenants`, {
+  const res = await http(`${BASE}/admin/tenants`, {
     headers: { Authorization: `Bearer ${token}` }
   })
   if (!res.ok) throw await res.json()
@@ -9,7 +10,7 @@ export async function getAdminTenants(token) {
 }
 
 export async function setTenantEnabled(token, id, enabled) {
-  const res = await fetch(`${BASE}/admin/tenants/${id}/enabled`, {
+  const res = await http(`${BASE}/admin/tenants/${id}/enabled`, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${token}`,

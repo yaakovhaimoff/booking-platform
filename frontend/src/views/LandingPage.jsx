@@ -2,62 +2,105 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listTenants } from '../api/tenantApi'
 import { useI18n } from '../i18n'
+import Skeleton from '../components/Skeleton'
+
+const CACHE_KEY = 'tenants-cache'
+
+function readCache() {
+  try { return JSON.parse(sessionStorage.getItem(CACHE_KEY)) } catch { return null }
+}
 
 export default function LandingPage() {
   const navigate = useNavigate()
   const { t } = useI18n()
-  const [tenants, setTenants] = useState([])
-  const [loading, setLoading] = useState(true)
+  // Show the last known list instantly, then refresh in the background.
+  const [tenants, setTenants] = useState(() => readCache() || [])
+  const [loading, setLoading] = useState(() => !readCache())
   const [error, setError] = useState(null)
+  const [query, setQuery] = useState('')
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
+    let cancelled = false
     listTenants()
       .then(data => {
+        if (cancelled) return
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(data))
         setTenants(data)
+        setError(null)
         setLoading(false)
       })
       .catch(() => {
+        if (cancelled) return
         setError('loadBusinessesFailed')
         setLoading(false)
       })
-  }, [])
+    return () => { cancelled = true }
+  }, [attempt])
+
+  const q = query.trim().toLowerCase()
+  const shown = q
+    ? tenants.filter(x => `${x.name || ''} ${x.address || ''} ${x.slug}`.toLowerCase().includes(q))
+    : tenants
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-3">{t('findBusiness')}</h1>
           <p className="text-lg text-gray-500">{t('findBusinessSub')}</p>
         </div>
 
+        <div className="max-w-md mx-auto mb-10">
+          <input
+            type="search"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={t('searchBusinesses')}
+            className="w-full border border-gray-300 rounded-full px-5 py-2.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+        </div>
+
         {loading && (
-          <div className="flex justify-center">
-            <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-100 p-6">
+                <Skeleton className="h-5 w-2/3 mb-3" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
           </div>
         )}
 
-        {error && (
-          <p className="text-center text-red-500">{t(error)}</p>
+        {error && tenants.length === 0 && (
+          <div className="text-center">
+            <p className="text-red-500 mb-3">{t(error)}</p>
+            <button onClick={() => { setLoading(true); setError(null); setAttempt(a => a + 1) }}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              {t('retry')}
+            </button>
+          </div>
         )}
 
         {!loading && !error && tenants.length === 0 && (
-          <p className="text-center text-gray-400">
-            {t('noBusinesses')}
-          </p>
+          <p className="text-center text-gray-400">{t('noBusinesses')}</p>
         )}
 
-        {!loading && !error && tenants.length > 0 && (
+        {!loading && tenants.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tenants.map(tenant => (
+            {shown.map(tenant => (
               <button
                 key={tenant.id}
                 onClick={() => navigate(`/store/${tenant.slug}`)}
-                className="text-left bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-indigo-200 transition-all"
+                className="text-left bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:border-indigo-200 transition-all"
               >
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                  {tenant.name}
-                </h2>
-                <p className="text-sm text-gray-400">/store/{tenant.slug}</p>
+                {tenant.coverUrl && (
+                  <div className="h-28 bg-cover bg-center" style={{ backgroundImage: `url("${tenant.coverUrl}")` }} />
+                )}
+                <div className="p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-1">{tenant.name || tenant.slug}</h2>
+                  {tenant.address && <p className="text-sm text-gray-500">{tenant.address}</p>}
+                </div>
               </button>
             ))}
           </div>

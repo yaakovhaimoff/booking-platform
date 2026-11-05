@@ -1,9 +1,14 @@
+import Skeleton from './Skeleton'
 import { useI18n } from '../i18n'
 
 export default function SlotGrid({ slots, loading, onSelect }) {
   const { t } = useI18n()
   if (loading) {
-    return <p className="text-center text-gray-500 py-8">{t('loadingSlots')}</p>
+    return (
+      <div className="grid grid-cols-3 gap-3" aria-busy="true" aria-label={t('loadingSlots')}>
+        {Array.from({ length: 9 }, (_, i) => <Skeleton key={i} className="h-10" />)}
+      </div>
+    )
   }
 
   if (slots.length === 0) {

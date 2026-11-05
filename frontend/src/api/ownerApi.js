@@ -1,3 +1,4 @@
+import { http } from './http'
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 function authHeaders(token, tenantId = null) {
@@ -10,13 +11,13 @@ function authHeaders(token, tenantId = null) {
 }
 
 export async function getMyTenant(token) {
-  const res = await fetch(`${BASE}/tenants/me`, { headers: authHeaders(token) })
+  const res = await http(`${BASE}/tenants/me`, { headers: authHeaders(token) })
   if (!res.ok) throw await res.json()
   return res.json()
 }
 
 export async function createTenant(token, slug, name) {
-  const res = await fetch(`${BASE}/tenants`, {
+  const res = await http(`${BASE}/tenants`, {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({ slug, name }),
@@ -26,7 +27,7 @@ export async function createTenant(token, slug, name) {
 }
 
 export async function createService(token, tenantId, data) {
-  const res = await fetch(`${BASE}/services`, {
+  const res = await http(`${BASE}/services`, {
     method: 'POST',
     headers: authHeaders(token, tenantId),
     body: JSON.stringify(data),
@@ -36,7 +37,7 @@ export async function createService(token, tenantId, data) {
 }
 
 export async function updateService(token, tenantId, id, data) {
-  const res = await fetch(`${BASE}/services/${id}`, {
+  const res = await http(`${BASE}/services/${id}`, {
     method: 'PUT',
     headers: authHeaders(token, tenantId),
     body: JSON.stringify(data),
@@ -46,7 +47,7 @@ export async function updateService(token, tenantId, id, data) {
 }
 
 export async function deleteService(token, tenantId, id) {
-  const res = await fetch(`${BASE}/services/${id}`, {
+  const res = await http(`${BASE}/services/${id}`, {
     method: 'DELETE',
     headers: authHeaders(token, tenantId),
   })
@@ -54,7 +55,7 @@ export async function deleteService(token, tenantId, id) {
 }
 
 export async function getPendingAppointments(token, tenantId) {
-  const res = await fetch(`${BASE}/appointments?status=PENDING`, {
+  const res = await http(`${BASE}/appointments?status=PENDING`, {
     headers: authHeaders(token, tenantId),
   })
   if (!res.ok) throw await res.json()
@@ -64,7 +65,7 @@ export async function getPendingAppointments(token, tenantId) {
 // status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | null (null = all except cancelled)
 export async function getAppointments(token, tenantId, status = null) {
   const qs = status ? `?status=${status}` : ''
-  const res = await fetch(`${BASE}/appointments${qs}`, {
+  const res = await http(`${BASE}/appointments${qs}`, {
     headers: authHeaders(token, tenantId),
   })
   if (!res.ok) throw await res.json()
@@ -72,7 +73,7 @@ export async function getAppointments(token, tenantId, status = null) {
 }
 
 export async function getServices(token, tenantId) {
-  const res = await fetch(`${BASE}/services`, {
+  const res = await http(`${BASE}/services`, {
     headers: authHeaders(token, tenantId),
   })
   if (!res.ok) throw await res.json()
@@ -80,7 +81,7 @@ export async function getServices(token, tenantId) {
 }
 
 export async function updateAppointmentStatus(token, tenantId, id, status) {
-  const res = await fetch(`${BASE}/appointments/${id}/status`, {
+  const res = await http(`${BASE}/appointments/${id}/status`, {
     method: 'PATCH',
     headers: authHeaders(token, tenantId),
     body: JSON.stringify({ status }),
@@ -90,7 +91,7 @@ export async function updateAppointmentStatus(token, tenantId, id, status) {
 }
 
 export async function getOperatingHours(token, tenantId) {
-  const res = await fetch(`${BASE}/operating-hours`, {
+  const res = await http(`${BASE}/operating-hours`, {
     headers: authHeaders(token, tenantId),
   })
   if (!res.ok) throw await res.json()
@@ -98,7 +99,7 @@ export async function getOperatingHours(token, tenantId) {
 }
 
 export async function updateOperatingHours(token, tenantId, rows) {
-  const res = await fetch(`${BASE}/operating-hours`, {
+  const res = await http(`${BASE}/operating-hours`, {
     method: 'PUT',
     headers: authHeaders(token, tenantId),
     body: JSON.stringify(rows),
@@ -108,7 +109,7 @@ export async function updateOperatingHours(token, tenantId, rows) {
 }
 
 export async function updateMyTenant(token, data) {
-  const res = await fetch(`${BASE}/tenants/me`, {
+  const res = await http(`${BASE}/tenants/me`, {
     method: 'PUT',
     headers: authHeaders(token),
     body: JSON.stringify(data),

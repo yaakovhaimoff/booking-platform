@@ -1,3 +1,4 @@
+import { http } from './http'
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 // Set once by PublicStorePage after slug resolution.
@@ -12,19 +13,19 @@ function tenantHeaders(extra = {}) {
 }
 
 export async function getServices() {
-  const res = await fetch(`${BASE}/services`, { headers: tenantHeaders() })
+  const res = await http(`${BASE}/services`, { headers: tenantHeaders() })
   if (!res.ok) throw await res.json()
   return res.json()
 }
 
 export async function getSlots(date) {
-  const res = await fetch(`${BASE}/slots?date=${date}`, { headers: tenantHeaders() })
+  const res = await http(`${BASE}/slots?date=${date}`, { headers: tenantHeaders() })
   if (!res.ok) throw await res.json()
   return res.json()
 }
 
 export async function createAppointment(payload) {
-  const res = await fetch(`${BASE}/appointments`, {
+  const res = await http(`${BASE}/appointments`, {
     method: 'POST',
     headers: tenantHeaders(),
     body: JSON.stringify(payload)
@@ -34,7 +35,7 @@ export async function createAppointment(payload) {
 }
 
 export async function getOpenDates(from, to) {
-  const res = await fetch(`${BASE}/slots/open-dates?from=${from}&to=${to}`, { headers: tenantHeaders() })
+  const res = await http(`${BASE}/slots/open-dates?from=${from}&to=${to}`, { headers: tenantHeaders() })
   if (!res.ok) throw await res.json()
   return res.json()
 }

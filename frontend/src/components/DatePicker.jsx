@@ -13,7 +13,8 @@ export default function DatePicker({ onSelect }) {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
-  const [loaded, setLoaded] = useState({ key: null, dates: new Set() })
+  const [loaded, setLoaded] = useState({ key: null, dates: new Set(), failed: false })
+  const [attempt, setAttempt] = useState(0)
 
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const firstWeekday = (new Date(year, month, 1).getDay() - weekStart + 7) % 7
@@ -25,10 +26,10 @@ export default function DatePicker({ onSelect }) {
 
   useEffect(() => {
     let cancelled = false
-    const done = dates => { if (!cancelled) setLoaded({ key: monthKey, dates: new Set(dates) }) }
-    getOpenDates(iso(year, month, 1), iso(year, month, daysInMonth)).then(done).catch(() => done([]))
+    const done = (dates, failed = false) => { if (!cancelled) setLoaded({ key: monthKey, dates: new Set(dates), failed }) }
+    getOpenDates(iso(year, month, 1), iso(year, month, daysInMonth)).then(d => done(d)).catch(() => done([], true))
     return () => { cancelled = true }
-  }, [year, month, daysInMonth, monthKey])
+  }, [year, month, daysInMonth, monthKey, attempt])
 
   function shift(delta) {
     const d = new Date(year, month + delta, 1)
@@ -68,15 +69,27 @@ export default function DatePicker({ onSelect }) {
         {weekdays.map(w => <div key={w}>{w}</div>)}
       </div>
 
-      <div className={`grid grid-cols-7 gap-1 ${loading ? 'opacity-50' : ''}`}>
+      {loading && <p className="text-sm text-indigo-600 text-center mb-2 animate-pulse" role="status">{t('checkingAvail')}</p>}
+      {!loading && loaded.failed && (
+        <p className="text-sm text-red-600 text-center mb-2">
+          {t('timeoutError')}{' '}
+          <button className="underline font-medium" onClick={() => { setLoaded(l => ({ ...l, key: null })); setAttempt(a => a + 1) }}>{t('retry')}</button>
+        </p>
+      )}
+      <div className="grid grid-cols-7 gap-1">
         {cells.map((day, i) => {
           if (day === null) return <div key={`e${i}`} />
           const date = iso(year, month, day)
           const open = !loading && openDates.has(date)
+          // While loading, days look neutral (not "closed") so the calendar never appears fully booked.
+          if (loading) {
+            return <div key={date} className="aspect-square rounded-md bg-gray-100 animate-pulse flex items-center justify-center text-sm text-gray-400">{day}</div>
+          }
           return (
             <button
               key={date}
               disabled={!open}
+              title={open ? undefined : t('closedDay')}
               onClick={() => onSelect(date)}
               className={`aspect-square rounded-md text-sm transition ${
                 open

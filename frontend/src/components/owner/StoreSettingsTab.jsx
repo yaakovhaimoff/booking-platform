@@ -80,14 +80,14 @@ export default function StoreSettingsTab({ tenant }) {
           <input className={inputCls} value={form.name} onChange={set('name')} maxLength={100} required />
         </Field>
         <Field label={t('address')} hint={t('addressHint')}>
-          <input className={inputCls} value={form.address} onChange={set('address')} maxLength={255} placeholder="Dizengoff 100, Tel Aviv" />
+          <input className={inputCls} value={form.address} onChange={set('address')} maxLength={255} placeholder="Via Rovereto 21, Milano" />
         </Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label={t('phone')}>
-            <input className={inputCls} value={form.phone} onChange={set('phone')} maxLength={30} placeholder="03-1234567" />
+            <input className={inputCls} value={form.phone} onChange={set('phone')} maxLength={30} placeholder="02 1234567" />
           </Field>
           <Field label={t('whatsappNumber')} hint={t('whatsappHint')}>
-            <input className={inputCls} value={form.whatsappNumber} onChange={set('whatsappNumber')} maxLength={30} placeholder="050-1234567" />
+            <input className={inputCls} value={form.whatsappNumber} onChange={set('whatsappNumber')} maxLength={30} placeholder="+39 333 1234567" />
           </Field>
         </div>
         <Field label={t('profileImageUrl')} hint={t('profileImageHint')}>

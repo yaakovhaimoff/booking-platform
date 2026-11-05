@@ -76,6 +76,8 @@ export default function ConfirmationScreen({ appointment, service, tenant, onBoo
         <Row label={t('duration')}>{service.durationMinutes} {t('min')}</Row>
         <Row label={t('price')}>{fmtPrice(service.price, tenant.currency)}</Row>
         <Row label={t('name')}>{appointment.clientName}</Row>
+        <Row label={t('phoneLabel')}>{appointment.clientPhone}</Row>
+        <Row label={t('bookingRef')}>#{String(appointment.id).padStart(5, '0')}</Row>
         {appointment.notes && <Row label={t('notes')}>{appointment.notes}</Row>}
       </dl>
 

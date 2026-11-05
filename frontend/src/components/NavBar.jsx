@@ -1,17 +1,19 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth0 } from '../mockAuth'
 import { useI18n } from '../i18n'
 import LanguageToggle from './LanguageToggle'
 
 export default function NavBar() {
   const { t } = useI18n()
-  const { isAuthenticated, user, loginWithRedirect, logout } = useAuth0()
+  const navigate = useNavigate()
+  const { isAuthenticated, user, logout } = useAuth0()
 
   const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim())
   const isAdmin = isAuthenticated && adminEmails.includes(user?.email)
 
   function handleLogout() {
-    logout({ logoutParams: { returnTo: window.location.origin } })
+    sessionStorage.removeItem('role')
+    try { logout() } finally { navigate('/', { replace: true }) }
   }
 
   return (
@@ -24,12 +26,17 @@ export default function NavBar() {
         <div className="flex items-center gap-2 sm:gap-3">
           <LanguageToggle />
           {!isAuthenticated && (
-            <button
-              onClick={() => loginWithRedirect()}
-              className="px-3 sm:px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition"
-            >
-              {t('login')}
-            </button>
+            <>
+              <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">
+                {t('login')}
+              </Link>
+              <Link
+                to="/signup"
+                className="px-3 sm:px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition"
+              >
+                {t('signup')}
+              </Link>
+            </>
           )}
 
           {isAuthenticated && isAdmin && (
