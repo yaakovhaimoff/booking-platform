@@ -1,28 +1,32 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth0 } from '../../mockAuth'
 import { getAppointments, getServices, updateAppointmentStatus } from '../../api/ownerApi'
-import AppointmentRow from './AppointmentRow'
+import AppointmentList from './AppointmentList'
 import AppointmentCalendar from './AppointmentCalendar'
+import { useI18n } from '../../i18n'
 
 const FILTERS = [
-  { id: 'PENDING',   label: 'Pending' },
-  { id: 'CONFIRMED', label: 'Confirmed' },
-  { id: 'ALL',       label: 'All' },
-  { id: 'CANCELLED', label: 'Cancelled' },
+  { id: 'TODAY',     label: 'filterToday' },
+  { id: 'PENDING',   label: 'filterPending' },
+  { id: 'CONFIRMED', label: 'filterConfirmed' },
+  { id: 'ALL',       label: 'filterAll' },
+  { id: 'CANCELLED', label: 'filterCancelled' },
 ]
 
 const EMPTY_TEXT = {
-  PENDING:   'No pending appointments.',
-  CONFIRMED: 'No confirmed appointments.',
-  ALL:       'No appointments yet.',
-  CANCELLED: 'No cancelled appointments.',
+  TODAY:     'emptyToday',
+  PENDING:   'emptyPending',
+  CONFIRMED: 'emptyConfirmed',
+  ALL:       'emptyAll',
+  CANCELLED: 'emptyCancelled',
 }
 
 export default function AppointmentQueueTab({ tenant }) {
   const { getAccessTokenSilently } = useAuth0()
+  const { t } = useI18n()
   const [appointments, setAppointments] = useState([])
   const [services, setServices] = useState([])
-  const [filter, setFilter] = useState('PENDING')
+  const [filter, setFilter] = useState('TODAY')
   const [view, setView] = useState('calendar')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -34,7 +38,7 @@ export default function AppointmentQueueTab({ tenant }) {
     getAccessTokenSilently()
       .then(token => Promise.all([
         // ALL = no status param: backend returns everything except cancelled
-        getAppointments(token, tenant.id, filter === 'ALL' ? null : filter),
+        getAppointments(token, tenant.id, filter === 'ALL' || filter === 'TODAY' ? null : filter),
         getServices(token, tenant.id).catch(() => []),
       ]))
       .then(([appts, svcs]) => {
@@ -42,7 +46,7 @@ export default function AppointmentQueueTab({ tenant }) {
         setAppointments(appts)
         setServices(svcs)
       })
-      .catch(() => { if (!cancelled) setError('Failed to load appointments.') })
+      .catch(() => { if (!cancelled) setError('loadApptsFailed') })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [tenant.id, filter, getAccessTokenSilently])
@@ -53,17 +57,19 @@ export default function AppointmentQueueTab({ tenant }) {
   )
 
   // Soonest first
-  const sorted = useMemo(
-    () => [...appointments].sort((a, b) => a.startTime.localeCompare(b.startTime)),
-    [appointments]
-  )
+  const sorted = useMemo(() => {
+    const todayIso = new Date().toLocaleDateString('sv-SE') // YYYY-MM-DD in local time
+    return appointments
+      .filter(a => filter !== 'TODAY' || a.startTime.startsWith(todayIso))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime))
+  }, [appointments, filter])
 
   async function changeStatus(id, status, failMessage) {
     const previous = appointments
     // Update in place; drop it from the list if it no longer matches the current filter
     setAppointments(prev => prev
       .map(a => (a.id === id ? { ...a, status } : a))
-      .filter(a => filter === 'ALL' ? a.status !== 'CANCELLED' : a.status === filter))
+      .filter(a => filter === 'ALL' || filter === 'TODAY' ? a.status !== 'CANCELLED' : a.status === filter))
     try {
       const token = await getAccessTokenSilently()
       await updateAppointmentStatus(token, tenant.id, id, status)
@@ -73,27 +79,27 @@ export default function AppointmentQueueTab({ tenant }) {
     }
   }
 
-  const handleApprove = id => changeStatus(id, 'CONFIRMED', 'Failed to approve appointment.')
-  const handleCancel  = id => changeStatus(id, 'CANCELLED', 'Failed to cancel appointment.')
+  const handleApprove = id => changeStatus(id, 'CONFIRMED', 'approveFailed')
+  const handleCancel  = id => changeStatus(id, 'CANCELLED', 'cancelFailed')
 
   const showCalendar = filter === 'CONFIRMED' && view === 'calendar'
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">Appointments</h2>
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        <h2 className="text-lg font-semibold text-gray-800">{t('tabAppointments')}</h2>
+        <div className="flex gap-1 bg-gray-100 rounded-lg p-1 max-w-full overflow-x-auto">
           {FILTERS.map(f => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition ${
+              className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap rounded-md transition ${
                 filter === f.id
                   ? 'bg-white text-indigo-600 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              {f.label}
+              {t(f.label)}
             </button>
           ))}
         </div>
@@ -101,7 +107,7 @@ export default function AppointmentQueueTab({ tenant }) {
 
       {filter === 'CONFIRMED' && (
         <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit mb-4">
-          {[['calendar', 'Calendar'], ['list', 'List']].map(([id, label]) => (
+          {[['calendar', 'viewCalendar'], ['list', 'viewList']].map(([id, label]) => (
             <button
               key={id}
               onClick={() => setView(id)}
@@ -109,7 +115,7 @@ export default function AppointmentQueueTab({ tenant }) {
                 view === id ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
@@ -117,7 +123,7 @@ export default function AppointmentQueueTab({ tenant }) {
 
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
-          {error}
+          {t(error)}
         </div>
       )}
 
@@ -133,32 +139,14 @@ export default function AppointmentQueueTab({ tenant }) {
           onCancel={handleCancel}
         />
       ) : sorted.length === 0 ? (
-        <p className="text-sm text-gray-400">{EMPTY_TEXT[filter]}</p>
+        <p className="text-sm text-gray-400">{t(EMPTY_TEXT[filter])}</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead>
-              <tr className="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">
-                <th className="pb-2 pr-4">Client</th>
-                <th className="pb-2 pr-4">Service</th>
-                <th className="pb-2 pr-4">Time</th>
-                <th className="pb-2 pr-4">Status</th>
-                <th className="pb-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map(a => (
-                <AppointmentRow
-                  key={a.id}
-                  appointment={a}
-                  serviceName={serviceNames[a.serviceId]}
-                  onApprove={handleApprove}
-                  onCancel={handleCancel}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AppointmentList
+          appointments={sorted}
+          serviceNames={serviceNames}
+          onApprove={handleApprove}
+          onCancel={handleCancel}
+        />
       )}
     </div>
   )

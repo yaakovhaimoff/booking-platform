@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { useAuth0 } from '../../mockAuth'
 import { getOperatingHours, updateOperatingHours } from '../../api/ownerApi'
 import HoursRowInput from './HoursRowInput'
-
-const DAY_LABELS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+import { useI18n } from '../../i18n'
 
 export default function AvailabilityMatrixTab({ tenant }) {
   const { getAccessTokenSilently } = useAuth0()
+  const { t } = useI18n()
+  const DAY_LABELS = t('days')
   const [hours, setHours] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -17,7 +18,7 @@ export default function AvailabilityMatrixTab({ tenant }) {
     getAccessTokenSilently()
       .then(token => getOperatingHours(token, tenant.id))
       .then(data => setHours(data))
-      .catch(() => setError('Failed to load operating hours.'))
+      .catch(() => setError({ key: 'loadHoursFailed' }))
       .finally(() => setLoading(false))
   }, [tenant.id, getAccessTokenSilently])
 
@@ -38,11 +39,11 @@ export default function AvailabilityMatrixTab({ tenant }) {
     for (const row of hours) {
       if (!row.isClosed) {
         if (!row.openTime || !row.closeTime) {
-          setError(`${DAY_LABELS[row.dayOfWeek]}: open and close times are required when not closed.`)
+          setError({ key: 'hoursRequired', vars: { day: row.dayOfWeek } })
           return
         }
         if (row.openTime >= row.closeTime) {
-          setError(`${DAY_LABELS[row.dayOfWeek]}: open time must be before close time.`)
+          setError({ key: 'hoursOrder', vars: { day: row.dayOfWeek } })
           return
         }
       }
@@ -56,7 +57,7 @@ export default function AvailabilityMatrixTab({ tenant }) {
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch {
-      setError('Failed to save hours.')
+      setError({ key: 'saveHoursFailed' })
     } finally {
       setSaving(false)
     }
@@ -72,11 +73,11 @@ export default function AvailabilityMatrixTab({ tenant }) {
 
   return (
     <div className="max-w-2xl">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Operating Hours</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('operatingHours')}</h2>
 
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
-          {error}
+          {t(error.key, error.vars && { day: DAY_LABELS[error.vars.day] })}
         </div>
       )}
 
@@ -96,7 +97,7 @@ export default function AvailabilityMatrixTab({ tenant }) {
         disabled={saving}
         className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition disabled:opacity-60"
       >
-        {saving ? 'Saving…' : saved ? 'Saved!' : 'Save'}
+        {saving ? t('saving') : saved ? t('saved') : t('save')}
       </button>
     </div>
   )

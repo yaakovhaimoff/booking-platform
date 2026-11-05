@@ -1,10 +1,13 @@
+import { useI18n } from '../i18n'
+
 export default function SlotGrid({ slots, loading, onSelect }) {
+  const { t } = useI18n()
   if (loading) {
-    return <p className="text-center text-gray-500 py-8">Loading available slots...</p>
+    return <p className="text-center text-gray-500 py-8">{t('loadingSlots')}</p>
   }
 
   if (slots.length === 0) {
-    return <p className="text-center text-gray-500 py-8">No available slots for this date.</p>
+    return <p className="text-center text-gray-500 py-8">{t('noSlots')}</p>
   }
 
   return (

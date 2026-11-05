@@ -1,7 +1,10 @@
+import { useI18n } from '../../i18n'
+
 export default function HoursRowInput({ day, row, onChange }) {
+  const { t } = useI18n()
   return (
-    <div className="flex items-center gap-4 py-3 border-b border-gray-100 last:border-0">
-      <span className="w-28 text-sm font-medium text-gray-700">{day}</span>
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 border-b border-gray-100 last:border-0">
+      <span className="w-full sm:w-28 text-sm font-medium text-gray-700">{day}</span>
 
       <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
         <input
@@ -10,11 +13,11 @@ export default function HoursRowInput({ day, row, onChange }) {
           onChange={e => onChange(row.dayOfWeek, 'isClosed', e.target.checked)}
           className="rounded"
         />
-        Closed
+        {t('closed')}
       </label>
 
       <label className="flex items-center gap-2 text-sm text-gray-600">
-        Open
+        {t('open')}
         <input
           type="time"
           value={row.openTime || ''}
@@ -25,7 +28,7 @@ export default function HoursRowInput({ day, row, onChange }) {
       </label>
 
       <label className="flex items-center gap-2 text-sm text-gray-600">
-        Close
+        {t('close')}
         <input
           type="time"
           value={row.closeTime || ''}

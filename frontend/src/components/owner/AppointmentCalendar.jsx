@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
-import AppointmentRow from './AppointmentRow'
+import AppointmentList from './AppointmentList'
+import { useI18n } from '../../i18n'
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const iso = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
 export default function AppointmentCalendar({ appointments, serviceNames, onApprove, onCancel }) {
+  const { t, locale, weekStart, weekdays } = useI18n()
   const now = new Date()
   const todayIso = iso(now.getFullYear(), now.getMonth(), now.getDate())
   const [year, setYear] = useState(now.getFullYear())
@@ -23,7 +24,7 @@ export default function AppointmentCalendar({ appointments, serviceNames, onAppr
   }, [appointments])
 
   const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const firstWeekday = new Date(year, month, 1).getDay()
+  const firstWeekday = (new Date(year, month, 1).getDay() - weekStart + 7) % 7
   const cells = [
     ...Array(firstWeekday).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
@@ -36,7 +37,7 @@ export default function AppointmentCalendar({ appointments, serviceNames, onAppr
   }
 
   const dayList = byDate[selected] || []
-  const selectedLabel = new Date(`${selected}T00:00:00`).toLocaleDateString(undefined, {
+  const selectedLabel = new Date(`${selected}T00:00:00`).toLocaleDateString(locale, {
     weekday: 'long', month: 'long', day: 'numeric',
   })
 
@@ -44,15 +45,15 @@ export default function AppointmentCalendar({ appointments, serviceNames, onAppr
     <div>
       <div className="max-w-md">
         <div className="flex items-center justify-between mb-3">
-          <button onClick={() => shift(-1)} className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded" aria-label="Previous month">←</button>
+          <button onClick={() => shift(-1)} className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded" aria-label={t('prevMonth')}>←</button>
           <h3 className="font-semibold text-gray-800">
-            {new Date(year, month, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+            {new Date(year, month, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
           </h3>
-          <button onClick={() => shift(1)} className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded" aria-label="Next month">→</button>
+          <button onClick={() => shift(1)} className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded" aria-label={t('nextMonth')}>→</button>
         </div>
 
         <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-1">
-          {WEEKDAYS.map(w => <div key={w}>{w}</div>)}
+          {weekdays.map(w => <div key={w}>{w}</div>)}
         </div>
 
         <div className="grid grid-cols-7 gap-1">
@@ -87,23 +88,15 @@ export default function AppointmentCalendar({ appointments, serviceNames, onAppr
 
       <h3 className="mt-6 mb-2 text-sm font-semibold text-gray-700">{selectedLabel}</h3>
       {dayList.length === 0 ? (
-        <p className="text-sm text-gray-400">No confirmed appointments on this day.</p>
+        <p className="text-sm text-gray-400">{t('noConfirmedOnDay')}</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <tbody>
-              {dayList.map(a => (
-                <AppointmentRow
-                  key={a.id}
-                  appointment={a}
-                  serviceName={serviceNames[a.serviceId]}
-                  onApprove={onApprove}
-                  onCancel={onCancel}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AppointmentList
+          appointments={dayList}
+          serviceNames={serviceNames}
+          onApprove={onApprove}
+          onCancel={onCancel}
+          showHeader={false}
+        />
       )}
     </div>
   )

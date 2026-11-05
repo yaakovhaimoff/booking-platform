@@ -15,6 +15,7 @@ public class AppointmentResponse {
     private String startTime;
     private String endTime;
     private String status;
+    private String notes;
 
     public static AppointmentResponse from(AppointmentEntity e) {
         return AppointmentResponse.builder()
@@ -25,6 +26,7 @@ public class AppointmentResponse {
             .startTime(e.getStartTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
             .endTime(e.getEndTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
             .status(e.getStatus().name())
+            .notes(e.getNotes())
             .build();
     }
 }

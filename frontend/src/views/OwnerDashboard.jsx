@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth0 } from '../mockAuth'
 import { getMyTenant } from '../api/ownerApi'
+import { useI18n } from '../i18n'
 import DashboardNav from '../components/owner/DashboardNav'
 import StoreSettingsTab from '../components/owner/StoreSettingsTab'
 import AppointmentQueueTab from '../components/owner/AppointmentQueueTab'
@@ -9,6 +10,7 @@ import AvailabilityMatrixTab from '../components/owner/AvailabilityMatrixTab'
 
 export default function OwnerDashboard() {
   const { getAccessTokenSilently } = useAuth0()
+  const { t } = useI18n()
   const [activeTab, setActiveTab] = useState('store')
   const [tenant, setTenant] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -31,9 +33,9 @@ export default function OwnerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Owner Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('ownerDashboard')}</h1>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
           <DashboardNav activeTab={activeTab} onTabChange={setActiveTab} />
 
           {activeTab === 'store'    && tenant && <StoreSettingsTab tenant={tenant} />}

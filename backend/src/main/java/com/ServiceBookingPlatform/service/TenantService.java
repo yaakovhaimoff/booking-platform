@@ -1,6 +1,7 @@
 package com.ServiceBookingPlatform.service;
 
 import com.ServiceBookingPlatform.config.DataSourceConfig;
+import com.ServiceBookingPlatform.dto.TenantProfileRequest;
 import com.ServiceBookingPlatform.entity.TenantEntity;
 import com.ServiceBookingPlatform.exception.SlugAlreadyTakenException;
 import com.ServiceBookingPlatform.exception.TenantDisabledException;
@@ -77,6 +78,24 @@ public class TenantService {
                 .orElseThrow(() -> new TenantNotFoundException(String.valueOf(id)));
         tenant.setEnabled(enabled);
         return tenantRepository.save(tenant);
+    }
+
+    @Transactional
+    public TenantEntity updateProfile(String ownerAuth0Id, TenantProfileRequest r) {
+        TenantEntity t = getTenantByOwnerAuth0Id(ownerAuth0Id);
+        t.setName(r.getName().trim());
+        t.setAddress(blankToNull(r.getAddress()));
+        t.setPhone(blankToNull(r.getPhone()));
+        t.setWhatsappNumber(blankToNull(r.getWhatsappNumber()));
+        t.setLogoUrl(blankToNull(r.getLogoUrl()));
+        t.setCoverUrl(blankToNull(r.getCoverUrl()));
+        t.setDefaultLanguage(blankToNull(r.getDefaultLanguage()));
+        t.setCurrency(blankToNull(r.getCurrency()));
+        return tenantRepository.save(t);
+    }
+
+    private static String blankToNull(String v) {
+        return (v == null || v.isBlank()) ? null : v.trim();
     }
 
     public TenantEntity getTenantByOwnerAuth0Id(String auth0Id) {

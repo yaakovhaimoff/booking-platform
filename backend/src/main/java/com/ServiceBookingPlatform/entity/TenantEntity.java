@@ -18,6 +18,27 @@ public class TenantEntity {
     @Column(length = 100)
     private String name;
 
+    @Column(length = 255)
+    private String address;
+
+    @Column(length = 30)
+    private String phone;
+
+    @Column(name = "whatsapp_number", length = 30)
+    private String whatsappNumber;
+
+    @Column(name = "logo_url", length = 1000)
+    private String logoUrl;
+
+    @Column(name = "cover_url", length = 1000)
+    private String coverUrl;
+
+    @Column(length = 3)
+    private String currency;
+
+    @Column(name = "default_language", length = 5)
+    private String defaultLanguage;
+
     @Column(name = "schema_name", nullable = false, unique = true)
     private String schemaName;
 

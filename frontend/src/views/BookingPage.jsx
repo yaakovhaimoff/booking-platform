@@ -6,8 +6,10 @@ import SlotGrid from '../components/SlotGrid'
 import CheckoutForm from '../components/CheckoutForm'
 import ConfirmationScreen from '../components/ConfirmationScreen'
 import StoreHeader from '../components/StoreHeader'
+import { useI18n } from '../i18n'
 
-export default function BookingPage({ tenantName, tenantSlug }) {
+export default function BookingPage({ tenant }) {
+  const { t, fmtDate, fmtPrice } = useI18n()
   const [step, setStep] = useState('service')
   const [selectedService, setSelectedService] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
@@ -30,8 +32,8 @@ export default function BookingPage({ tenantName, tenantSlug }) {
       const data = await getSlots(date)
       setSlots(data)
       setStep('slot')
-    } catch (e) {
-      setError(e.message || 'Could not load slots')
+    } catch {
+      setError(t('slotsError'))
     } finally {
       setSlotsLoading(false)
     }
@@ -42,19 +44,20 @@ export default function BookingPage({ tenantName, tenantSlug }) {
     setStep('form')
   }
 
-  async function handleFormSubmit(clientName, clientPhone) {
+  async function handleFormSubmit(clientName, clientPhone, notes) {
     setError(null)
     try {
       const response = await createAppointment({
         serviceId: selectedService.id,
         clientName,
         clientPhone,
+        notes: notes || null,
         startTime: selectedSlot,
       })
       setAppointment(response)
       setStep('confirmed')
-    } catch (e) {
-      setError(e.message || 'Booking failed. Please try again.')
+    } catch {
+      setError(t('bookingFailed'))
     }
   }
 
@@ -74,30 +77,50 @@ export default function BookingPage({ tenantName, tenantSlug }) {
     else if (step === 'form') { setStep('slot'); setSelectedSlot(null) }
   }
 
+  const STEPS = ['service', 'date', 'slot', 'form']
+  const stepIndex = STEPS.indexOf(step)
+  const STEP_LABELS = t('steps')
+  const serviceSummary = selectedService
+    ? `${selectedService.name} · ${selectedService.durationMinutes} ${t('min')} · ${fmtPrice(selectedService.price, tenant.currency)}`
+    : ''
   const showBack = step === 'date' || step === 'slot' || step === 'form'
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-start justify-center pt-12 px-4">
+    <div className="min-h-screen bg-gray-50 flex items-start justify-center sm:pt-6 sm:px-4">
       <div className="w-full max-w-xl">
-        <StoreHeader name={tenantName} slug={tenantSlug} />
+        <StoreHeader tenant={tenant} />
+        <div className="px-4 sm:px-0 pb-12">
+
+        {stepIndex >= 0 && (
+          <div className="mb-5" aria-label={t('step', { n: stepIndex + 1 })}>
+            <div className="flex gap-1.5">
+              {STEPS.map((s, i) => (
+                <div key={s} className={`h-1.5 flex-1 rounded-full ${i <= stepIndex ? 'bg-indigo-600' : 'bg-gray-200'}`} />
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-1.5">
+              {t('step', { n: stepIndex + 1 })} &middot; {STEP_LABELS[stepIndex]}
+            </p>
+          </div>
+        )}
 
         {showBack && (
           <button
             onClick={goBack}
             className="mb-4 text-sm text-indigo-600 hover:text-indigo-800 transition"
           >
-            ← Back
+            {t('back')}
           </button>
         )}
 
         {step === 'service' && (
-          <ServiceList onSelect={handleServiceSelect} />
+          <ServiceList currency={tenant.currency} onSelect={handleServiceSelect} />
         )}
 
         {step === 'date' && (
           <div>
             <p className="text-sm text-gray-500 mb-4">
-              Service: <span className="font-medium text-gray-700">{selectedService.name}</span>
+              {t('serviceLabel')} <span className="font-medium text-gray-700">{serviceSummary}</span>
             </p>
             {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
             <DatePicker onSelect={handleDateSelect} />
@@ -107,7 +130,7 @@ export default function BookingPage({ tenantName, tenantSlug }) {
         {step === 'slot' && (
           <div>
             <p className="text-sm text-gray-500 mb-4">
-              {selectedService.name} &mdash; {selectedDate}
+              {serviceSummary} &mdash; {fmtDate(selectedDate)}
             </p>
             {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
             <SlotGrid slots={slots} loading={slotsLoading} onSelect={handleSlotSelect} />
@@ -117,7 +140,7 @@ export default function BookingPage({ tenantName, tenantSlug }) {
         {step === 'form' && (
           <div>
             <p className="text-sm text-gray-500 mb-4">
-              {selectedService.name} &mdash; {selectedSlot.substring(11, 16)} on {selectedDate}
+              {serviceSummary} &mdash; {selectedSlot.substring(11, 16)} &middot; {fmtDate(selectedDate)}
             </p>
             <CheckoutForm onSubmit={handleFormSubmit} error={error} />
           </div>
@@ -126,10 +149,12 @@ export default function BookingPage({ tenantName, tenantSlug }) {
         {step === 'confirmed' && (
           <ConfirmationScreen
             appointment={appointment}
-            serviceName={selectedService.name}
+            service={selectedService}
+            tenant={tenant}
             onBookAnother={handleReset}
           />
         )}
+        </div>
       </div>
     </div>
   )

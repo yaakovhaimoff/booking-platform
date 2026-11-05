@@ -26,6 +26,8 @@ public class SchemaProvisioningService {
             "UPDATE " + schemaName + ".appointments SET end_time = start_time + INTERVAL '30 minutes' WHERE end_time IS NULL");
         publicJdbcTemplate.execute(
             "ALTER TABLE " + schemaName + ".appointments ADD COLUMN IF NOT EXISTS client_auth0_sub VARCHAR(255)");
+        publicJdbcTemplate.execute(
+            "ALTER TABLE " + schemaName + ".appointments ADD COLUMN IF NOT EXISTS notes VARCHAR(500)");
 
         // operating_hours — entire table added in a5fbccc; seed rows only when table is fresh
         publicJdbcTemplate.execute("""
@@ -74,7 +76,8 @@ public class SchemaProvisioningService {
                 start_time       TIMESTAMP     NOT NULL,
                 end_time         TIMESTAMP     NOT NULL,
                 status           VARCHAR(20)   NOT NULL DEFAULT 'CONFIRMED',
-                client_auth0_sub VARCHAR(255)
+                client_auth0_sub VARCHAR(255),
+                notes            VARCHAR(500)
             )""".formatted(schemaName));
 
         publicJdbcTemplate.execute("""

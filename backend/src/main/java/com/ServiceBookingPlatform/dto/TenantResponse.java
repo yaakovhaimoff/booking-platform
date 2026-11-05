@@ -9,12 +9,28 @@ public class TenantResponse {
     private Long id;
     private String slug;
     private String schemaName;
+    private String name;
+    private String address;
+    private String phone;
+    private String whatsappNumber;
+    private String logoUrl;
+    private String coverUrl;
+    private String defaultLanguage;
+    private String currency;
 
     public static TenantResponse from(TenantEntity entity) {
         return TenantResponse.builder()
                 .id(entity.getId())
                 .slug(entity.getSlug())
                 .schemaName(entity.getSchemaName())
+                .name(entity.getName())
+                .address(entity.getAddress())
+                .phone(entity.getPhone())
+                .whatsappNumber(entity.getWhatsappNumber())
+                .logoUrl(entity.getLogoUrl())
+                .coverUrl(entity.getCoverUrl())
+                .defaultLanguage(entity.getDefaultLanguage())
+                .currency(entity.getCurrency())
                 .build();
     }
 }

@@ -1,0 +1,297 @@
+import { useSyncExternalStore } from 'react'
+
+const STORAGE_KEY = 'lang'
+export const LANGS = ['it', 'en']
+const LOCALES = { it: 'it-IT', en: 'en-GB' }
+
+const dict = {
+  en: {
+    step: 'Step {n} of 4',
+    steps: ['Service', 'Day', 'Time', 'Details'],
+    back: '← Back',
+    min: 'min',
+    serviceLabel: 'Service:',
+    loadingServices: 'Loading services...',
+    servicesError: 'Could not load services. Please try again.',
+    noServices: 'No services available.',
+    slotsError: 'Could not load slots',
+    bookingFailed: 'Booking failed. Please try again.',
+    prevMonth: 'Previous month',
+    nextMonth: 'Next month',
+    availableHint: 'Highlighted days have available times.',
+    loadingSlots: 'Loading available slots...',
+    noSlots: 'No available slots for this date.',
+    fullName: 'Full name',
+    phone: 'Phone number',
+    notes: 'Notes',
+    optional: '(optional)',
+    notesPlaceholder: 'Anything the barber should know?',
+    nameRequired: 'Name is required.',
+    nameTooLong: 'Name must be 100 characters or fewer.',
+    phoneRequired: 'Phone is required.',
+    phoneDigits: 'Phone must contain digits only.',
+    confirmBooking: 'Confirm Booking',
+    booking: 'Booking...',
+    requestSent: 'Request sent!',
+    waiting: 'Waiting for approval',
+    willConfirm: '{shop} will confirm your appointment shortly.',
+    date: 'Date',
+    time: 'Time',
+    duration: 'Duration',
+    price: 'Price',
+    name: 'Name',
+    addToCalendar: 'Add to calendar',
+    messageOnWhatsApp: 'Message {shop} on WhatsApp',
+    bookAnother: 'Book another',
+    waMessage: 'Hi, this is {name}. I just booked {service} on {date} at {time}.',
+    icsTitle: '{service} at {shop}',
+    whatsapp: 'WhatsApp',
+    call: 'Call',
+    waze: 'Waze',
+    loadingStore: 'Loading store…',
+    unavailable: 'This business is currently unavailable.',
+    storeNotFound: 'Store not found',
+    noBusinessAt: 'No business exists at',
+    language: 'Language',
+
+    // nav / landing / misc
+    login: 'Login', logout: 'Logout', admin: 'Admin', myArea: 'My Area',
+    findBusiness: 'Find a business',
+    findBusinessSub: 'Book appointments with local service providers.',
+    loadBusinessesFailed: 'Failed to load businesses.',
+    noBusinesses: 'No businesses yet — be the first to register!',
+    notFoundText: 'Page not found.', backHome: 'Back to home',
+    // client dashboard
+    myBookings: 'My Bookings', slugPlaceholder: 'Store slug (e.g. my-salon)',
+    lookUp: 'Look up', lookingUp: 'Looking up…',
+    noStoreWithSlug: 'No store found with that slug.',
+    genericError: 'Something went wrong. Please try again.',
+    cancelFailed: 'Failed to cancel appointment.',
+    noAppointmentsHere: 'No appointments found at this store.',
+    colService: 'Service', colStart: 'Start Time', colStatus: 'Status',
+    colClient: 'Client', colTime: 'Time', colActions: 'Actions',
+    colName: 'Name', colDuration: 'Duration (min)', colPrice: 'Price',
+    status_PENDING: 'Pending', status_CONFIRMED: 'Confirmed', status_CANCELLED: 'Cancelled',
+    cancel: 'Cancel', approve: 'Approve', edit: 'Edit', delete: 'Delete', save: 'Save', saving: 'Saving…', saved: 'Saved!',
+    // owner dashboard
+    ownerDashboard: 'Owner Dashboard',
+    tabStore: 'Store', tabAppointments: 'Appointments', tabServices: 'Services', tabHours: 'Hours',
+    filterToday: 'Today', emptyToday: 'No appointments today.', filterPending: 'Pending', filterConfirmed: 'Confirmed', filterAll: 'All', filterCancelled: 'Cancelled',
+    emptyPending: 'No pending appointments.', emptyConfirmed: 'No confirmed appointments.',
+    emptyAll: 'No appointments yet.', emptyCancelled: 'No cancelled appointments.',
+    viewCalendar: 'Calendar', viewList: 'List',
+    loadApptsFailed: 'Failed to load appointments.', approveFailed: 'Failed to approve appointment.',
+    noConfirmedOnDay: 'No confirmed appointments on this day.',
+    // hours
+    operatingHours: 'Operating Hours',
+    days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    closed: 'Closed', open: 'Open', close: 'Close',
+    loadHoursFailed: 'Failed to load operating hours.', saveHoursFailed: 'Failed to save hours.',
+    hoursRequired: '{day}: open and close times are required when not closed.',
+    hoursOrder: '{day}: open time must be before close time.',
+    // services
+    servicesTitle: 'Services', addService: 'Add Service', editService: 'Edit Service',
+    noServicesYet: 'No services yet. Add one to get started.',
+    confirmDeleteService: 'Delete this service?',
+    loadServicesFailed: 'Failed to load services.', deleteServiceFailed: 'Failed to delete service.',
+    durationMinutes: 'Duration (minutes)', priceLabel: 'Price ({symbol})',
+    currency: 'Currency', currencyHint: 'Prices on your page are shown in this currency.',
+    durationInvalid: 'Duration must be greater than 0.', priceInvalid: 'Price must be 0 or greater.',
+    saveFailed: 'Failed to save. Please try again.',
+    // store settings
+    storeUrl: 'Your store URL', copyLink: 'Copy link', copied: 'Copied!',
+    businessProfile: 'Business profile', businessName: 'Business name',
+    address: 'Address', addressHint: 'Used for the Waze button.',
+    whatsappNumber: 'WhatsApp number', whatsappHint: 'Local (05x) or international.',
+    profileImageUrl: 'Profile image URL', profileImageHint: 'Link to a square image (logo or portrait).',
+    coverImageUrl: 'Cover image URL', coverImageHint: 'Wide banner image shown at the top of your page.',
+    defaultLanguage: 'Default language of your page',
+    defaultLanguageHint: 'Customers see this language first. They can still switch it from the top bar.',
+    langEn: 'English', langIt: 'Italiano',
+    saveChanges: 'Save changes', profileSaved: 'Saved. Your public page is updated.',
+    profileSaveFailed: 'Could not save. Check the fields and try again.',
+    // onboarding
+    setUpStore: 'Set up your store',
+    onboardIntro: 'Choose a unique slug for your booking page. Lowercase letters, numbers, and hyphens only.',
+    storeSlug: 'Store slug', createStore: 'Create store', creating: 'Creating…',
+    slugInvalid: 'Slug may only contain lowercase letters, numbers, and hyphens.',
+    slugTaken: 'That slug is already taken.',
+  },
+  it: {
+    step: 'Passo {n} di 4',
+    steps: ['Servizio', 'Giorno', 'Orario', 'Dati'],
+    back: '← Indietro',
+    min: 'min',
+    serviceLabel: 'Servizio:',
+    loadingServices: 'Caricamento servizi...',
+    servicesError: 'Impossibile caricare i servizi. Riprova.',
+    noServices: 'Nessun servizio disponibile.',
+    slotsError: 'Impossibile caricare gli orari',
+    bookingFailed: 'Prenotazione non riuscita. Riprova.',
+    prevMonth: 'Mese precedente',
+    nextMonth: 'Mese successivo',
+    availableHint: 'I giorni evidenziati hanno orari disponibili.',
+    loadingSlots: 'Caricamento orari disponibili...',
+    noSlots: 'Nessun orario disponibile per questa data.',
+    fullName: 'Nome e cognome',
+    phone: 'Numero di telefono',
+    notes: 'Note',
+    optional: '(facoltativo)',
+    notesPlaceholder: 'Qualcosa che il barbiere deve sapere?',
+    nameRequired: 'Il nome è obbligatorio.',
+    nameTooLong: 'Il nome può avere al massimo 100 caratteri.',
+    phoneRequired: 'Il telefono è obbligatorio.',
+    phoneDigits: 'Il telefono deve contenere solo cifre.',
+    confirmBooking: 'Conferma prenotazione',
+    booking: 'Prenotazione in corso...',
+    requestSent: 'Richiesta inviata!',
+    waiting: 'In attesa di conferma',
+    willConfirm: '{shop} confermerà il tuo appuntamento a breve.',
+    date: 'Data',
+    time: 'Orario',
+    duration: 'Durata',
+    price: 'Prezzo',
+    name: 'Nome',
+    addToCalendar: 'Aggiungi al calendario',
+    messageOnWhatsApp: 'Scrivi a {shop} su WhatsApp',
+    bookAnother: 'Prenota ancora',
+    waMessage: 'Ciao, sono {name}. Ho appena prenotato {service} il {date} alle {time}.',
+    icsTitle: '{service} da {shop}',
+    whatsapp: 'WhatsApp',
+    call: 'Chiama',
+    waze: 'Waze',
+    loadingStore: 'Caricamento…',
+    unavailable: 'Questa attività non è al momento disponibile.',
+    storeNotFound: 'Negozio non trovato',
+    noBusinessAt: 'Nessuna attività esiste su',
+    language: 'Lingua',
+
+    login: 'Accedi', logout: 'Esci', admin: 'Admin', myArea: 'La mia area',
+    findBusiness: 'Trova un\'attività',
+    findBusinessSub: 'Prenota appuntamenti con professionisti della tua zona.',
+    loadBusinessesFailed: 'Impossibile caricare le attività.',
+    noBusinesses: 'Ancora nessuna attività — sii il primo a registrarti!',
+    notFoundText: 'Pagina non trovata.', backHome: 'Torna alla home',
+    myBookings: 'Le mie prenotazioni', slugPlaceholder: 'Slug del negozio (es. mio-salone)',
+    lookUp: 'Cerca', lookingUp: 'Ricerca…',
+    noStoreWithSlug: 'Nessun negozio trovato con questo slug.',
+    genericError: 'Qualcosa è andato storto. Riprova.',
+    cancelFailed: 'Impossibile annullare l\'appuntamento.',
+    noAppointmentsHere: 'Nessun appuntamento trovato in questo negozio.',
+    colService: 'Servizio', colStart: 'Inizio', colStatus: 'Stato',
+    colClient: 'Cliente', colTime: 'Orario', colActions: 'Azioni',
+    colName: 'Nome', colDuration: 'Durata (min)', colPrice: 'Prezzo',
+    status_PENDING: 'In attesa', status_CONFIRMED: 'Confermato', status_CANCELLED: 'Annullato',
+    cancel: 'Annulla', approve: 'Approva', edit: 'Modifica', delete: 'Elimina', save: 'Salva', saving: 'Salvataggio…', saved: 'Salvato!',
+    ownerDashboard: 'Area titolare',
+    tabStore: 'Negozio', tabAppointments: 'Appuntamenti', tabServices: 'Servizi', tabHours: 'Orari',
+    filterToday: 'Oggi', emptyToday: 'Nessun appuntamento oggi.', filterPending: 'In attesa', filterConfirmed: 'Confermati', filterAll: 'Tutti', filterCancelled: 'Annullati',
+    emptyPending: 'Nessun appuntamento in attesa.', emptyConfirmed: 'Nessun appuntamento confermato.',
+    emptyAll: 'Ancora nessun appuntamento.', emptyCancelled: 'Nessun appuntamento annullato.',
+    viewCalendar: 'Calendario', viewList: 'Elenco',
+    loadApptsFailed: 'Impossibile caricare gli appuntamenti.', approveFailed: 'Impossibile approvare l\'appuntamento.',
+    noConfirmedOnDay: 'Nessun appuntamento confermato in questo giorno.',
+    operatingHours: 'Orari di apertura',
+    days: ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'],
+    closed: 'Chiuso', open: 'Apre', close: 'Chiude',
+    loadHoursFailed: 'Impossibile caricare gli orari di apertura.', saveHoursFailed: 'Impossibile salvare gli orari.',
+    hoursRequired: '{day}: orario di apertura e chiusura obbligatori se non è chiuso.',
+    hoursOrder: '{day}: l\'apertura deve essere prima della chiusura.',
+    servicesTitle: 'Servizi', addService: 'Aggiungi servizio', editService: 'Modifica servizio',
+    noServicesYet: 'Ancora nessun servizio. Aggiungine uno per iniziare.',
+    confirmDeleteService: 'Eliminare questo servizio?',
+    loadServicesFailed: 'Impossibile caricare i servizi.', deleteServiceFailed: 'Impossibile eliminare il servizio.',
+    durationMinutes: 'Durata (minuti)', priceLabel: 'Prezzo ({symbol})',
+    currency: 'Valuta', currencyHint: 'I prezzi della tua pagina sono mostrati in questa valuta.',
+    durationInvalid: 'La durata deve essere maggiore di 0.', priceInvalid: 'Il prezzo deve essere 0 o più.',
+    saveFailed: 'Salvataggio non riuscito. Riprova.',
+    storeUrl: 'Indirizzo del tuo negozio', copyLink: 'Copia link', copied: 'Copiato!',
+    businessProfile: 'Profilo attività', businessName: 'Nome attività',
+    address: 'Indirizzo', addressHint: 'Usato per il pulsante Waze.',
+    whatsappNumber: 'Numero WhatsApp', whatsappHint: 'Italiano (3xx) o internazionale.',
+    profileImageUrl: 'URL immagine profilo', profileImageHint: 'Link a un\'immagine quadrata (logo o ritratto).',
+    coverImageUrl: 'URL immagine di copertina', coverImageHint: 'Immagine larga mostrata in cima alla tua pagina.',
+    defaultLanguage: 'Lingua predefinita della pagina',
+    defaultLanguageHint: 'I clienti vedono prima questa lingua. Possono comunque cambiarla dalla barra in alto.',
+    langEn: 'English', langIt: 'Italiano',
+    saveChanges: 'Salva modifiche', profileSaved: 'Salvato. La tua pagina pubblica è aggiornata.',
+    profileSaveFailed: 'Impossibile salvare. Controlla i campi e riprova.',
+    setUpStore: 'Configura il tuo negozio',
+    onboardIntro: 'Scegli uno slug univoco per la tua pagina di prenotazione. Solo lettere minuscole, numeri e trattini.',
+    storeSlug: 'Slug del negozio', createStore: 'Crea negozio', creating: 'Creazione…',
+    slugInvalid: 'Lo slug può contenere solo lettere minuscole, numeri e trattini.',
+    slugTaken: 'Questo slug è già in uso.',
+  },
+}
+
+const listeners = new Set()
+
+// Two scopes:
+//  - global: landing page, dashboards, etc. Remembered under 'lang'.
+//  - store:  a public store page. A visitor's choice is remembered per store ('lang:store:<slug>').
+// Language on a store page = visitor's choice for that store > store's default > global/browser.
+let scope = null // store slug while on a public store page
+
+const validLang = v => (LANGS.includes(v) ? v : null)
+const globalSaved = () => validLang(localStorage.getItem(STORAGE_KEY))
+const storeKey = slug => `${STORAGE_KEY}:store:${slug}`
+
+function detect() {
+  return globalSaved() || ((navigator.language || '').toLowerCase().startsWith('it') ? 'it' : 'en')
+}
+
+let current = detect()
+
+function apply(lang) {
+  current = lang
+  document.documentElement.lang = lang
+  listeners.forEach(l => l())
+}
+apply(current)
+
+// The nav toggle. On a store page it only affects that store.
+export function setLang(lang) {
+  if (!LANGS.includes(lang)) return
+  localStorage.setItem(scope ? storeKey(scope) : STORAGE_KEY, lang)
+  apply(lang)
+}
+
+// Called when a public store page has loaded its store.
+export function enterStore(slug, storeDefault) {
+  scope = slug
+  apply(validLang(localStorage.getItem(storeKey(slug))) || validLang(storeDefault) || detect())
+}
+
+// Called when leaving the store page.
+export function leaveStore() {
+  scope = null
+  apply(detect())
+}
+
+const subscribe = cb => { listeners.add(cb); return () => listeners.delete(cb) }
+
+// Returns { lang, locale, t(key, vars), fmtDate(iso), fmtPrice(n), weekStart, weekdays }
+export function useI18n() {
+  const lang = useSyncExternalStore(subscribe, () => current)
+  const locale = LOCALES[lang]
+  const t = (key, vars = {}) => {
+    const v = dict[lang][key]
+    if (typeof v !== 'string') return v
+    return v.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '')
+  }
+  // iso: 'YYYY-MM-DD' -> localized, parsed as a local date (no timezone shift)
+  const fmtDate = iso => {
+    const [y, m, d] = iso.split('-').map(Number)
+    return new Date(y, m - 1, d).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })
+  }
+  // Italian weeks start on Monday, English on Sunday
+  const weekStart = lang === 'it' ? 1 : 0
+  const weekdays = Array.from({ length: 7 }, (_, i) =>
+    new Date(2023, 0, 1 + ((i + weekStart) % 7)).toLocaleDateString(locale, { weekday: 'short' }))
+  const fmtPrice = (n, currency) =>
+    new Intl.NumberFormat(locale, { style: 'currency', currency: currency || 'EUR' }).format(n)
+  const currencySymbol = currency =>
+    new Intl.NumberFormat(locale, { style: 'currency', currency: currency || 'EUR' })
+      .formatToParts(0).find(p => p.type === 'currency')?.value ?? ''
+  return { lang, locale, t, fmtDate, fmtPrice, currencySymbol, weekStart, weekdays }
+}

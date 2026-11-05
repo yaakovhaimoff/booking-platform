@@ -32,6 +32,9 @@ public class AppointmentEntity {
     @Column(nullable = false, length = 20)
     private AppointmentStatus status;
 
+    @Column(length = 500)
+    private String notes;
+
     @Column(name = "client_auth0_sub")
     private String clientAuth0Sub;
 }

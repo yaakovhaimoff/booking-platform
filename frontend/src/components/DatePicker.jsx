@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react'
 import { getOpenDates } from '../api/bookingApi'
-
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+import { useI18n } from '../i18n'
 
 const iso = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
 export default function DatePicker({ onSelect }) {
+  const { t, lang, locale } = useI18n()
+  // Italian weeks start on Monday, English on Sunday
+  const weekStart = lang === 'it' ? 1 : 0
+  const weekdays = Array.from({ length: 7 }, (_, i) =>
+    new Date(2023, 0, 1 + ((i + weekStart) % 7)).toLocaleDateString(locale, { weekday: 'short' }))
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
   const [loaded, setLoaded] = useState({ key: null, dates: new Set() })
 
   const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const firstWeekday = new Date(year, month, 1).getDay()
+  const firstWeekday = (new Date(year, month, 1).getDay() - weekStart + 7) % 7
   const monthKey = `${year}-${month}`
   const loading = loaded.key !== monthKey
   const openDates = loaded.dates
@@ -44,24 +48,24 @@ export default function DatePicker({ onSelect }) {
           onClick={() => shift(-1)}
           disabled={isCurrentMonth}
           className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30 disabled:hover:bg-transparent"
-          aria-label="Previous month"
+          aria-label={t('prevMonth')}
         >
           ←
         </button>
         <h3 className="font-semibold text-gray-800">
-          {new Date(year, month, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+          {new Date(year, month, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' })}
         </h3>
         <button
           onClick={() => shift(1)}
           className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
-          aria-label="Next month"
+          aria-label={t('nextMonth')}
         >
           →
         </button>
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-1">
-        {WEEKDAYS.map(w => <div key={w}>{w}</div>)}
+        {weekdays.map(w => <div key={w}>{w}</div>)}
       </div>
 
       <div className={`grid grid-cols-7 gap-1 ${loading ? 'opacity-50' : ''}`}>
@@ -85,7 +89,7 @@ export default function DatePicker({ onSelect }) {
           )
         })}
       </div>
-      <p className="text-xs text-gray-400 mt-3">Highlighted days have available times.</p>
+      <p className="text-xs text-gray-400 mt-3">{t('availableHint')}</p>
     </div>
   )
 }

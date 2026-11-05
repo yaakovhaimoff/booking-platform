@@ -4,9 +4,11 @@ import { setTenantId, getServices } from '../../api/bookingApi'
 import { createService, updateService, deleteService } from '../../api/ownerApi'
 import ServiceTable from './ServiceTable'
 import ServiceFormModal from './ServiceFormModal'
+import { useI18n } from '../../i18n'
 
 export default function ServiceManagementTab({ tenant }) {
   const { getAccessTokenSilently } = useAuth0()
+  const { t } = useI18n()
   const [services, setServices] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
@@ -17,7 +19,7 @@ export default function ServiceManagementTab({ tenant }) {
     setTenantId(tenant.id)
     getServices()
       .then(data => setServices(data))
-      .catch(() => setError('Failed to load services.'))
+      .catch(() => setError('loadServicesFailed'))
       .finally(() => setLoading(false))
   }, [tenant.id])
 
@@ -35,14 +37,14 @@ export default function ServiceManagementTab({ tenant }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this service?')) return
+    if (!window.confirm(t('confirmDeleteService'))) return
     setError(null)
     try {
       const token = await getAccessTokenSilently()
       await deleteService(token, tenant.id, id)
       setServices(prev => prev.filter(s => s.id !== id))
     } catch {
-      setError('Failed to delete service.')
+      setError('deleteServiceFailed')
     }
   }
 
@@ -68,29 +70,30 @@ export default function ServiceManagementTab({ tenant }) {
     <div>
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
-          {error}
+          {t(error)}
         </div>
       )}
 
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">Services</h2>
+        <h2 className="text-lg font-semibold text-gray-800">{t('servicesTitle')}</h2>
         <button
           onClick={openCreate}
           className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition"
         >
-          Add Service
+          {t('addService')}
         </button>
       </div>
 
       {services.length === 0 ? (
-        <p className="text-sm text-gray-400">No services yet. Add one to get started.</p>
+        <p className="text-sm text-gray-400">{t('noServicesYet')}</p>
       ) : (
-        <ServiceTable services={services} onEdit={openEdit} onDelete={handleDelete} />
+        <ServiceTable services={services} currency={tenant.currency} onEdit={openEdit} onDelete={handleDelete} />
       )}
 
       {showForm && (
         <ServiceFormModal
           service={editTarget}
+          currency={tenant.currency}
           onSave={handleSave}
           onClose={() => { setShowForm(false); setEditTarget(null) }}
         />

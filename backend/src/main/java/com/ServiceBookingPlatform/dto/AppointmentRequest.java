@@ -18,5 +18,8 @@ public class AppointmentRequest {
     @NotBlank
     private String startTime;
 
+    @Size(max = 500)
+    private String notes;
+
     private String clientAuth0Sub;
 }

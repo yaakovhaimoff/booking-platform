@@ -1,4 +1,7 @@
-export default function ServiceCard({ service, onSelect }) {
+import { useI18n } from '../i18n'
+
+export default function ServiceCard({ service, currency, onSelect }) {
+  const { t, fmtPrice } = useI18n()
   return (
     <button
       onClick={onSelect}
@@ -7,9 +10,9 @@ export default function ServiceCard({ service, onSelect }) {
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-base font-semibold text-gray-800">{service.name}</h3>
-          <p className="text-sm text-gray-500 mt-1">{service.durationMinutes} min</p>
+          <p className="text-sm text-gray-500 mt-1">{service.durationMinutes} {t('min')}</p>
         </div>
-        <span className="text-base font-medium text-purple-600">${service.price.toFixed(2)}</span>
+        <span className="text-base font-medium text-purple-600">{fmtPrice(service.price, currency)}</span>
       </div>
     </button>
   )

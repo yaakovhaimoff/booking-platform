@@ -1,22 +1,25 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
 
 export default function CheckoutForm({ onSubmit, error }) {
+  const { t } = useI18n()
   const [clientName, setClientName] = useState('')
   const [clientPhone, setClientPhone] = useState('')
+  const [notes, setNotes] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
   function validate() {
     const errors = {}
     if (!clientName.trim()) {
-      errors.clientName = 'Name is required.'
+      errors.clientName = 'nameRequired'
     } else if (clientName.trim().length > 100) {
-      errors.clientName = 'Name must be 100 characters or fewer.'
+      errors.clientName = 'nameTooLong'
     }
     if (!clientPhone.trim()) {
-      errors.clientPhone = 'Phone is required.'
+      errors.clientPhone = 'phoneRequired'
     } else if (!/^\d+$/.test(clientPhone.trim())) {
-      errors.clientPhone = 'Phone must contain digits only.'
+      errors.clientPhone = 'phoneDigits'
     }
     return errors
   }
@@ -31,7 +34,7 @@ export default function CheckoutForm({ onSubmit, error }) {
     setFieldErrors({})
     setSubmitting(true)
     try {
-      await onSubmit(clientName.trim(), clientPhone.trim())
+      await onSubmit(clientName.trim(), clientPhone.trim(), notes.trim())
     } finally {
       setSubmitting(false)
     }
@@ -40,7 +43,7 @@ export default function CheckoutForm({ onSubmit, error }) {
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-5">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t('fullName')}</label>
         <input
           type="text"
           value={clientName}
@@ -48,12 +51,12 @@ export default function CheckoutForm({ onSubmit, error }) {
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
         />
         {fieldErrors.clientName && (
-          <p className="text-red-600 text-xs mt-1">{fieldErrors.clientName}</p>
+          <p className="text-red-600 text-xs mt-1">{t(fieldErrors.clientName)}</p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Phone number</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')}</label>
         <input
           type="text"
           value={clientPhone}
@@ -61,8 +64,22 @@ export default function CheckoutForm({ onSubmit, error }) {
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
         />
         {fieldErrors.clientPhone && (
-          <p className="text-red-600 text-xs mt-1">{fieldErrors.clientPhone}</p>
+          <p className="text-red-600 text-xs mt-1">{t(fieldErrors.clientPhone)}</p>
         )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {t('notes')} <span className="text-gray-400 font-normal">{t('optional')}</span>
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          maxLength={500}
+          rows={3}
+          placeholder={t('notesPlaceholder')}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400"
+        />
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -72,7 +89,7 @@ export default function CheckoutForm({ onSubmit, error }) {
         disabled={submitting}
         className="bg-purple-600 text-white rounded-md py-2 font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {submitting ? 'Booking...' : 'Confirm Booking'}
+        {submitting ? t('booking') : t('confirmBooking')}
       </button>
     </form>
   )

@@ -3,15 +3,21 @@ import { useEffect, useState } from 'react'
 import { getTenantBySlug } from '../api/tenantApi'
 import { setTenantId } from '../api/bookingApi'
 import BookingPage from './BookingPage'
+import { useI18n, enterStore, leaveStore } from '../i18n'
 
 export default function PublicStorePage() {
   const { slug } = useParams()
+  const { t } = useI18n()
   const [state, setState] = useState({ loading: true, notFound: false, disabled: false, tenant: null })
+
+  // Leaving the store page returns to the global language
+  useEffect(() => leaveStore, [])
 
   useEffect(() => {
     getTenantBySlug(slug)
       .then(tenant => {
         setTenantId(tenant.id)
+        enterStore(tenant.slug, tenant.defaultLanguage)
         setState({ loading: false, notFound: false, disabled: false, tenant })
       })
       .catch(err => {
@@ -24,7 +30,7 @@ export default function PublicStorePage() {
   if (state.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <span className="text-gray-400">Loading store…</span>
+        <span className="text-gray-400">{t('loadingStore')}</span>
       </div>
     )
   }
@@ -32,7 +38,7 @@ export default function PublicStorePage() {
   if (state.disabled) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg text-gray-500">This business is currently unavailable.</p>
+        <p className="text-lg text-gray-500">{t('unavailable')}</p>
       </div>
     )
   }
@@ -40,16 +46,15 @@ export default function PublicStorePage() {
   if (state.notFound) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h2 className="text-2xl font-semibold text-gray-700">Store not found</h2>
-        <p className="text-gray-400">No business exists at <code>/store/{slug}</code>.</p>
+        <h2 className="text-2xl font-semibold text-gray-700">{t('storeNotFound')}</h2>
+        <p className="text-gray-400">{t('noBusinessAt')} <code>/store/{slug}</code>.</p>
       </div>
     )
   }
 
   return (
     <BookingPage
-      tenantName={state.tenant.slug}
-      tenantSlug={state.tenant.slug}
+      tenant={state.tenant}
     />
   )
 }

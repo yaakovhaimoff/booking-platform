@@ -1,6 +1,7 @@
 package com.ServiceBookingPlatform.controller;
 
 import com.ServiceBookingPlatform.dto.PublicTenantResponse;
+import com.ServiceBookingPlatform.dto.TenantProfileRequest;
 import com.ServiceBookingPlatform.dto.TenantRequest;
 import com.ServiceBookingPlatform.dto.TenantResponse;
 import com.ServiceBookingPlatform.entity.TenantEntity;
@@ -38,6 +39,13 @@ public class TenantController {
             @RequestHeader(value = "X-Dev-User-Sub", defaultValue = "dev|owner1") String auth0Id) {
         TenantEntity tenant = tenantService.getTenantByOwnerAuth0Id(auth0Id);
         return ResponseEntity.ok(TenantResponse.from(tenant));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<TenantResponse> updateMyTenant(
+            @Valid @RequestBody TenantProfileRequest request,
+            @RequestHeader(value = "X-Dev-User-Sub", defaultValue = "dev|owner1") String auth0Id) {
+        return ResponseEntity.ok(TenantResponse.from(tenantService.updateProfile(auth0Id, request)));
     }
 
     @PostMapping

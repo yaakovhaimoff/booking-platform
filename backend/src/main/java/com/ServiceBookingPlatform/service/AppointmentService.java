@@ -43,6 +43,7 @@ public class AppointmentService {
                 .startTime(startTime)
                 .endTime(endTime)
                 .status(AppointmentStatus.PENDING)
+                .notes(request.getNotes() == null || request.getNotes().isBlank() ? null : request.getNotes().trim())
                 .clientAuth0Sub(request.getClientAuth0Sub())
                 .build();
 

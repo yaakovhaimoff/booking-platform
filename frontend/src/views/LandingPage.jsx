@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listTenants } from '../api/tenantApi'
+import { useI18n } from '../i18n'
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const { t } = useI18n()
   const [tenants, setTenants] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -15,7 +17,7 @@ export default function LandingPage() {
         setLoading(false)
       })
       .catch(() => {
-        setError('Failed to load businesses.')
+        setError('loadBusinessesFailed')
         setLoading(false)
       })
   }, [])
@@ -24,8 +26,8 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">Find a business</h1>
-          <p className="text-lg text-gray-500">Book appointments with local service providers.</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">{t('findBusiness')}</h1>
+          <p className="text-lg text-gray-500">{t('findBusinessSub')}</p>
         </div>
 
         {loading && (
@@ -35,12 +37,12 @@ export default function LandingPage() {
         )}
 
         {error && (
-          <p className="text-center text-red-500">{error}</p>
+          <p className="text-center text-red-500">{t(error)}</p>
         )}
 
         {!loading && !error && tenants.length === 0 && (
           <p className="text-center text-gray-400">
-            No businesses yet — be the first to register!
+            {t('noBusinesses')}
           </p>
         )}
 

@@ -106,3 +106,13 @@ export async function updateOperatingHours(token, tenantId, rows) {
   if (!res.ok) throw await res.json()
   return res.json()
 }
+
+export async function updateMyTenant(token, data) {
+  const res = await fetch(`${BASE}/tenants/me`, {
+    method: 'PUT',
+    headers: authHeaders(token),
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}
