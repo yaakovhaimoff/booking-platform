@@ -1,0 +1,9 @@
+plans/
+node_modules/
+dist/
+target/
+.idea/
+.DS_Store
+.env
+.env.local
+graphify-out/

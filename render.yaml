@@ -1,0 +1,26 @@
+databases:
+  - name: booking-db
+    plan: free
+    databaseName: booking_platform
+
+services:
+  - type: web
+    name: booking-backend
+    runtime: docker
+    plan: free
+    rootDir: backend
+    envVars:
+      - key: DB_HOST
+        fromDatabase: { name: booking-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: booking-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: booking-db, property: database }
+      - key: DB_USER
+        fromDatabase: { name: booking-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: booking-db, property: password }
+      - key: SHOW_SQL
+        value: "false"
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false   # set to your Vercel URL after the frontend deploys

@@ -1,4 +1,4 @@
-const BASE = 'http://localhost:8080/api/v1'
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 // Set once by PublicStorePage after slug resolution.
 // All functions below read this variable — no callers need to change.
