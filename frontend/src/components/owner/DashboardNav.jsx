@@ -1,24 +1,20 @@
 import { useI18n } from '../../i18n'
+import { OWNER_TABS } from './ownerTabs'
 
-const TABS = [
-  { id: 'store',    label: 'tabStore' },
-  { id: 'queue',    label: 'tabAppointments' },
-  { id: 'services', label: 'tabServices' },
-  { id: 'hours',    label: 'tabHours' },
-]
-
+// Desktop sidebar. On mobile the same tabs live in the navbar menu (see NavBar).
 export default function DashboardNav({ activeTab, onTabChange }) {
   const { t } = useI18n()
   return (
-    <nav className="flex border-b border-gray-200 mb-6">
-      {TABS.map(tab => (
+    <nav className="hidden md:flex flex-col gap-1 w-56 shrink-0 sticky top-20 self-start bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
+      {OWNER_TABS.map(tab => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`flex-1 sm:flex-none px-1 sm:px-5 py-3 text-[13px] sm:text-sm text-center font-medium whitespace-nowrap transition border-b-2 -mb-px ${
+          aria-current={activeTab === tab.id ? 'page' : undefined}
+          className={`text-left px-4 py-2.5 rounded-lg text-sm font-medium transition ${
             activeTab === tab.id
-              ? 'border-indigo-600 text-indigo-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'bg-indigo-50 text-indigo-700'
+              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
           }`}
         >
           {t(tab.label)}

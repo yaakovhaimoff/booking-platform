@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth0 } from '../mockAuth'
 import { getMyTenant } from '../api/ownerApi'
 import { useI18n } from '../i18n'
 import DashboardNav from '../components/owner/DashboardNav'
+import { OWNER_TABS, ownerTabId } from '../components/owner/ownerTabs'
 import StoreSettingsTab from '../components/owner/StoreSettingsTab'
 import AppointmentQueueTab from '../components/owner/AppointmentQueueTab'
 import ServiceManagementTab from '../components/owner/ServiceManagementTab'
@@ -11,7 +13,9 @@ import AvailabilityMatrixTab from '../components/owner/AvailabilityMatrixTab'
 export default function OwnerDashboard() {
   const { getAccessTokenSilently } = useAuth0()
   const { t } = useI18n()
-  const [activeTab, setActiveTab] = useState('store')
+  const [params, setParams] = useSearchParams()
+  const activeTab = ownerTabId(params.get('tab'))
+  const setActiveTab = id => setParams({ tab: id })
   const [tenant, setTenant] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -32,16 +36,22 @@ export default function OwnerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('ownerDashboard')}</h1>
-
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+      <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+        <div className="md:flex md:gap-6 md:items-start">
           <DashboardNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {activeTab === 'store'    && tenant && <StoreSettingsTab tenant={tenant} />}
-          {activeTab === 'queue'    && tenant && <AppointmentQueueTab tenant={tenant} />}
-          {activeTab === 'services' && tenant && <ServiceManagementTab tenant={tenant} />}
-          {activeTab === 'hours'    && tenant && <AvailabilityMatrixTab tenant={tenant} />}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4 md:mb-6">
+              {t(OWNER_TABS.find(x => x.id === activeTab).label)}
+            </h1>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+              {activeTab === 'store'    && tenant && <StoreSettingsTab tenant={tenant} />}
+              {activeTab === 'queue'    && tenant && <AppointmentQueueTab tenant={tenant} />}
+              {activeTab === 'services' && tenant && <ServiceManagementTab tenant={tenant} />}
+              {activeTab === 'hours'    && tenant && <AvailabilityMatrixTab tenant={tenant} />}
+            </div>
+          </div>
         </div>
       </div>
     </div>
