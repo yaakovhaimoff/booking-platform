@@ -20,6 +20,29 @@ public class SlotController {
 
     private final SlotCalculatorService slotCalculatorService;
 
+    @GetMapping("/open-dates")
+    public ResponseEntity<List<String>> getOpenDates(@RequestParam String from, @RequestParam String to) {
+        LocalDate start;
+        LocalDate end;
+        try {
+            start = LocalDate.parse(from);
+            end = LocalDate.parse(to);
+        } catch (DateTimeParseException ex) {
+            throw new InvalidDateException("Invalid date format");
+        }
+        if (end.isBefore(start) || start.plusDays(62).isBefore(end)) {
+            throw new InvalidDateException("Invalid date range");
+        }
+        LocalDate today = LocalDate.now();
+        List<String> result = new java.util.ArrayList<>();
+        for (LocalDate d = start.isBefore(today) ? today : start; !d.isAfter(end); d = d.plusDays(1)) {
+            if (!slotCalculatorService.getAvailableSlots(d, 30).isEmpty()) {
+                result.add(d.toString());
+            }
+        }
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping
     public ResponseEntity<List<String>> getSlots(@RequestParam String date) {
         LocalDate localDate;

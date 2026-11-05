@@ -32,3 +32,9 @@ export async function createAppointment(payload) {
   if (!res.ok) throw await res.json()
   return res.json()
 }
+
+export async function getOpenDates(from, to) {
+  const res = await fetch(`${BASE}/slots/open-dates?from=${from}&to=${to}`, { headers: tenantHeaders() })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}

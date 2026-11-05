@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useAuth0 } from '../../mockAuth'
 import { getAppointments, getServices, updateAppointmentStatus } from '../../api/ownerApi'
 import AppointmentRow from './AppointmentRow'
+import AppointmentCalendar from './AppointmentCalendar'
 
 const FILTERS = [
   { id: 'PENDING',   label: 'Pending' },
@@ -22,6 +23,7 @@ export default function AppointmentQueueTab({ tenant }) {
   const [appointments, setAppointments] = useState([])
   const [services, setServices] = useState([])
   const [filter, setFilter] = useState('PENDING')
+  const [view, setView] = useState('calendar')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -74,6 +76,8 @@ export default function AppointmentQueueTab({ tenant }) {
   const handleApprove = id => changeStatus(id, 'CONFIRMED', 'Failed to approve appointment.')
   const handleCancel  = id => changeStatus(id, 'CANCELLED', 'Failed to cancel appointment.')
 
+  const showCalendar = filter === 'CONFIRMED' && view === 'calendar'
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -95,6 +99,22 @@ export default function AppointmentQueueTab({ tenant }) {
         </div>
       </div>
 
+      {filter === 'CONFIRMED' && (
+        <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit mb-4">
+          {[['calendar', 'Calendar'], ['list', 'List']].map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setView(id)}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition ${
+                view === id ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {error && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
           {error}
@@ -105,6 +125,13 @@ export default function AppointmentQueueTab({ tenant }) {
         <div className="flex items-center justify-center py-16">
           <div className="w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
         </div>
+      ) : showCalendar ? (
+        <AppointmentCalendar
+          appointments={sorted}
+          serviceNames={serviceNames}
+          onApprove={handleApprove}
+          onCancel={handleCancel}
+        />
       ) : sorted.length === 0 ? (
         <p className="text-sm text-gray-400">{EMPTY_TEXT[filter]}</p>
       ) : (
