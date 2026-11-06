@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 public class TenantRequest {
-    @NotBlank
+    // Optional: ignored by onboarding, which generates a unique slug from the name.
     @Pattern(regexp = "^[a-z0-9-]{3,50}$", message = "Slug must be 3–50 chars: lowercase letters, digits, hyphens only")
     private String slug;
 

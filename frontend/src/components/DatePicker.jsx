@@ -5,9 +5,9 @@ import { useI18n } from '../i18n'
 const iso = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
 export default function DatePicker({ onSelect }) {
-  const { t, lang, locale } = useI18n()
-  // Italian weeks start on Monday, English on Sunday
-  const weekStart = lang === 'it' ? 1 : 0
+  const { t, locale } = useI18n()
+  // Weeks always start on Monday
+  const weekStart = 1
   const weekdays = Array.from({ length: 7 }, (_, i) =>
     new Date(2023, 0, 1 + ((i + weekStart) % 7)).toLocaleDateString(locale, { weekday: 'short' }))
   const now = new Date()

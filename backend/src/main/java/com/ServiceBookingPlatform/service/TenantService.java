@@ -109,6 +109,25 @@ public class TenantService {
                 .orElseThrow(() -> new TenantNotFoundException(auth0Id));
     }
 
+    // "Mike's Barbershop" -> "mikes-barbershop-k3x9q2"; retried until unused.
+    private String generateUniqueSlug(String name) {
+        String base = java.text.Normalizer.normalize(name == null ? "" : name, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-+|-+$", "");
+        if (base.length() > 40) base = base.substring(0, 40).replaceAll("-+$", "");
+        if (base.isEmpty()) base = "store";
+        String alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+        java.security.SecureRandom rnd = new java.security.SecureRandom();
+        while (true) {
+            StringBuilder sb = new StringBuilder(base).append('-');
+            for (int i = 0; i < 6; i++) sb.append(alphabet.charAt(rnd.nextInt(alphabet.length())));
+            String candidate = sb.toString();
+            if (!tenantRepository.existsBySlug(candidate)) return candidate;
+        }
+    }
+
     // Registers a new business:
     // 1. Validates slug format (regex: ^[a-z0-9-]{3,50}$)
     // 2. Checks slug uniqueness
@@ -118,12 +137,7 @@ public class TenantService {
     // 6. Returns the saved TenantEntity
     @Transactional
     public TenantEntity onboardTenant(String slug, String name, String ownerAuth0Id, String ownerEmail) {
-        if (!slug.matches("^[a-z0-9-]{3,50}$")) {
-            throw new IllegalArgumentException("Invalid slug format");
-        }
-        if (tenantRepository.existsBySlug(slug)) {
-            throw new SlugAlreadyTakenException(slug);
-        }
+        slug = generateUniqueSlug(name);
         if (tenantRepository.findByOwnerAuth0Id(ownerAuth0Id).isPresent()) {
             throw new IllegalStateException("Owner already has a registered tenant");
         }

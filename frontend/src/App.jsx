@@ -18,6 +18,7 @@ import ClientDashboard from './views/ClientDashboard'
 import AuthRoutingPage from './views/AuthRoutingPage'
 import NotFoundPage from './views/NotFoundPage'
 import StubPage from './views/StubPage'
+import ScrollManager from './components/ScrollManager'
 
 // Three separate worlds, each with its own chrome:
 //   consumer  -> ConsumerLayout   (/, /auth, /user-flow, /search, /store/:slug, /client/*)
@@ -25,6 +26,8 @@ import StubPage from './views/StubPage'
 //   portal    -> /partner (own screen) and the owner app under NavBar (/owner/*, /admin, /auth/routing)
 export default function App() {
   return (
+    <>
+    <ScrollManager />
     <Routes>
       <Route element={<ConsumerLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -60,5 +63,6 @@ export default function App() {
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </>
   )
 }

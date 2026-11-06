@@ -4,14 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import { createTenant } from '../api/ownerApi'
 import { useI18n } from '../i18n'
 
-const SLUG_REGEX = /^[a-z0-9-]+$/
-
 export default function OwnerOnboardingPage() {
   const { getAccessTokenSilently } = useAuth0()
   const navigate = useNavigate()
   const { t } = useI18n()
   const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
@@ -19,22 +16,13 @@ export default function OwnerOnboardingPage() {
     e.preventDefault()
     setError(null)
 
-    if (!SLUG_REGEX.test(slug)) {
-      setError(t('slugInvalid'))
-      return
-    }
-
     setSubmitting(true)
     try {
       const token = await getAccessTokenSilently()
-      await createTenant(token, slug, name)
+      await createTenant(token, name)
       navigate('/owner/dashboard')
-    } catch (err) {
-      if (err?.status === 409 || err?.error === 'SLUG_TAKEN') {
-        setError(t('slugTaken'))
-      } else {
-        setError(t('genericError'))
-      }
+    } catch {
+      setError(t('genericError'))
     } finally {
       setSubmitting(false)
     }
@@ -63,26 +51,6 @@ export default function OwnerOnboardingPage() {
               required
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="slug">
-              {t('storeSlug')}
-            </label>
-            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500">
-              <span className="px-3 py-2 bg-gray-100 text-gray-500 text-sm border-r border-gray-300">
-                /store/
-              </span>
-              <input
-                id="slug"
-                type="text"
-                value={slug}
-                onChange={e => setSlug(e.target.value)}
-                placeholder="my-salon"
-                className="flex-1 px-3 py-2 text-sm outline-none"
-                required
-              />
-            </div>
           </div>
 
           {error && (

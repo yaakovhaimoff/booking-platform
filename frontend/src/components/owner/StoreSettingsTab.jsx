@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import StoreQrModal from './StoreQrModal'
 import { useAuth0 } from '../../mockAuth'
 import { updateMyTenant } from '../../api/ownerApi'
 import { useI18n } from '../../i18n'
@@ -20,6 +21,7 @@ export default function StoreSettingsTab({ tenant }) {
   const { getAccessTokenSilently } = useAuth0()
   const { t } = useI18n()
   const [copied, setCopied] = useState(false)
+  const [showQr, setShowQr] = useState(false)
   const [form, setForm] = useState({
     name: tenant.name || '',
     address: tenant.address || '',
@@ -73,8 +75,15 @@ export default function StoreSettingsTab({ tenant }) {
           >
             {copied ? t('copied') : t('copyLink')}
           </button>
+          <button
+            onClick={() => setShowQr(true)}
+            className="shrink-0 px-3 py-1.5 text-sm border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-50 transition"
+          >
+            {t('qrCode')}
+          </button>
         </div>
       </div>
+      {showQr && <StoreQrModal url={storeUrl} name={form.name || tenant.slug} onClose={() => setShowQr(false)} />}
 
       <form onSubmit={handleSave} className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-800">{t('businessProfile')}</h2>

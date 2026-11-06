@@ -18,11 +18,11 @@ export async function getMyTenant(token) {
   return res.json()
 }
 
-export async function createTenant(token, slug, name) {
+export async function createTenant(token, name) {
   const res = await http(`${BASE}/tenants`, {
     method: 'POST',
     headers: authHeaders(token),
-    body: JSON.stringify({ slug, name }),
+    body: JSON.stringify({ name }),
   })
   if (!res.ok) throw await res.json()
   return res.json()
