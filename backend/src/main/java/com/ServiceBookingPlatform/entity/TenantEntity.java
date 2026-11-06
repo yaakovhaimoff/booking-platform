@@ -33,6 +33,13 @@ public class TenantEntity {
     @Column(name = "cover_url", length = 1000)
     private String coverUrl;
 
+    @Column(length = 1000)
+    private String about;
+
+    // Newline-separated image URLs for the booking page gallery (links only, no uploads yet).
+    @Column(name = "gallery_urls", columnDefinition = "TEXT")
+    private String galleryUrls;
+
     @Column(length = 3)
     private String currency;
 

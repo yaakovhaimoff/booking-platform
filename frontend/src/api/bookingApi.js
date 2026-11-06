@@ -45,3 +45,19 @@ export async function getPublicHours() {
   if (!res.ok) throw await res.json()
   return res.json()
 }
+
+export async function getReviews() {
+  const res = await http(`${BASE}/reviews`, { headers: tenantHeaders() })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}
+
+export async function createReview(payload) {
+  const res = await http(`${BASE}/reviews`, {
+    method: 'POST',
+    headers: tenantHeaders(),
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}

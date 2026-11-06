@@ -35,4 +35,10 @@ public class TenantProfileRequest {
     @Size(max = 1000)
     @Pattern(regexp = "^(https?://.*)?$", message = "Cover URL must start with http:// or https://")
     private String coverUrl;
+
+    @Size(max = 1000)
+    private String about;
+
+    @Size(max = 12, message = "At most 12 gallery images")
+    private java.util.List<@Size(max = 1000) @Pattern(regexp = "^https?://.*", message = "Gallery URLs must start with http:// or https://") String> galleryUrls;
 }

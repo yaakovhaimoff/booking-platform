@@ -17,6 +17,8 @@ public class TenantResponse {
     private String coverUrl;
     private String defaultLanguage;
     private String currency;
+    private String about;
+    private java.util.List<String> galleryUrls;
 
     public static TenantResponse from(TenantEntity entity) {
         return TenantResponse.builder()
@@ -31,6 +33,13 @@ public class TenantResponse {
                 .coverUrl(entity.getCoverUrl())
                 .defaultLanguage(entity.getDefaultLanguage())
                 .currency(entity.getCurrency())
+                .about(entity.getAbout())
+                .galleryUrls(splitGallery(entity.getGalleryUrls()))
                 .build();
+    }
+
+    public static java.util.List<String> splitGallery(String raw) {
+        return raw == null || raw.isBlank() ? java.util.List.of()
+                : java.util.Arrays.stream(raw.split("\\n")).filter(u -> !u.isBlank()).toList();
     }
 }

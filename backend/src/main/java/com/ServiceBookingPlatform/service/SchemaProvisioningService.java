@@ -51,6 +51,16 @@ public class SchemaProvisioningService {
             log.info("Seeded operating_hours for schema: {}", schemaName);
         }
 
+        publicJdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS %s.reviews (
+                id               BIGSERIAL     PRIMARY KEY,
+                author_name      VARCHAR(100)  NOT NULL,
+                author_auth0_sub VARCHAR(255),
+                rating           INT           NOT NULL,
+                comment          VARCHAR(1000),
+                created_at       TIMESTAMP     NOT NULL
+            )""".formatted(schemaName));
+
         log.info("Migration complete for schema: {}", schemaName);
     }
 
@@ -88,6 +98,16 @@ public class SchemaProvisioningService {
                 open_time    VARCHAR(5),
                 close_time   VARCHAR(5),
                 is_closed    BOOLEAN   NOT NULL DEFAULT false
+            )""".formatted(schemaName));
+
+        publicJdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS %s.reviews (
+                id               BIGSERIAL     PRIMARY KEY,
+                author_name      VARCHAR(100)  NOT NULL,
+                author_auth0_sub VARCHAR(255),
+                rating           INT           NOT NULL,
+                comment          VARCHAR(1000),
+                created_at       TIMESTAMP     NOT NULL
             )""".formatted(schemaName));
 
         // Seed Mon–Sun with 09:00–17:00 open by default

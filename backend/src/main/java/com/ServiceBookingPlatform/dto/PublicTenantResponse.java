@@ -16,10 +16,13 @@ public class PublicTenantResponse {
     private String coverUrl;
     private String defaultLanguage;
     private String currency;
+    private String about;
+    private java.util.List<String> galleryUrls;
 
     public static PublicTenantResponse from(TenantEntity e) {
         return builder().id(e.getId()).slug(e.getSlug()).name(e.getName())
                 .address(e.getAddress()).phone(e.getPhone()).whatsappNumber(e.getWhatsappNumber())
-                .logoUrl(e.getLogoUrl()).coverUrl(e.getCoverUrl()).defaultLanguage(e.getDefaultLanguage()).currency(e.getCurrency()).build();
+                .logoUrl(e.getLogoUrl()).coverUrl(e.getCoverUrl()).defaultLanguage(e.getDefaultLanguage()).currency(e.getCurrency()).about(e.getAbout())
+                .galleryUrls(TenantResponse.splitGallery(e.getGalleryUrls())).build();
     }
 }

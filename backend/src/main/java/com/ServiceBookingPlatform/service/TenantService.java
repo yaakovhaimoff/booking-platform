@@ -91,6 +91,12 @@ public class TenantService {
         t.setCoverUrl(blankToNull(r.getCoverUrl()));
         t.setDefaultLanguage(blankToNull(r.getDefaultLanguage()));
         t.setCurrency(blankToNull(r.getCurrency()));
+        t.setAbout(blankToNull(r.getAbout()));
+        if (r.getGalleryUrls() != null) {
+            String joined = r.getGalleryUrls().stream().map(String::trim).filter(u -> !u.isEmpty())
+                    .collect(java.util.stream.Collectors.joining("\n"));
+            t.setGalleryUrls(joined.isEmpty() ? null : joined);
+        }
         return tenantRepository.save(t);
     }
 

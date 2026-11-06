@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getSlots, createAppointment, getPublicHours } from '../api/bookingApi'
+import { getSlots, createAppointment, getPublicHours, getReviews } from '../api/bookingApi'
 import { hoursOnDate } from '../utils/openStatus'
 import ServiceList from '../components/ServiceList'
 import DatePicker from '../components/DatePicker'
@@ -7,6 +7,9 @@ import SlotGrid from '../components/SlotGrid'
 import CheckoutForm from '../components/CheckoutForm'
 import ConfirmationScreen from '../components/ConfirmationScreen'
 import StoreHeader from '../components/StoreHeader'
+import Gallery from '../components/Gallery'
+import Reviews from '../components/Reviews'
+import StoreInfo from '../components/StoreInfo'
 import { useI18n } from '../i18n'
 import { useAuth0 } from '../mockAuth'
 
@@ -24,7 +27,12 @@ export default function BookingPage({ tenant }) {
   const [error, setError] = useState(null)
   const [hours, setHours] = useState(null)
 
+  const [reviews, setReviews] = useState(null)
+  const [reviewsFailed, setReviewsFailed] = useState(false)
+
   useEffect(() => { getPublicHours().then(setHours).catch(() => {}) }, [])
+  const loadReviews = () => getReviews().then(d => { setReviews(d); setReviewsFailed(false) }).catch(() => setReviewsFailed(true))
+  useEffect(() => { loadReviews() }, [])
 
   function handleServiceSelect(service) {
     setSelectedService(service)
@@ -96,9 +104,13 @@ export default function BookingPage({ tenant }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center sm:pt-6 sm:px-4">
-      <div className="w-full max-w-xl">
-        <StoreHeader tenant={tenant} hours={hours} compact={step !== 'service'} />
-        <div className="px-4 sm:px-0 pb-12">
+      <div className="w-full max-w-xl lg:max-w-6xl">
+        <StoreHeader tenant={tenant} hours={hours} compact={step !== 'service'} rating={reviews} />
+        {/* Mobile: one column in DOM order. Desktop: booking flow + reviews on the left, store info sticky on the right. */}
+        <div className="px-4 sm:px-0 pb-12 lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-x-10 lg:items-start">
+        <div className="lg:col-start-1 lg:row-start-1">
+
+        {step === 'service' && <Gallery urls={tenant.galleryUrls} />}
 
         {stepIndex >= 0 && (
           <div className="mb-5" aria-label={t('step', { n: stepIndex + 1 })}>
@@ -166,6 +178,18 @@ export default function BookingPage({ tenant }) {
             tenant={tenant}
             onBookAnother={handleReset}
           />
+        )}
+        </div>
+
+        {/* On mobile the info only shows on the first step; on desktop the sidebar stays put through the flow. */}
+        <aside className={`lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-20 ${step === 'service' ? '' : 'hidden lg:block'}`}>
+          <StoreInfo tenant={tenant} hours={hours} />
+        </aside>
+
+        {step === 'service' && (
+          <div className="lg:col-start-1 lg:row-start-2">
+            <Reviews data={reviews} failed={reviewsFailed} onSubmitted={loadReviews} />
+          </div>
         )}
         </div>
       </div>

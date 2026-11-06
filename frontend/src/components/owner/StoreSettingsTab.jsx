@@ -27,6 +27,8 @@ export default function StoreSettingsTab({ tenant }) {
     whatsappNumber: tenant.whatsappNumber || '',
     logoUrl: tenant.logoUrl || '',
     coverUrl: tenant.coverUrl || '',
+    about: tenant.about || '',
+    galleryUrls: (tenant.galleryUrls || []).join('\n'),
     defaultLanguage: tenant.defaultLanguage || 'it',
     currency: tenant.currency || 'EUR',
   })
@@ -49,7 +51,8 @@ export default function StoreSettingsTab({ tenant }) {
     setMessage(null)
     try {
       const token = await getAccessTokenSilently()
-      await updateMyTenant(token, form)
+      const galleryUrls = form.galleryUrls.split('\n').map(u => u.trim()).filter(Boolean)
+      await updateMyTenant(token, { ...form, galleryUrls })
       setMessage({ type: 'ok', text: t('profileSaved') })
     } catch {
       setMessage({ type: 'error', text: t('profileSaveFailed') })
@@ -90,11 +93,17 @@ export default function StoreSettingsTab({ tenant }) {
             <input className={inputCls} value={form.whatsappNumber} onChange={set('whatsappNumber')} maxLength={30} placeholder="+39 333 1234567" />
           </Field>
         </div>
+        <Field label={t('aboutLabel')} hint={t('aboutHint')}>
+          <textarea className={inputCls} rows={4} value={form.about} onChange={set('about')} maxLength={1000} />
+        </Field>
         <Field label={t('profileImageUrl')} hint={t('profileImageHint')}>
           <input className={inputCls} type="url" value={form.logoUrl} onChange={set('logoUrl')} maxLength={1000} placeholder="https://…" />
         </Field>
         <Field label={t('coverImageUrl')} hint={t('coverImageHint')}>
           <input className={inputCls} type="url" value={form.coverUrl} onChange={set('coverUrl')} maxLength={1000} placeholder="https://…" />
+        </Field>
+        <Field label={t('galleryImages')} hint={t('galleryImagesHint')}>
+          <textarea className={inputCls} rows={4} value={form.galleryUrls} onChange={set('galleryUrls')} placeholder="https://…" />
         </Field>
 
         <Field label={t('defaultLanguage')} hint={t('defaultLanguageHint')}>

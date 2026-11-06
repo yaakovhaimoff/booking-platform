@@ -7,6 +7,14 @@ const LOCALES = { it: 'it-IT', en: 'en-GB' }
 
 const dict = {
   en: {
+    about: 'About', visitUs: 'Visit us', openingHours: 'Opening hours', today: 'Today', getDirections: 'Get directions', mapOf: 'Map of {address}',
+    aboutLabel: 'About your business', aboutHint: 'A few sentences shown on your booking page.',
+    gallery: 'Photo gallery', closeImage: 'Close image',
+    reviews: 'Reviews', reviewCount: '{n} reviews', noReviews: 'No reviews yet. Be the first!', reviewsError: 'Reviews could not be loaded.',
+    leaveReview: 'Leave a review', rating: 'Rating', yourName: 'Your name', comment: 'Comment', reviewingAs: 'Reviewing as',
+    ratingRequired: 'Please choose a star rating.', reviewFailed: 'Could not send your review. Please try again.',
+    reviewThanks: 'Thanks for your review!', submitReview: 'Submit review', sending: 'Sending…',
+    galleryImages: 'Gallery image links', galleryImagesHint: 'One image link per line (up to 12). Shown at the top of your booking page.',
     step: 'Step {n} of 4',
     steps: ['Service', 'Day', 'Time', 'Details'],
     back: '← Back',
@@ -139,6 +147,14 @@ const dict = {
     ...PUBLIC.en,
   },
   it: {
+    about: 'Chi siamo', visitUs: 'Vieni a trovarci', openingHours: 'Orari di apertura', today: 'Oggi', getDirections: 'Indicazioni', mapOf: 'Mappa di {address}',
+    aboutLabel: 'Descrizione dell’attività', aboutHint: 'Poche righe mostrate sulla tua pagina di prenotazione.',
+    gallery: 'Galleria foto', closeImage: 'Chiudi immagine',
+    reviews: 'Recensioni', reviewCount: '{n} recensioni', noReviews: 'Ancora nessuna recensione. Scrivi la prima!', reviewsError: 'Impossibile caricare le recensioni.',
+    leaveReview: 'Lascia una recensione', rating: 'Valutazione', yourName: 'Il tuo nome', comment: 'Commento', reviewingAs: 'Recensisci come',
+    ratingRequired: 'Scegli una valutazione a stelle.', reviewFailed: 'Impossibile inviare la recensione. Riprova.',
+    reviewThanks: 'Grazie per la recensione!', submitReview: 'Invia recensione', sending: 'Invio…',
+    galleryImages: 'Link immagini della galleria', galleryImagesHint: 'Un link per riga (max 12). Mostrate in cima alla tua pagina di prenotazione.',
     step: 'Passo {n} di 4',
     steps: ['Servizio', 'Giorno', 'Orario', 'Dati'],
     back: '← Indietro',
