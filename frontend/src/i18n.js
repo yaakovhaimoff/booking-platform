@@ -289,8 +289,37 @@ const validLang = v => (LANGS.includes(v) ? v : null)
 const globalSaved = () => validLang(localStorage.getItem(STORAGE_KEY))
 const storeKey = slug => `${STORAGE_KEY}:store:${slug}`
 
+// Fallback when the visitor hasn't chosen: country from their IP (Italy -> Italian,
+// anywhere else -> English). Cached after the first lookup; until it arrives, or if it
+// fails (e.g. local dev), the browser language is used.
+const GEO_KEY = 'geoLang'
+const geoCached = () => validLang(localStorage.getItem(GEO_KEY))
+const browserLang = () => ((navigator.language || '').toLowerCase().startsWith('it') ? 'it' : 'en')
+
 function detect() {
-  return globalSaved() || ((navigator.language || '').toLowerCase().startsWith('it') ? 'it' : 'en')
+  return globalSaved() || geoCached() || browserLang()
+}
+
+let storeDefaultNow = null
+
+function reapply() {
+  if (scope) {
+    apply(validLang(localStorage.getItem(storeKey(scope))) || validLang(storeDefaultNow) || detect())
+  } else {
+    apply(detect())
+  }
+}
+
+export function initGeoLang() {
+  if (geoCached()) return
+  fetch('/api/geo')
+    .then(r => (r.ok ? r.json() : null))
+    .then(d => {
+      if (!d || !d.country) return
+      localStorage.setItem(GEO_KEY, d.country === 'IT' ? 'it' : 'en')
+      reapply()
+    })
+    .catch(() => {})
 }
 
 let current = detect()
@@ -312,13 +341,15 @@ export function setLang(lang) {
 // Called when a public store page has loaded its store.
 export function enterStore(slug, storeDefault) {
   scope = slug
-  apply(validLang(localStorage.getItem(storeKey(slug))) || validLang(storeDefault) || detect())
+  storeDefaultNow = storeDefault
+  reapply()
 }
 
 // Called when leaving the store page.
 export function leaveStore() {
   scope = null
-  apply(detect())
+  storeDefaultNow = null
+  reapply()
 }
 
 const subscribe = cb => { listeners.add(cb); return () => listeners.delete(cb) }
