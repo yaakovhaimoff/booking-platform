@@ -15,7 +15,7 @@ export default function AppointmentHistoryRow({ appointment, onCancel }) {
 
   return (
     <tr className="border-b border-gray-100 last:border-0">
-      <td className="py-3 pr-4 text-sm text-gray-600">#{appointment.serviceId}</td>
+      <td className="py-3 px-4 text-sm text-gray-900 font-medium">{appointment.shopName ?? `#${appointment.serviceId}`}</td>
       <td className="py-3 pr-4 text-sm text-gray-600">{formatted}</td>
       <td className="py-3 pr-4">
         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[appointment.status] ?? ''}`}>

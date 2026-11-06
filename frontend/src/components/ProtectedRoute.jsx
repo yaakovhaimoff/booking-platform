@@ -1,8 +1,9 @@
 import { useAuth0 } from '../mockAuth'
 import { Navigate } from 'react-router-dom'
 
-export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading } = useAuth0()
+// type: which account world this route belongs to. Wrong or missing session -> that world's login.
+export default function ProtectedRoute({ children, type = 'business' }) {
+  const { isAuthenticated, isLoading, accountType } = useAuth0()
 
   if (isLoading) {
     return (
@@ -12,7 +13,7 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
-  if (!isAuthenticated) return <Navigate to="/" replace />
+  if (!isAuthenticated || accountType !== type) return <Navigate to={type === 'consumer' ? '/auth' : '/partner'} replace />
 
   return children
 }

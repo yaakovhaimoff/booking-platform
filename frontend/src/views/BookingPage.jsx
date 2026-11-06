@@ -7,9 +7,11 @@ import CheckoutForm from '../components/CheckoutForm'
 import ConfirmationScreen from '../components/ConfirmationScreen'
 import StoreHeader from '../components/StoreHeader'
 import { useI18n } from '../i18n'
+import { useAuth0 } from '../mockAuth'
 
 export default function BookingPage({ tenant }) {
   const { t, fmtDate, fmtPrice } = useI18n()
+  const { isAuthenticated, accountType, user } = useAuth0()
   const [step, setStep] = useState('service')
   const [selectedService, setSelectedService] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
@@ -53,6 +55,8 @@ export default function BookingPage({ tenant }) {
         clientPhone,
         notes: notes || null,
         startTime: selectedSlot,
+        // Link the booking to a signed-in customer so it appears under "My bookings"
+        clientAuth0Sub: isAuthenticated && accountType === 'consumer' ? user.sub : undefined,
       })
       setAppointment(response)
       setStep('confirmed')

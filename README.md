@@ -1,4 +1,4 @@
-# Multi-Tenant Service Booking Platform (SaaS)
+# torni: Multi-Tenant Service Booking Platform (SaaS)
 
 An enterprise-grade, multi-tenant Software-as-a-Service (SaaS) platform built for service-based businesses (e.g., salons, barbershops, consultants). The application allows business owners (tenants) to host dynamic business profile pages, manage service offerings, and handle customer appointment scheduling.
 

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { PUBLIC } from './i18nPublic'
 
 const STORAGE_KEY = 'lang'
 export const LANGS = ['it', 'en']
@@ -79,7 +80,7 @@ const dict = {
     noBusinesses: 'No businesses yet — be the first to register!',
     notFoundText: 'Page not found.', backHome: 'Back to home',
     // client dashboard
-    myBookings: 'My Bookings', slugPlaceholder: 'Store slug (e.g. my-salon)',
+    colShop: 'Shop', myBookings: 'My Bookings', slugPlaceholder: 'Store slug (e.g. my-salon)',
     lookUp: 'Look up', lookingUp: 'Looking up…',
     noStoreWithSlug: 'No store found with that slug.',
     genericError: 'Something went wrong. Please try again.',
@@ -133,6 +134,7 @@ const dict = {
     storeSlug: 'Store slug', createStore: 'Create store', creating: 'Creating…',
     slugInvalid: 'Slug may only contain lowercase letters, numbers, and hyphens.',
     slugTaken: 'That slug is already taken.',
+    ...PUBLIC.en,
   },
   it: {
     step: 'Passo {n} di 4',
@@ -206,7 +208,7 @@ const dict = {
     loadBusinessesFailed: 'Impossibile caricare le attività.',
     noBusinesses: 'Ancora nessuna attività — sii il primo a registrarti!',
     notFoundText: 'Pagina non trovata.', backHome: 'Torna alla home',
-    myBookings: 'Le mie prenotazioni', slugPlaceholder: 'Slug del negozio (es. mio-salone)',
+    colShop: 'Negozio', myBookings: 'Le mie prenotazioni', slugPlaceholder: 'Slug del negozio (es. mio-salone)',
     lookUp: 'Cerca', lookingUp: 'Ricerca…',
     noStoreWithSlug: 'Nessun negozio trovato con questo slug.',
     genericError: 'Qualcosa è andato storto. Riprova.',
@@ -255,6 +257,7 @@ const dict = {
     storeSlug: 'Slug del negozio', createStore: 'Crea negozio', creating: 'Creazione…',
     slugInvalid: 'Lo slug può contenere solo lettere minuscole, numeri e trattini.',
     slugTaken: 'Questo slug è già in uso.',
+    ...PUBLIC.it,
   },
 }
 

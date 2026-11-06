@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth0 } from '../mockAuth'
 import { useI18n } from '../i18n'
+import Logo from './shared/Logo'
 import LanguageToggle from './LanguageToggle'
 import { OWNER_TABS, ownerTabId } from './owner/ownerTabs'
 
@@ -33,7 +34,7 @@ export default function NavBar() {
   function handleLogout() {
     setOpen(false)
     sessionStorage.removeItem('role')
-    try { logout() } finally { navigate('/', { replace: true }) }
+    try { logout() } finally { navigate('/partner', { replace: true }) }
   }
 
   const close = () => setOpen(false)
@@ -41,10 +42,7 @@ export default function NavBar() {
   return (
     <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-        <Link to="/" onClick={close} className="flex items-center gap-2 text-lg font-bold text-gray-900 shrink-0">
-          <span className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">S</span>
-          <span>ServiceBooking</span>
-        </Link>
+        <Logo to="/auth/routing" onClick={close} suffix="business" />
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-6">
