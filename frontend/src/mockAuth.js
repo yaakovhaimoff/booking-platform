@@ -11,17 +11,31 @@ import { useSyncExternalStore } from 'react'
 const DEV_TOKEN = 'dev-bypass-token'
 const KEY = 'demo-session'
 const TYPE_KEY = 'demo-account'   // 'consumer' | 'business'. Sessions that predate account types are business.
+const NAME_KEY = 'demo-name'      // display name given at sign-up
+const PHONE_KEY = 'demo-phone'    // phone the customer saved in their profile (overrides the sign-up phone)
 const ID_KEY = 'demo-identity'    // what the business owner typed at login (email / phone / provider)
 
 // The original demo owner (and its existing shop) is dev|owner1. Logging in as this email reaches it.
 const LEGACY_OWNER_EMAIL = 'dev@example.com'
 
 // Each distinct business identity is its own owner, so each can register its own store.
-function buildUser(type, identity) {
-  if (type === 'consumer') return { sub: 'dev|client1', email: 'client@example.com', name: 'Dev Client' }
+function buildUser(type, identity, name, phone) {
+  if (type === 'consumer') {
+    // Each distinct phone is its own customer. No identity = the original demo client.
+    const raw = (identity || '').trim().toLowerCase()
+    if (!raw) return { sub: 'dev|client1', email: 'client@example.com', name: 'Demo client' }
+    const isEmail = raw.includes('@')
+    return {
+      sub: `dev|client-${raw.replace(/\W/g, '')}`,
+      email: isEmail ? raw : `${raw.replace(/\W/g, '')}@demo.local`,
+      phone: phone || (isEmail ? undefined : raw.replace(/\D/g, '')), // digits only: what the booking API accepts
+      login: identity,
+      name: name || undefined, // undefined = unknown, checkout asks for it
+    }
+  }
   const id = (identity || LEGACY_OWNER_EMAIL).trim().toLowerCase()
   const email = id.includes('@') ? id : `${id.replace(/\W/g, '')}@demo.local`
-  return { sub: email === LEGACY_OWNER_EMAIL ? 'dev|owner1' : `dev|${id}`, email, name: id }
+  return { sub: email === LEGACY_OWNER_EMAIL ? 'dev|owner1' : `dev|${id}`, email, name: name || id }
 }
 
 const listeners = new Set()
@@ -29,11 +43,11 @@ const listeners = new Set()
 const OUT = { isLoading: false, isAuthenticated: false, accountType: null, user: undefined }
 let current = OUT
 
-function make(type, identity) {
-  return { isLoading: false, isAuthenticated: true, accountType: type, user: buildUser(type, identity) }
+function make(type, identity, name, phone) {
+  return { isLoading: false, isAuthenticated: true, accountType: type, user: buildUser(type, identity, name, phone) }
 }
 if (localStorage.getItem(KEY) === '1') {
-  current = make(localStorage.getItem(TYPE_KEY) === 'consumer' ? 'consumer' : 'business', localStorage.getItem(ID_KEY))
+  current = make(localStorage.getItem(TYPE_KEY) === 'consumer' ? 'consumer' : 'business', localStorage.getItem(ID_KEY), localStorage.getItem(NAME_KEY), localStorage.getItem(PHONE_KEY))
 }
 
 const emit = () => listeners.forEach(l => l())
@@ -45,12 +59,14 @@ const loginWithRedirect = opts => {
   const type = opts?.accountType === 'consumer' ? 'consumer' : 'business'
   localStorage.setItem(KEY, '1'); localStorage.setItem(TYPE_KEY, type)
   if (opts?.identity) localStorage.setItem(ID_KEY, opts.identity); else localStorage.removeItem(ID_KEY)
+  if (opts?.name) localStorage.setItem(NAME_KEY, opts.name); else localStorage.removeItem(NAME_KEY)
+  localStorage.removeItem(PHONE_KEY)
   sessionStorage.removeItem('role') // a different owner must not inherit the previous owner's cached routing
-  current = make(type, opts?.identity)
+  current = make(type, opts?.identity, opts?.name)
   emit()
 }
 const logout = () => {
-  localStorage.removeItem(KEY); localStorage.removeItem(TYPE_KEY); localStorage.removeItem(ID_KEY)
+  localStorage.removeItem(KEY); localStorage.removeItem(TYPE_KEY); localStorage.removeItem(ID_KEY); localStorage.removeItem(NAME_KEY); localStorage.removeItem(PHONE_KEY)
   current = OUT
   emit()
 }
@@ -62,7 +78,21 @@ export function devHeaders() {
   return u ? { 'X-Dev-User-Sub': u.sub, 'X-Dev-User-Email': u.email } : {}
 }
 
-const fns = { loginWithRedirect, logout, getAccessTokenSilently }
+// Customer profile edit: name + phone (digits). Also updates the saved account so the next login shows the new name.
+const updateProfile = ({ name, phone }) => {
+  const identity = localStorage.getItem(ID_KEY)
+  localStorage.setItem(NAME_KEY, name)
+  if (phone) localStorage.setItem(PHONE_KEY, phone); else localStorage.removeItem(PHONE_KEY)
+  try {
+    const accounts = JSON.parse(localStorage.getItem('demo-accounts')) || {}
+    const e = accounts[identity]
+    if (e && typeof e === 'object') localStorage.setItem('demo-accounts', JSON.stringify({ ...accounts, [identity]: { ...e, name } }))
+  } catch { /* ignore a corrupt demo store */ }
+  current = make(current.accountType, identity, name, phone || null)
+  emit()
+}
+
+const fns = { loginWithRedirect, logout, getAccessTokenSilently, updateProfile }
 export function useAuth0() {
   return { ...useSyncExternalStore(subscribe, () => current), ...fns }
 }

@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+/* torni theme: fonts only; colours are Tailwind's indigo / pink / gray. */
+@theme {
+  --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Figtree', ui-sans-serif, system-ui, sans-serif;
+
+}
+
+@layer base {
+  body { font-family: var(--font-sans); color: var(--color-gray-900); -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  :focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+}
+
+@layer utilities {
+  .font-display { font-family: var(--font-display); }
+}

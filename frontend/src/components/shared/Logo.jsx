@@ -23,7 +23,7 @@ export default function Logo({ to = '/', suffix, onClick }) {
   return (
     <Link to={to} onClick={onClick} aria-label={`torni${suffix ? ` ${suffix}` : ''}`} className="flex items-center gap-2 shrink-0">
       <LogoMark />
-      <span className="text-2xl font-extrabold tracking-tight text-gray-950 leading-none">torni</span>
+      <span className="font-display text-2xl font-extrabold tracking-tight text-gray-950 leading-none">torni</span>
       {suffix && <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 leading-none mt-1">{suffix}</span>}
     </Link>
   )

@@ -46,11 +46,11 @@ export default function NavBar() {
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-6">
-          {isAuthenticated && !isAdmin && <NavLink to="/auth/routing" className={linkCls}>{t('myArea')}</NavLink>}
           {isAdmin && <NavLink to="/admin" className={linkCls}>{t('admin')}</NavLink>}
           <LanguageToggle />
           {isAuthenticated ? (
-            <button onClick={handleLogout} className="px-4 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            // On the dashboard, logout lives at the bottom of the sidebar.
+            !onDashboard && <button onClick={handleLogout} className="px-4 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
               {t('logout')}
             </button>
           ) : (
@@ -96,7 +96,6 @@ export default function NavBar() {
                 ))}
               </>
             )}
-            {isAuthenticated && !isAdmin && !onDashboard && <NavLink to="/auth/routing" onClick={close} className={mobileLinkCls}>{t('myArea')}</NavLink>}
             {isAdmin && <NavLink to="/admin" onClick={close} className={mobileLinkCls}>{t('admin')}</NavLink>}
             <div className="border-t border-gray-100 mt-2 pt-3 px-1 flex flex-col gap-2">
               {isAuthenticated ? (

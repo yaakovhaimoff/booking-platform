@@ -57,7 +57,7 @@ export default function ConfirmationScreen({ appointment, service, tenant, onBoo
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 sm:p-8">
       <div className="text-center mb-6">
-        <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>

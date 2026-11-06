@@ -39,3 +39,9 @@ export async function getOpenDates(from, to) {
   if (!res.ok) throw await res.json()
   return res.json()
 }
+
+export async function getPublicHours() {
+  const res = await http(`${BASE}/operating-hours`, { headers: tenantHeaders() })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}

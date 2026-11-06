@@ -11,8 +11,14 @@ export default function PartnerLoginPage() {
   const { t } = useI18n()
   if (isAuthenticated && accountType === 'business') return <Navigate to="/auth/routing" replace />
 
-  function done(identity) {
-    loginWithRedirect({ accountType: 'business', identity })
+  function done(identity, name) {
+    loginWithRedirect({ accountType: 'business', identity, name })
+    navigate('/auth/routing', { replace: true })
+  }
+
+  // Demo shortcut: the original shop's owner, so it is always reachable without remembering an email.
+  function openDemo() {
+    loginWithRedirect({ accountType: 'business' })
     navigate('/auth/routing', { replace: true })
   }
 
@@ -21,20 +27,24 @@ export default function PartnerLoginPage() {
       <div className="flex flex-col px-6 py-6">
         <Logo to="/for-business" />
         <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto py-10">
-          <h1 className="text-2xl font-bold text-gray-950 text-center">{t('pProsHeading')}</h1>
-          <p className="mt-1 mb-8 text-sm text-gray-500 text-center">{t('pProsSub')}</p>
+          <h1 className="text-3xl font-extrabold text-gray-950">{t('pProsHeading')}</h1>
+          <p className="mt-2 mb-8 text-sm text-gray-600">{t('pProsSub')}</p>
           <CodeAuthForm primary="email" onVerified={done} />
+          <button type="button" onClick={openDemo} className="mt-4 w-full rounded-xl border-2 border-dashed border-gray-300 px-4 py-3 text-left hover:border-indigo-600 transition">
+            <span className="block text-sm font-bold text-gray-950">{t('pDemoOwner')}</span>
+            <span className="block text-xs text-gray-600">{t('pDemoOwnerHint')}</span>
+          </button>
           <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm">
             <p className="font-semibold text-gray-900">{t('pAreCustomer')}</p>
-            <Link to="/" className="text-indigo-600 hover:underline">{t('pGoCustomers')}</Link>
+            <Link to="/" className="text-indigo-700 font-semibold hover:underline">{t('pGoCustomers')}</Link>
           </div>
         </div>
         <p className="text-center text-xs text-gray-400">{t('pRecaptcha')}</p>
       </div>
-      <div className="hidden lg:flex relative bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 items-end p-12 rounded-l-[120px]">
+      <div className="hidden lg:flex relative bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 items-end p-12">
         <div className="text-white">
-          <p className="text-5xl font-extrabold tracking-tight">torni</p>
-          <p className="text-lg text-white/80">{t('pBusinessTag')}</p>
+          <p className="font-display text-[9rem] leading-[0.85] font-extrabold tracking-[-0.04em] text-white">torni</p>
+          <p className="mt-4 text-lg text-white/80">{t('pBusinessTag')}</p>
         </div>
       </div>
     </div>

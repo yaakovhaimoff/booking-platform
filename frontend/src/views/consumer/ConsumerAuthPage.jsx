@@ -10,19 +10,19 @@ export default function ConsumerAuthPage() {
   const { t } = useI18n()
   if (isAuthenticated && accountType === 'consumer') return <Navigate to="/client/dashboard" replace />
 
-  function done(identity) {
-    loginWithRedirect({ accountType: 'consumer', identity })
+  function done(identity, name) {
+    loginWithRedirect({ accountType: 'consumer', identity, name })
     navigate('/client/dashboard', { replace: true })
   }
 
   return (
     <div className="max-w-sm mx-auto px-4 py-10 sm:py-16">
-      <h1 className="text-3xl font-bold text-gray-950 text-center">{t('pAuthTitle')}</h1>
-      <p className="mt-2 mb-8 text-sm text-gray-600 text-center">{t('pAuthSub')}</p>
+      <h1 className="text-4xl font-extrabold text-gray-950">{t('pAuthTitle')}</h1>
+      <p className="mt-2 mb-8 text-gray-600">{t('pAuthSub')}</p>
       <CodeAuthForm primary="phone" onVerified={done} />
       <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm">
         <p className="font-semibold text-gray-900">{t('pHaveBusiness')}</p>
-        <Link to="/partner" className="text-indigo-600 hover:underline">{t('pGoPros')}</Link>
+        <Link to="/partner" className="text-indigo-700 font-semibold hover:underline">{t('pGoPros')}</Link>
       </div>
     </div>
   )

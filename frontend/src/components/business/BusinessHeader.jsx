@@ -47,10 +47,10 @@ export default function BusinessHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link to="/" className="hidden md:inline-flex h-11 items-center gap-2 rounded-full border border-gray-200 px-5 text-sm font-semibold text-gray-900 hover:bg-gray-50">
+          <Link to="/" className="hidden md:inline-flex h-11 items-center gap-2 rounded-xl border border-gray-200 px-5 text-sm font-semibold text-gray-900 hover:bg-gray-50">
             <StoreIcon size={18} />{t('pMarketplace')}
           </Link>
-          <Link to="/partner" className="inline-flex h-11 items-center rounded-full bg-gray-950 px-5 text-sm font-semibold text-white hover:bg-gray-800 transition">{t('pSignUp')}</Link>
+          <Link to="/partner" className="inline-flex h-11 items-center rounded-xl bg-gray-950 px-5 text-sm font-semibold text-white hover:bg-gray-800 transition">{t('pSignUp')}</Link>
           <HeaderMenu logoTo="/for-business">
             {close => (
               <>

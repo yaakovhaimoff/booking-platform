@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { getSlots, createAppointment } from '../api/bookingApi'
+import { useEffect, useState } from 'react'
+import { getSlots, createAppointment, getPublicHours } from '../api/bookingApi'
+import { hoursOnDate } from '../utils/openStatus'
 import ServiceList from '../components/ServiceList'
 import DatePicker from '../components/DatePicker'
 import SlotGrid from '../components/SlotGrid'
@@ -12,6 +13,7 @@ import { useAuth0 } from '../mockAuth'
 export default function BookingPage({ tenant }) {
   const { t, fmtDate, fmtPrice } = useI18n()
   const { isAuthenticated, accountType, user } = useAuth0()
+  const signedIn = isAuthenticated && accountType === 'consumer'
   const [step, setStep] = useState('service')
   const [selectedService, setSelectedService] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
@@ -20,6 +22,9 @@ export default function BookingPage({ tenant }) {
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [appointment, setAppointment] = useState(null)
   const [error, setError] = useState(null)
+  const [hours, setHours] = useState(null)
+
+  useEffect(() => { getPublicHours().then(setHours).catch(() => {}) }, [])
 
   function handleServiceSelect(service) {
     setSelectedService(service)
@@ -56,7 +61,7 @@ export default function BookingPage({ tenant }) {
         notes: notes || null,
         startTime: selectedSlot,
         // Link the booking to a signed-in customer so it appears under "My bookings"
-        clientAuth0Sub: isAuthenticated && accountType === 'consumer' ? user.sub : undefined,
+        clientAuth0Sub: signedIn ? user.sub : undefined,
       })
       setAppointment(response)
       setStep('confirmed')
@@ -92,7 +97,7 @@ export default function BookingPage({ tenant }) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center sm:pt-6 sm:px-4">
       <div className="w-full max-w-xl">
-        <StoreHeader tenant={tenant} compact={step !== 'service'} />
+        <StoreHeader tenant={tenant} hours={hours} compact={step !== 'service'} />
         <div className="px-4 sm:px-0 pb-12">
 
         {stepIndex >= 0 && (
@@ -136,6 +141,10 @@ export default function BookingPage({ tenant }) {
             <p className="text-sm text-gray-500 mb-4">
               {serviceSummary} &mdash; {fmtDate(selectedDate)}
             </p>
+            {hours && (() => {
+              const day = hoursOnDate(hours, selectedDate)
+              return <p className="text-sm font-semibold text-gray-800 mb-4">{day ? t('hoursOnDay', { open: day.open, close: day.close }) : t('closedOnDay')}</p>
+            })()}
             {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
             <SlotGrid slots={slots} loading={slotsLoading} onSelect={handleSlotSelect} />
           </div>
@@ -146,7 +155,7 @@ export default function BookingPage({ tenant }) {
             <p className="text-sm text-gray-500 mb-4">
               {serviceSummary} &mdash; {selectedSlot.substring(11, 16)} &middot; {fmtDate(selectedDate)}
             </p>
-            <CheckoutForm onSubmit={handleFormSubmit} error={error} />
+            <CheckoutForm onSubmit={handleFormSubmit} error={error} knownName={signedIn ? user.name || '' : ''} knownPhone={signedIn ? user.phone || '' : ''} />
           </div>
         )}
 

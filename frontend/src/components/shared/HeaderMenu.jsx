@@ -36,7 +36,7 @@ export default function HeaderMenu({ children, logoTo = '/', iconOnlyOnMobile = 
         aria-expanded={open}
         aria-controls="header-menu"
         aria-label={t('pMenu')}
-        className="h-11 flex items-center gap-2 rounded-full border border-gray-200 bg-white/80 px-4 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition max-[480px]:w-11 max-[480px]:justify-center max-[480px]:border-0 max-[480px]:bg-transparent max-[480px]:px-0"
+        className="h-11 flex items-center gap-2 rounded-xl border border-gray-200 bg-white/80 px-4 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition max-[480px]:w-11 max-[480px]:justify-center max-[480px]:border-0 max-[480px]:bg-transparent max-[480px]:px-0"
       >
         <span className={iconOnlyOnMobile ? 'max-[480px]:hidden' : ''}>{t('pMenu')}</span>
         <MenuIcon size={20} />
@@ -51,7 +51,7 @@ export default function HeaderMenu({ children, logoTo = '/', iconOnlyOnMobile = 
         >
           <div className="hidden max-[480px]:flex h-14 items-center justify-between px-4 bg-white border-b border-gray-100">
             <Logo to={logoTo} onClick={close} />
-            <button onClick={close} aria-label={t('pCloseMenu')} className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100">
+            <button onClick={close} aria-label={t('pCloseMenu')} className="w-11 h-11 flex items-center justify-center rounded-xl hover:bg-gray-100">
               <CloseIcon size={22} />
             </button>
           </div>

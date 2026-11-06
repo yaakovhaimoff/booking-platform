@@ -1,6 +1,7 @@
 export const OWNER_TABS = [
   { id: 'store',    label: 'tabStore' },
   { id: 'queue',    label: 'tabAppointments' },
+  { id: 'clients',  label: 'tabClients' },
   { id: 'services', label: 'tabServices' },
   { id: 'hours',    label: 'tabHours' },
 ]

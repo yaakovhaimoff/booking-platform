@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useI18n } from '../i18n'
 
-export default function CheckoutForm({ onSubmit, error }) {
+// knownName / knownPhone: a signed-in customer is not asked again.
+export default function CheckoutForm({ onSubmit, error, knownName = '', knownPhone = '' }) {
   const { t } = useI18n()
-  const [clientName, setClientName] = useState('')
-  const [clientPhone, setClientPhone] = useState('')
+  const [clientName, setClientName] = useState(knownName)
+  const [clientPhone, setClientPhone] = useState(knownPhone)
   const [notes, setNotes] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -42,7 +43,8 @@ export default function CheckoutForm({ onSubmit, error }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-5">
-      <div>
+      {knownName && <p className="text-sm text-gray-600">{t('bookingAs')} <strong className="text-gray-900">{knownName}</strong></p>}
+      {!knownName && <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">{t('fullName')}</label>
         <input
           type="text"
@@ -53,9 +55,9 @@ export default function CheckoutForm({ onSubmit, error }) {
         {fieldErrors.clientName && (
           <p className="text-red-600 text-xs mt-1">{t(fieldErrors.clientName)}</p>
         )}
-      </div>
+      </div>}
 
-      <div>
+      {!knownPhone && <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')}</label>
         <input
           type="text"
@@ -66,7 +68,7 @@ export default function CheckoutForm({ onSubmit, error }) {
         {fieldErrors.clientPhone && (
           <p className="text-red-600 text-xs mt-1">{t(fieldErrors.clientPhone)}</p>
         )}
-      </div>
+      </div>}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">

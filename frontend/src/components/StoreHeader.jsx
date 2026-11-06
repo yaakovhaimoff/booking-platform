@@ -1,4 +1,5 @@
 import { useI18n } from '../i18n'
+import { todayStatus } from '../utils/openStatus'
 
 function digits(v) {
   return (v || '').replace(/[^\d]/g, '')
@@ -18,7 +19,7 @@ function ActionButton({ href, label, color, children }) {
       rel="noopener noreferrer"
       className="flex flex-col items-center gap-1.5 group"
     >
-      <span className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-sm transition group-hover:scale-105 ${color}`}>
+      <span className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm transition group-hover:scale-105 ${color}`}>
         {children}
       </span>
       <span className="text-xs text-gray-600">{label}</span>
@@ -26,13 +27,14 @@ function ActionButton({ href, label, color, children }) {
   )
 }
 
-export default function StoreHeader({ tenant, compact = false }) {
+export default function StoreHeader({ tenant, hours = null, compact = false }) {
   const { t } = useI18n()
   const { name, slug, address, phone, whatsappNumber, logoUrl, coverUrl } = tenant
   const title = name || slug
   const wa = waNumber(whatsappNumber)
   // A cover that is just the logo image again makes the avatar sit on top of itself: use the gradient instead.
   const cover = coverUrl && coverUrl !== logoUrl ? coverUrl : null
+  const status = hours ? todayStatus(hours) : null
   const tel = phone ? phone.replace(/[^\d+]/g, '') : ''
 
   if (compact) {
@@ -56,7 +58,7 @@ export default function StoreHeader({ tenant, compact = false }) {
   return (
     <div className="bg-white sm:rounded-2xl shadow-sm overflow-hidden mb-6">
       <div
-        className="h-36 sm:h-44 bg-gradient-to-br from-indigo-500 to-indigo-800 bg-cover bg-center"
+        className="h-36 sm:h-44 bg-indigo-600 bg-cover bg-center"
         style={cover ? { backgroundImage: `url("${cover}")` } : undefined}
       />
       <div className="px-5 pb-5 text-center">
@@ -75,6 +77,12 @@ export default function StoreHeader({ tenant, compact = false }) {
         </div>
         <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
         {address && <p className="text-sm text-gray-500 mt-1">{address}</p>}
+        {status && (
+          <p className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${status.open ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+            <span className={`w-2 h-2 rounded-full ${status.open ? 'bg-green-500' : 'bg-gray-400'}`} aria-hidden="true" />
+            {t(status.key, { time: status.time })}
+          </p>
+        )}
 
         {(wa || tel || address) && (
           <div className="flex justify-center gap-6 mt-5">
@@ -90,8 +98,8 @@ export default function StoreHeader({ tenant, compact = false }) {
             )}
             {address && (
               <ActionButton
-                href={`https://waze.com/ul?q=${encodeURIComponent(address)}&navigate=yes`}
-                label={t('waze')}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                label={t('maps')}
                 color="bg-sky-500"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.200 7 13 7 13s7-7.800 7-13a7 7 0 0 0-7-7zm0 9.500A2.500 2.500 0 1 1 12 6.500a2.500 2.500 0 0 1 0 5z"/></svg>

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth0 } from '../../mockAuth'
 import { useI18n } from '../../i18n'
 import Logo from '../shared/Logo'
@@ -13,6 +13,9 @@ export default function ConsumerHeader() {
   const { isAuthenticated, accountType, logout } = useAuth0()
   const { t } = useI18n()
   const navigate = useNavigate()
+  const { pathname, search } = useLocation()
+  const onProfile = pathname === '/client/dashboard' && search.includes('tab=profile')
+  const onBookings = pathname === '/client/dashboard' && !onProfile
   // A business session is invisible here: the consumer site only reflects consumer accounts.
   const signedIn = isAuthenticated && accountType === 'consumer'
 
@@ -23,26 +26,29 @@ export default function ConsumerHeader() {
   }
 
   return (
-    <header className="relative z-40 w-full">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-gray-100">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         <Logo />
         <div className="flex items-center gap-2 sm:gap-3">
-          {signedIn
-            ? <Link to="/client/dashboard" className="hidden sm:inline text-sm font-semibold text-gray-900 hover:text-indigo-600 px-2">{t('pMyBookings')}</Link>
-            : <Link to="/user-flow" className="hidden sm:inline text-sm font-semibold text-gray-900 hover:text-indigo-600 px-2">{t('pLogIn')}</Link>}
-          <Link
-            to="/for-business"
-            className="hidden sm:inline-flex h-11 items-center rounded-full border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-indigo-50 hover:border-indigo-200 transition"
-          >
-            {t('pForBusinesses')}
-          </Link>
+          {!signedIn && (
+            <>
+              <Link to="/user-flow" className="hidden sm:inline text-sm font-semibold text-gray-900 hover:text-indigo-600 px-2">{t('pLogIn')}</Link>
+              <Link
+                to="/for-business"
+                className="hidden sm:inline-flex h-11 items-center rounded-xl border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-indigo-50 hover:border-indigo-200 transition"
+              >
+                {t('pForBusinesses')}
+              </Link>
+            </>
+          )}
           <HeaderMenu>
             {close => (
               <>
                 <MenuGroup title={t('pForCustomers')}>
                   {signedIn ? (
                     <>
-                      <MenuItem to="/client/dashboard" onClick={close}>{t('pMyBookings')}</MenuItem>
+                      <MenuItem to="/client/dashboard" onClick={close} active={onBookings}>{t('pMyBookings')}</MenuItem>
+                      <MenuItem to="/client/dashboard?tab=profile" onClick={close} active={onProfile}>{t('pProfile')}</MenuItem>
                       <MenuItem onClick={() => handleLogout(close)}>{t('pLogOut')}</MenuItem>
                     </>
                   ) : (
@@ -54,7 +60,7 @@ export default function ConsumerHeader() {
                     <LanguageToggle />
                   </li>
                 </MenuGroup>
-                <MenuSwitchRow to="/for-business" onClick={close}>{t('pForBusinesses')}</MenuSwitchRow>
+                {!signedIn && <MenuSwitchRow to="/for-business" onClick={close}>{t('pForBusinesses')}</MenuSwitchRow>}
               </>
             )}
           </HeaderMenu>

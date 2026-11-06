@@ -47,7 +47,7 @@ export default function SearchPage() {
   return (
     <div>
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-10">
-        <h2 className="text-xl font-semibold text-gray-900 mb-5">{t('findBusiness')}</h2>
+        <h2 className="font-display text-4xl font-extrabold text-gray-950 mb-6">{t('findBusiness')}</h2>
 
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true">
@@ -80,10 +80,10 @@ export default function SearchPage() {
               <button
                 key={tenant.id}
                 onClick={() => navigate(`/store/${tenant.slug}`)}
-                className="group text-left bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:border-indigo-200 transition-all"
+                className="group text-left bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-950 transition-colors"
               >
                 <div
-                  className="h-32 bg-gradient-to-br from-indigo-500 to-indigo-800 bg-cover bg-center"
+                  className="h-32 bg-indigo-600 bg-cover bg-center"
                   style={tenant.coverUrl ? { backgroundImage: `url("${tenant.coverUrl}")` } : undefined}
                 />
                 <div className="p-5 flex items-center justify-between gap-3">
