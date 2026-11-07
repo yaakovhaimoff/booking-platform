@@ -40,7 +40,7 @@ export const PUBLIC = {
     pWithGoogle: 'Continue with Google', pWithApple: 'Continue with Apple',
     pBadPhone: 'Enter a valid phone number.', pBadEmail: 'Enter a valid email address.', pBadCode: 'Enter the 6-digit code.',
     pCodeSentTo: 'We sent a 6-digit code to', pVerifyCode: 'Verification code', pVerify: 'Verify',
-    pDiffNumber: 'Use a different number', pDiffEmail: 'Use a different email', pDemoCode: 'Demo mode: any 6-digit code works.', pDemoOwner: 'Open the demo shop', pDemoOwnerHint: 'Demo: skip sign-in and manage the first shop.', pPassword: 'Password', pLogInTab: 'Log in', pSignUpTab: 'Sign up', pNoAccount: 'No account found. Sign up first.', pAccountExists: 'An account already exists. Log in instead.', pWrongPassword: 'Wrong password.', pPasswordShort: 'Use at least 6 characters.',
+    pDiffNumber: 'Use a different number', pDiffEmail: 'Use a different email', pDemoCode: 'Demo mode: any 6-digit code works.', pDemoOwner: 'Open the demo shop', pDemoOwnerHint: 'Demo: skip sign-in and manage the first shop.', pPassword: 'Password', pLogInTab: 'Log in', pSignUpTab: 'Sign up', pNoAccount: 'No account found. Sign up first.', pAccountExists: 'An account already exists. Log in instead.', pWrongPassword: 'Wrong password.', pAuthFailed: 'Could not reach the server. Try again.', pPasswordShort: 'Use at least 6 characters.',
     // business landing
     pLandTitle: 'Fewer gaps in the book. More regulars in the chair.',
     pLandSub: 'torni gives your shop a booking page, a calendar and a queue you can run from your phone.',
@@ -87,7 +87,7 @@ export const PUBLIC = {
     pWithGoogle: 'Continua con Google', pWithApple: 'Continua con Apple',
     pBadPhone: 'Inserisci un numero di telefono valido.', pBadEmail: 'Inserisci un indirizzo email valido.', pBadCode: 'Inserisci il codice di 6 cifre.',
     pCodeSentTo: 'Abbiamo inviato un codice di 6 cifre a', pVerifyCode: 'Codice di verifica', pVerify: 'Verifica',
-    pDiffNumber: 'Usa un altro numero', pDiffEmail: 'Usa un’altra email', pDemoCode: 'Modalità demo: va bene qualsiasi codice di 6 cifre.', pDemoOwner: 'Apri il negozio demo', pDemoOwnerHint: 'Demo: salta l’accesso e gestisci il primo negozio.', pPassword: 'Password', pLogInTab: 'Accedi', pSignUpTab: 'Registrati', pNoAccount: 'Nessun account trovato. Registrati prima.', pAccountExists: 'Esiste già un account. Accedi.', pWrongPassword: 'Password errata.', pPasswordShort: 'Usa almeno 6 caratteri.',
+    pDiffNumber: 'Usa un altro numero', pDiffEmail: 'Usa un’altra email', pDemoCode: 'Modalità demo: va bene qualsiasi codice di 6 cifre.', pDemoOwner: 'Apri il negozio demo', pDemoOwnerHint: 'Demo: salta l’accesso e gestisci il primo negozio.', pPassword: 'Password', pLogInTab: 'Accedi', pSignUpTab: 'Registrati', pNoAccount: 'Nessun account trovato. Registrati prima.', pAccountExists: 'Esiste già un account. Accedi.', pWrongPassword: 'Password errata.', pAuthFailed: 'Server non raggiungibile. Riprova.', pPasswordShort: 'Usa almeno 6 caratteri.',
     pLandTitle: 'Meno buchi in agenda. Più clienti fissi in poltrona.',
     pLandSub: 'torni dà al tuo negozio una pagina di prenotazione, un calendario e una coda da gestire dal telefono.',
     pGetStarted: 'Inizia ora',

@@ -11,9 +11,20 @@ const altBtn = 'w-full h-12 rounded-xl border border-gray-300 bg-white px-4 flex
 const inputCls = 'w-full h-12 rounded-xl border border-gray-300 bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400'
 const STORE = 'demo-accounts'
 
-// Demo account store: no backend, passwords are only hashed in this browser's localStorage.
-const read = () => { try { return JSON.parse(localStorage.getItem(STORE)) || {} } catch { return {} } }
-async function hash(text) {
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
+const authCall = (path, body) => fetch(`${BASE}/auth/${path}`, {
+  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+})
+
+// Accounts used to live only in this browser's localStorage (SHA-256 of "identity:password").
+// Kept read-only so those users can log in once and be migrated to the server.
+const readLegacy = id => {
+  try {
+    const e = (JSON.parse(localStorage.getItem(STORE)) || {})[id]
+    return typeof e === 'string' ? { h: e } : e
+  } catch { return null }
+}
+async function legacyHash(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('')
 }
@@ -45,23 +56,34 @@ export default function CodeAuthForm({ primary, onVerified }) {
     if (password.length < 6) { setError(t('pPasswordShort')); return }
 
     const identity = isPhone ? `${country}${value.replace(/\D/g, '')}` : value.trim().toLowerCase()
-    const key = identity
     setBusy(true)
-    const accounts = read()
-    const h = await hash(`${key}:${password}`)
-    setBusy(false)
-
-    // Entries are { h, name }; older ones were just the hash string.
-    const entry = typeof accounts[key] === 'string' ? { h: accounts[key] } : accounts[key]
-    if (isSignup) {
-      if (entry) { setError(t('pAccountExists')); return }
-      localStorage.setItem(STORE, JSON.stringify({ ...accounts, [key]: { h, name: name.trim() } }))
-      onVerified(identity, name.trim())
-      return
+    try {
+      if (isSignup) {
+        const r = await authCall('signup', { identity, password, name: name.trim() })
+        if (r.status === 409) { setError(t('pAccountExists')); return }
+        if (!r.ok) { setError(t('pAuthFailed')); return }
+        onVerified(identity, name.trim())
+        return
+      }
+      let r = await authCall('login', { identity, password })
+      if (r.status === 404) {
+        // Account made before accounts moved to the server: it only exists in this browser.
+        // If the password matches the old local hash, upload it once and continue.
+        const entry = readLegacy(identity)
+        if (entry && entry.h === await legacyHash(`${identity}:${password}`)) {
+          const up = await authCall('signup', { identity, password, name: entry.name || '' })
+          if (up.ok) { onVerified(identity, entry.name); return }
+        }
+        setError(t('pNoAccount')); return
+      }
+      if (r.status === 401) { setError(t('pWrongPassword')); return }
+      if (!r.ok) { setError(t('pAuthFailed')); return }
+      onVerified(identity, (await r.json()).name || undefined)
+    } catch {
+      setError(t('pAuthFailed'))
+    } finally {
+      setBusy(false)
     }
-    if (!entry) { setError(t('pNoAccount')); return }
-    if (entry.h !== h) { setError(t('pWrongPassword')); return }
-    onVerified(identity, entry.name)
   }
 
   const tab = on => `flex-1 h-10 rounded-lg text-sm font-bold transition ${on ? 'bg-gray-950 text-white' : 'text-gray-700 hover:bg-gray-100'}`
