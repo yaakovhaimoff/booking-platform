@@ -38,6 +38,10 @@ public class DataSourceConfig {
         config.setJdbcUrl(jdbcUrl);
         config.setUsername(dbUsername);
         config.setPassword(dbPassword);
+        // Hosted Postgres has a small connection cap (and the old instance overlaps during a deploy).
+        config.setMaximumPoolSize(5);
+        config.setMinimumIdle(0);
+        config.setIdleTimeout(30_000);
         return new HikariDataSource(config);
     }
 
@@ -69,7 +73,11 @@ public class DataSourceConfig {
         // e.g. AppointmentService.updateStatus loads the tenant to check ownership.
         // Tenant tables (appointments, services, ...) still win because the schema is first.
         config.setConnectionInitSql("SET search_path TO " + schemaName + ", public");
-        config.setMaximumPoolSize(5);
+        // One pool per tenant: keep them tiny and idle-free so many tenants don't exhaust Postgres.
+        config.setMaximumPoolSize(2);
+        config.setMinimumIdle(0);
+        config.setIdleTimeout(30_000);
+        config.setInitializationFailTimeout(-1); // don't crash startup if the DB is briefly full
         return new HikariDataSource(config);
     }
 
