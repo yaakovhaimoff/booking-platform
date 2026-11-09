@@ -95,7 +95,7 @@ export default function StoreHeader({ tenant, hours = null, compact = false, rat
         )}
       </div>
       <div className="px-5 pb-5 text-center lg:text-left lg:px-8 lg:pb-6 lg:flex lg:items-end lg:gap-6">
-        <div className="-mt-12 mb-3 flex justify-center lg:mb-0 lg:-mt-14 lg:shrink-0">
+        <div className="relative z-10 -mt-12 mb-3 flex justify-center lg:mb-0 lg:-mt-14 lg:shrink-0">
           {logoUrl ? (
             <img
               src={logoUrl}
