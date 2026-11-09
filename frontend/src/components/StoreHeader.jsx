@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useI18n } from '../i18n'
 import { todayStatus } from '../utils/openStatus'
 
@@ -59,6 +59,7 @@ export default function StoreHeader({ tenant, hours = null, compact = false, rat
   const wa = waNumber(whatsappNumber)
   // Use the cover link when there is one and it loads; otherwise fall back to a colour.
   const [coverFailed, setCoverFailed] = useState(false)
+  useEffect(() => setCoverFailed(false), [coverUrl])
   const cover = coverUrl && !coverFailed ? coverUrl : null
   const status = hours ? todayStatus(hours) : null
   const tel = phone ? phone.replace(/[^\d+]/g, '') : ''

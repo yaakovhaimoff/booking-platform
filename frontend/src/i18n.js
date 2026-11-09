@@ -100,7 +100,7 @@ const dict = {
     cancel: 'Cancel', approve: 'Approve', edit: 'Edit', delete: 'Delete', save: 'Save', saving: 'Saving…', saved: 'Saved!',
     // owner dashboard
     ownerDashboard: 'Owner Dashboard',
-    tabStore: 'Store', tabAppointments: 'Appointments', tabClients: 'Clients', tabServices: 'Services', tabHours: 'Hours', tabPreview: 'Preview', previewMobile: 'Mobile', previewDesktop: 'Desktop', previewReload: 'Reload', previewOpen: 'Open live page', previewHint: 'This is how customers see your store. Save your changes, then reload.',
+    tabStore: 'Store', tabAppointments: 'Appointments', tabClients: 'Clients', tabServices: 'Services', tabHours: 'Hours', previewTitle: 'Preview', previewMobile: 'Mobile', previewDesktop: 'Desktop', previewOpen: 'Open live page', previewShow: 'Preview', previewClose: 'Close preview',
     clientsSearch: 'Search by name or phone', emptyClients: 'No clients yet. They appear here after their first booking.', colPhone: 'Phone', colVisits: 'Bookings', colLastVisit: 'Last booking', colLastService: 'Service', colNotes: 'Notes', clientsCount: '{n} clients', clientBookings: 'Bookings', bookingsOne: '{n} booking', bookingsMany: '{n} bookings',
     openNowUntil: 'Open now · until {time}', opensAtToday: 'Closed · opens today at {time}', closedAfter: 'Closed · closed at {time}', closedToday: 'Closed today', hoursOnDay: 'Open {open} to {close}', closedOnDay: 'Closed on this day',
     filterToday: 'Today', emptyToday: 'No appointments today.', filterPending: 'Pending', filterConfirmed: 'Confirmed', filterAll: 'All', filterCancelled: 'Cancelled',
@@ -235,7 +235,7 @@ const dict = {
     status_PENDING: 'In attesa', status_CONFIRMED: 'Confermato', status_CANCELLED: 'Annullato',
     cancel: 'Annulla', approve: 'Approva', edit: 'Modifica', delete: 'Elimina', save: 'Salva', saving: 'Salvataggio…', saved: 'Salvato!',
     ownerDashboard: 'Area titolare',
-    tabStore: 'Negozio', tabAppointments: 'Appuntamenti', tabClients: 'Clienti', tabServices: 'Servizi', tabHours: 'Orari', tabPreview: 'Anteprima', previewMobile: 'Mobile', previewDesktop: 'Desktop', previewReload: 'Ricarica', previewOpen: 'Apri pagina live', previewHint: 'Così i clienti vedono il tuo negozio. Salva le modifiche, poi ricarica.',
+    tabStore: 'Negozio', tabAppointments: 'Appuntamenti', tabClients: 'Clienti', tabServices: 'Servizi', tabHours: 'Orari', previewTitle: 'Anteprima', previewMobile: 'Mobile', previewDesktop: 'Desktop', previewOpen: 'Apri pagina live', previewShow: 'Anteprima', previewClose: 'Chiudi anteprima',
     clientsSearch: 'Cerca per nome o telefono', emptyClients: 'Ancora nessun cliente. Appaiono qui dopo la prima prenotazione.', colPhone: 'Telefono', colVisits: 'Prenotazioni', colLastVisit: 'Ultima prenotazione', colLastService: 'Servizio', colNotes: 'Note', clientsCount: '{n} clienti', clientBookings: 'Prenotazioni', bookingsOne: '{n} prenotazione', bookingsMany: '{n} prenotazioni',
     openNowUntil: 'Aperto ora · fino alle {time}', opensAtToday: 'Chiuso · apre oggi alle {time}', closedAfter: 'Chiuso · ha chiuso alle {time}', closedToday: 'Chiuso oggi', hoursOnDay: 'Aperto dalle {open} alle {close}', closedOnDay: 'Chiuso in questo giorno',
     filterToday: 'Oggi', emptyToday: 'Nessun appuntamento oggi.', filterPending: 'In attesa', filterConfirmed: 'Confermati', filterAll: 'Tutti', filterCancelled: 'Annullati',

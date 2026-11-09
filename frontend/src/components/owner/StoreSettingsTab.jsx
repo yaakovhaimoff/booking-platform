@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import StoreQrModal from './StoreQrModal'
+import StorePreviewFrame from './StorePreviewFrame'
+import StorePreviewModal from './StorePreviewModal'
 import { useAuth0 } from '../../mockAuth'
 import { updateMyTenant } from '../../api/ownerApi'
 import { useI18n } from '../../i18n'
@@ -22,6 +24,7 @@ export default function StoreSettingsTab({ tenant }) {
   const { t } = useI18n()
   const [copied, setCopied] = useState(false)
   const [showQr, setShowQr] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
   const [form, setForm] = useState({
     name: tenant.name || '',
     address: tenant.address || '',
@@ -37,6 +40,12 @@ export default function StoreSettingsTab({ tenant }) {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null) // { type: 'ok' | 'error', text }
   const storeUrl = `${window.location.origin}/store/${tenant.slug}`
+
+  // Unsaved form state, shaped like the tenant the public page expects
+  const draft = useMemo(() => ({
+    ...form,
+    galleryUrls: form.galleryUrls.split('\n').map(u => u.trim()).filter(Boolean),
+  }), [form])
 
   const set = key => e => setForm(f => ({ ...f, [key]: e.target.value }))
 
@@ -64,11 +73,11 @@ export default function StoreSettingsTab({ tenant }) {
   }
 
   return (
-    <div className="space-y-8 max-w-lg">
+    <div className="xl:grid xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] xl:gap-8 xl:items-start">
+    <div className="space-y-8 max-w-lg xl:max-w-none">
       <div>
         <p className="text-sm font-medium text-gray-700 mb-1">{t('storeUrl')}</p>
-        <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-          <span className="text-sm text-gray-800 flex-1 break-all">{storeUrl}</span>
+        <div className="flex items-center gap-3">
           <button
             onClick={handleCopy}
             className="shrink-0 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
@@ -83,6 +92,14 @@ export default function StoreSettingsTab({ tenant }) {
           </button>
         </div>
       </div>
+      <button
+        type="button"
+        onClick={() => setShowPreview(true)}
+        className="xl:hidden w-full px-4 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"
+      >
+        {t('previewShow')}
+      </button>
+      {showPreview && <StorePreviewModal slug={tenant.slug} draft={draft} onClose={() => setShowPreview(false)} />}
       {showQr && <StoreQrModal url={storeUrl} name={form.name || tenant.slug} onClose={() => setShowQr(false)} />}
 
       <form onSubmit={handleSave} className="space-y-4">
@@ -143,6 +160,15 @@ export default function StoreSettingsTab({ tenant }) {
           {saving ? t('saving') : t('saveChanges')}
         </button>
       </form>
+    </div>
+
+    <aside className="hidden xl:block sticky top-20">
+      <div className="flex items-center gap-2 mb-3">
+        <h2 className="text-lg font-semibold text-gray-800">{t('previewTitle')}</h2>
+        <button type="button" onClick={() => setShowPreview(true)} className="ml-auto text-sm text-indigo-600 hover:underline">{t('previewDesktop')} ↗</button>
+      </div>
+      <StorePreviewFrame slug={tenant.slug} draft={draft} device="mobile" />
+    </aside>
     </div>
   )
 }

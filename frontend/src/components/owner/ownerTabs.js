@@ -4,7 +4,6 @@ export const OWNER_TABS = [
   { id: 'clients',  label: 'tabClients' },
   { id: 'services', label: 'tabServices' },
   { id: 'hours',    label: 'tabHours' },
-  { id: 'preview',  label: 'tabPreview' },
 ]
 
 export const ownerTabId = value => (OWNER_TABS.some(x => x.id === value) ? value : 'store')

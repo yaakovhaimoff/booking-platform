@@ -11,6 +11,23 @@ export default function PublicStorePage() {
   const { t } = useI18n()
   const [state, setState] = useState({ loading: true, notFound: false, disabled: false, tenant: null, failed: false })
   const [attempt, setAttempt] = useState(0)
+  const [draft, setDraft] = useState(null)
+
+  // Owner dashboard preview: when embedded in our own dashboard, show the owner's unsaved edits.
+  useEffect(() => {
+    if (window.parent === window) return
+    document.documentElement.style.overscrollBehavior = 'contain'
+    const onMessage = e => {
+      if (e.origin !== window.location.origin || e.source !== window.parent) return
+      if (e.data?.type === 'store-preview') setDraft(e.data.tenant)
+    }
+    window.addEventListener('message', onMessage)
+    window.parent.postMessage({ type: 'store-preview-ready' }, window.location.origin)
+    return () => {
+      window.removeEventListener('message', onMessage)
+      document.documentElement.style.overscrollBehavior = ''
+    }
+  }, [])
 
   // Leaving the store page returns to the global language
   useEffect(() => leaveStore, [])
@@ -71,7 +88,7 @@ export default function PublicStorePage() {
 
   return (
     <BookingPage
-      tenant={state.tenant}
+      tenant={draft ? { ...state.tenant, ...draft } : state.tenant}
     />
   )
 }
