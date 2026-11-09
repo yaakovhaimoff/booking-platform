@@ -95,7 +95,7 @@ export default function StoreHeader({ tenant, hours = null, compact = false, rat
           <img src={cover} alt="" onError={() => setCoverFailed(true)} className="absolute inset-0 w-full h-full object-cover" />
         )}
       </div>
-      <div className="px-5 pb-5 text-center lg:text-left lg:px-8 lg:pb-6 lg:flex lg:items-end lg:gap-6">
+      <div className="px-5 pb-5 text-center lg:text-left lg:px-8 lg:pb-6 lg:flex lg:items-start lg:gap-6">
         <div className="relative z-10 -mt-12 mb-3 flex justify-center lg:mb-0 lg:-mt-14 lg:shrink-0">
           {logoUrl ? (
             <img
@@ -122,7 +122,7 @@ export default function StoreHeader({ tenant, hours = null, compact = false, rat
         </div>
 
         {(wa || tel || address) && (
-          <div className="flex justify-center gap-6 mt-5 lg:mt-0 lg:justify-end lg:shrink-0">
+          <div className="flex justify-center gap-6 mt-5 lg:mt-0 lg:pt-4 lg:justify-end lg:shrink-0">
             {wa && (
               <ActionButton href={`https://wa.me/${wa}`} label={t('whatsapp')} color="bg-green-500">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.9 11.9 0 0 0 12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.2 1.6 6L0 24l6.2-1.6A12 12 0 0 0 12 24c6.6 0 12-5.4 12-12 0-3.2-1.2-6.200-3.500-8.500zM12 22c-1.800 0-3.600-.5-5.100-1.400l-.4-.2-3.700 1 1-3.600-.2-.4A10 10 0 1 1 12 22zm5.500-7.500c-.3-.2-1.800-.9-2-1-.3-.1-.5-.2-.7.2-.2.300-.8 1-.9 1.200-.2.200-.3.200-.6.100-.3-.2-1.300-.5-2.400-1.500-.9-.8-1.500-1.800-1.700-2.100-.2-.3 0-.5.100-.6l.4-.5c.1-.2.2-.3.300-.5.100-.2 0-.4 0-.5l-.9-2.200c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.100-.8.400-.3.300-1 1-1 2.500s1.100 2.900 1.200 3.100c.2.200 2.100 3.200 5.100 4.500.7.3 1.300.5 1.700.6.700.2 1.400.2 1.900.1.600-.1 1.800-.7 2-1.400.3-.7.300-1.300.2-1.400-.1-.1-.3-.2-.6-.4z"/></svg>

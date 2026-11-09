@@ -47,13 +47,26 @@ export default function PublicStorePage() {
   }, [slug, attempt])
 
   if (state.loading) {
+    // Mirrors BookingPage + StoreHeader dimensions so nothing shifts when the real page replaces it
     return (
-      <div className="max-w-xl mx-auto sm:pt-6" aria-busy="true" aria-label={t('loadingStore')}>
-        <Skeleton className="h-44 w-full rounded-none sm:rounded-2xl" />
-        <div className="px-4 mt-6 flex flex-col gap-3">
-          <Skeleton className="h-6 w-1/2 mx-auto" />
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-20 w-full" />
+      <div className="min-h-screen bg-gray-50 flex items-start justify-center sm:pt-6 sm:px-4" aria-busy="true" aria-label={t('loadingStore')}>
+        <div className="w-full max-w-xl lg:max-w-6xl">
+          <div className="bg-white sm:rounded-2xl shadow-sm overflow-hidden mb-6">
+            <Skeleton className="h-36 sm:h-44 lg:h-64 w-full rounded-none" />
+            <div className="px-5 pb-5 text-center lg:text-left lg:px-8 lg:pb-6 lg:flex lg:items-start lg:gap-6">
+              <div className="-mt-12 mb-3 flex justify-center lg:mb-0 lg:-mt-14 lg:shrink-0">
+                <Skeleton className="w-24 h-24 lg:w-32 lg:h-32 rounded-full border-4 border-white" />
+              </div>
+              <div className="lg:flex-1 lg:pt-4 flex flex-col items-center lg:items-start gap-2">
+                <Skeleton className="h-8 w-1/2" />
+                <Skeleton className="h-4 w-1/3" />
+              </div>
+            </div>
+          </div>
+          <div className="px-4 sm:px-0 pb-12 flex flex-col gap-3">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
         </div>
       </div>
     )
