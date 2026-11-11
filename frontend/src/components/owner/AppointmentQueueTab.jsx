@@ -4,6 +4,7 @@ import { getAppointments, getServices, updateAppointmentStatus } from '../../api
 import AppointmentList from './AppointmentList'
 import AppointmentCalendar from './AppointmentCalendar'
 import { useI18n } from '../../i18n'
+import { setPendingCount } from '../../pendingStore'
 
 const FILTERS = [
   { id: 'TODAY',     label: 'filterToday' },
@@ -21,7 +22,8 @@ const EMPTY_TEXT = {
   CANCELLED: 'emptyCancelled',
 }
 
-export default function AppointmentQueueTab({ tenant }) {
+// `pending` is the live count from the dashboard poll; when it changes the list reloads.
+export default function AppointmentQueueTab({ tenant, pending }) {
   const { getAccessTokenSilently } = useAuth0()
   const { t } = useI18n()
   const [appointments, setAppointments] = useState([])
@@ -46,12 +48,17 @@ export default function AppointmentQueueTab({ tenant }) {
       .catch(() => { if (!cancelled) setError('loadApptsFailed') })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [tenant.id, getAccessTokenSilently])
+  }, [tenant.id, getAccessTokenSilently, pending])
 
   const serviceNames = useMemo(
     () => Object.fromEntries(services.map(s => [s.id, s.name])),
     [services]
   )
+
+  // Keep the nav badge in step with approvals / cancellations made here, without waiting for the next poll.
+  useEffect(() => {
+    if (!loading) setPendingCount(appointments.filter(a => a.status === 'PENDING').length)
+  }, [appointments, loading])
 
   const live = useMemo(() => appointments.filter(a => a.status !== 'CANCELLED'), [appointments])
 

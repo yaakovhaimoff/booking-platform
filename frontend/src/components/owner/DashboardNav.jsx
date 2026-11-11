@@ -3,11 +3,13 @@ import { useAuth0 } from '../../mockAuth'
 import { useI18n } from '../../i18n'
 import { OWNER_TABS } from './ownerTabs'
 import SideNav from '../shared/SideNav'
+import { usePendingCount } from '../../pendingStore'
 
 export default function DashboardNav({ activeTab, onTabChange }) {
   const { t } = useI18n()
   const { logout } = useAuth0()
   const navigate = useNavigate()
+  const pending = usePendingCount()
 
   function handleLogout() {
     sessionStorage.removeItem('role')
@@ -16,7 +18,7 @@ export default function DashboardNav({ activeTab, onTabChange }) {
 
   return (
     <SideNav
-      items={OWNER_TABS.map(x => ({ id: x.id, label: t(x.label) }))}
+      items={OWNER_TABS.map(x => ({ id: x.id, label: t(x.label), badge: x.id === 'queue' ? pending : 0 }))}
       active={activeTab}
       onSelect={onTabChange}
       onLogout={handleLogout}

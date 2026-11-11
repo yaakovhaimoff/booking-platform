@@ -18,8 +18,8 @@ export async function getServices() {
   return res.json()
 }
 
-export async function getSlots(date) {
-  const res = await http(`${BASE}/slots?date=${date}`, { headers: tenantHeaders() })
+export async function getSlots(date, serviceId) {
+  const res = await http(`${BASE}/slots?date=${date}&serviceId=${serviceId}`, { headers: tenantHeaders() })
   if (!res.ok) throw await res.json()
   return res.json()
 }
@@ -34,8 +34,8 @@ export async function createAppointment(payload) {
   return res.json()
 }
 
-export async function getOpenDates(from, to) {
-  const res = await http(`${BASE}/slots/open-dates?from=${from}&to=${to}`, { headers: tenantHeaders() })
+export async function getOpenDates(from, to, serviceId) {
+  const res = await http(`${BASE}/slots/open-dates?from=${from}&to=${to}&serviceId=${serviceId}`, { headers: tenantHeaders() })
   if (!res.ok) throw await res.json()
   return res.json()
 }

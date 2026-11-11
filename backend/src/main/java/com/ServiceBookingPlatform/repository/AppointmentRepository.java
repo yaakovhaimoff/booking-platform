@@ -14,6 +14,15 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
             List<AppointmentStatus> statuses
     );
 
+    // Appointments that overlap the window [from, to): start < to AND end > from.
+    @org.springframework.data.jpa.repository.Query(
+        "select a from AppointmentEntity a where a.startTime < :to and a.endTime > :from and a.status in :statuses")
+    List<AppointmentEntity> findOverlapping(
+            @org.springframework.data.repository.query.Param("from") LocalDateTime from,
+            @org.springframework.data.repository.query.Param("to") LocalDateTime to,
+            @org.springframework.data.repository.query.Param("statuses") List<AppointmentStatus> statuses
+    );
+
     List<AppointmentEntity> findByStatus(AppointmentStatus status);
 
     List<AppointmentEntity> findByStatusNot(AppointmentStatus status);

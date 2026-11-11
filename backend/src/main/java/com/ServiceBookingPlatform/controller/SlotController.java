@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 public class SlotController {
 
     private final SlotCalculatorService slotCalculatorService;
+    private final com.ServiceBookingPlatform.service.ServiceCatalogService serviceCatalogService;
 
     @GetMapping("/open-dates")
-    public ResponseEntity<List<String>> getOpenDates(@RequestParam String from, @RequestParam String to) {
+    public ResponseEntity<List<String>> getOpenDates(@RequestParam String from, @RequestParam String to,
+                                                     @RequestParam Long serviceId) {
         LocalDate start;
         LocalDate end;
         try {
@@ -33,27 +35,21 @@ public class SlotController {
         if (end.isBefore(start) || start.plusDays(62).isBefore(end)) {
             throw new InvalidDateException("Invalid date range");
         }
-        LocalDate today = LocalDate.now();
-        List<String> result = new java.util.ArrayList<>();
-        for (LocalDate d = start.isBefore(today) ? today : start; !d.isAfter(end); d = d.plusDays(1)) {
-            if (!slotCalculatorService.getAvailableSlots(d, 30).isEmpty()) {
-                result.add(d.toString());
-            }
-        }
-        return ResponseEntity.ok(result);
+        int duration = serviceCatalogService.getById(serviceId).getDurationMinutes();
+        return ResponseEntity.ok(slotCalculatorService.getOpenDates(start, end, duration).stream()
+                .map(LocalDate::toString).collect(Collectors.toList()));
     }
 
     @GetMapping
-    public ResponseEntity<List<String>> getSlots(@RequestParam String date) {
+    public ResponseEntity<List<String>> getSlots(@RequestParam String date, @RequestParam Long serviceId) {
         LocalDate localDate;
         try {
             localDate = LocalDate.parse(date);
         } catch (DateTimeParseException ex) {
             throw new InvalidDateException("Invalid date format: " + date);
         }
-
-        List<LocalDateTime> slots = slotCalculatorService.getAvailableSlots(localDate, 30);
-        List<String> result = slots.stream()
+        int duration = serviceCatalogService.getById(serviceId).getDurationMinutes();
+        List<String> result = slotCalculatorService.getAvailableSlots(localDate, duration).stream()
             .map(slot -> slot.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
             .collect(Collectors.toList());
         return ResponseEntity.ok(result);

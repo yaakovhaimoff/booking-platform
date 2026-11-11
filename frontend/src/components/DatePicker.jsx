@@ -4,7 +4,7 @@ import { useI18n } from '../i18n'
 
 const iso = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
-export default function DatePicker({ onSelect }) {
+export default function DatePicker({ serviceId, onSelect }) {
   const { t, locale } = useI18n()
   // Weeks always start on Monday
   const weekStart = 1
@@ -27,9 +27,9 @@ export default function DatePicker({ onSelect }) {
   useEffect(() => {
     let cancelled = false
     const done = (dates, failed = false) => { if (!cancelled) setLoaded({ key: monthKey, dates: new Set(dates), failed }) }
-    getOpenDates(iso(year, month, 1), iso(year, month, daysInMonth)).then(d => done(d)).catch(() => done([], true))
+    getOpenDates(iso(year, month, 1), iso(year, month, daysInMonth), serviceId).then(d => done(d)).catch(() => done([], true))
     return () => { cancelled = true }
-  }, [year, month, daysInMonth, monthKey, attempt])
+  }, [year, month, daysInMonth, monthKey, attempt, serviceId])
 
   function shift(delta) {
     const d = new Date(year, month + delta, 1)

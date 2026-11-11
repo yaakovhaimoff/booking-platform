@@ -43,6 +43,10 @@ public class TenantEntity {
     @Column(length = 3)
     private String currency;
 
+    // IANA zone id, e.g. "Europe/Rome". Null means Europe/Rome. Slots and "now" are computed in it.
+    @Column(length = 50)
+    private String timezone;
+
     @Column(name = "default_language", length = 5)
     private String defaultLanguage;
 

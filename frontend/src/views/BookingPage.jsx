@@ -44,7 +44,7 @@ export default function BookingPage({ tenant }) {
     setSlotsLoading(true)
     setError(null)
     try {
-      const data = await getSlots(date)
+      const data = await getSlots(date, selectedService.id)
       setSlots(data)
       setStep('slot')
     } catch {
@@ -56,6 +56,7 @@ export default function BookingPage({ tenant }) {
 
   function handleSlotSelect(slot) {
     setSelectedSlot(slot)
+    setError(null)
     setStep('form')
   }
 
@@ -73,8 +74,16 @@ export default function BookingPage({ tenant }) {
       })
       setAppointment(response)
       setStep('confirmed')
-    } catch {
-      setError(t('bookingFailed'))
+    } catch (e) {
+      if (e?.error === 'SLOT_TAKEN') {
+        // Someone else got that time first: go back to the time step with fresh availability.
+        setSlots(e.slots || [])
+        setSelectedSlot(null)
+        setStep('slot')
+        setError(t('slotTaken'))
+      } else {
+        setError(t('bookingFailed'))
+      }
     }
   }
 
@@ -144,7 +153,7 @@ export default function BookingPage({ tenant }) {
               {t('serviceLabel')} <span className="font-medium text-gray-700">{serviceSummary}</span>
             </p>
             {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
-            <DatePicker onSelect={handleDateSelect} />
+            <DatePicker serviceId={selectedService.id} onSelect={handleDateSelect} />
           </div>
         )}
 

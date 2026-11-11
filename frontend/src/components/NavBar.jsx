@@ -5,6 +5,7 @@ import { useI18n } from '../i18n'
 import Logo from './shared/Logo'
 import LanguageToggle from './LanguageToggle'
 import { OWNER_TABS, ownerTabId } from './owner/ownerTabs'
+import { usePendingCount } from '../pendingStore'
 
 const linkCls = ({ isActive }) =>
   `text-sm font-medium transition ${isActive ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600'}`
@@ -17,6 +18,7 @@ export default function NavBar() {
   const location = useLocation()
   const { isAuthenticated, user, logout } = useAuth0()
   const [open, setOpen] = useState(false)
+  const pending = usePendingCount()
 
   const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map(e => e.trim())
   const onDashboard = isAuthenticated && location.pathname === '/owner/dashboard'
@@ -69,11 +71,12 @@ export default function NavBar() {
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={t(open ? 'closeMenu' : 'openMenu')}
-            className="w-10 h-10 flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
+            className="relative w-10 h-10 flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
             </svg>
+            {pending > 0 && !open && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-600" aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -92,6 +95,9 @@ export default function NavBar() {
                     className={mobileLinkCls({ isActive: activeOwnerTab === tab.id })}
                   >
                     {t(tab.label)}
+                    {tab.id === 'queue' && pending > 0 && (
+                      <span className="ml-2 inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">{pending}</span>
+                    )}
                   </Link>
                 ))}
               </>

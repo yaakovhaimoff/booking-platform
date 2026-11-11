@@ -83,6 +83,15 @@ public class GlobalExceptionHandler {
             .body(Map.of("error", "FORBIDDEN", "message", ex.getMessage()));
     }
 
+    @ExceptionHandler(SlotTakenException.class)
+    public ResponseEntity<Map<String, Object>> handleSlotTaken(SlotTakenException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "SLOT_TAKEN");
+        body.put("message", ex.getMessage());
+        body.put("slots", ex.getFreshSlots());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
         Map<String, Object> body = new HashMap<>();

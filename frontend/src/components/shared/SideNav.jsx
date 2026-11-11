@@ -18,6 +18,9 @@ export default function SideNav({ items, active, onSelect, onLogout, logoutLabel
             }`}
           >
             {item.label}
+            {item.badge > 0 && (
+              <span className="ml-2 inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold" aria-label={`${item.badge} new`}>{item.badge}</span>
+            )}
           </button>
         ))}
       </div>
