@@ -10,8 +10,8 @@ export default function ConsumerAuthPage() {
   const { t } = useI18n()
   if (isAuthenticated && accountType === 'consumer') return <Navigate to="/client/dashboard" replace />
 
-  function done(identity, name) {
-    loginWithRedirect({ accountType: 'consumer', identity, name })
+  function done(identity, name, phone) {
+    loginWithRedirect({ accountType: 'consumer', identity, name, phone })
     navigate('/client/dashboard', { replace: true })
   }
 

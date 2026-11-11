@@ -60,9 +60,9 @@ const loginWithRedirect = opts => {
   localStorage.setItem(KEY, '1'); localStorage.setItem(TYPE_KEY, type)
   if (opts?.identity) localStorage.setItem(ID_KEY, opts.identity); else localStorage.removeItem(ID_KEY)
   if (opts?.name) localStorage.setItem(NAME_KEY, opts.name); else localStorage.removeItem(NAME_KEY)
-  localStorage.removeItem(PHONE_KEY)
+  if (opts?.phone) localStorage.setItem(PHONE_KEY, opts.phone); else localStorage.removeItem(PHONE_KEY)
   sessionStorage.removeItem('role') // a different owner must not inherit the previous owner's cached routing
-  current = make(type, opts?.identity, opts?.name)
+  current = make(type, opts?.identity, opts?.name, opts?.phone || null)
   emit()
 }
 const logout = () => {
@@ -78,8 +78,12 @@ export function devHeaders() {
   return u ? { 'X-Dev-User-Sub': u.sub, 'X-Dev-User-Email': u.email } : {}
 }
 
-// Customer profile edit: name + phone (digits). Also updates the saved account so the next login shows the new name.
-const updateProfile = ({ name, phone }) => {
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
+
+// Customer profile edit: name + phone (digits). Updates this browser at once, then saves to the
+// server account so the new name survives logging out/in and works on other devices.
+// Resolves false if the server could not be reached (the change still exists on this device).
+const updateProfile = async ({ name, phone }) => {
   const identity = localStorage.getItem(ID_KEY)
   localStorage.setItem(NAME_KEY, name)
   if (phone) localStorage.setItem(PHONE_KEY, phone); else localStorage.removeItem(PHONE_KEY)
@@ -90,6 +94,13 @@ const updateProfile = ({ name, phone }) => {
   } catch { /* ignore a corrupt demo store */ }
   current = make(current.accountType, identity, name, phone || null)
   emit()
+  try {
+    const r = await fetch(`${API}/auth/profile`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identity, name, phone: phone || '' }),
+    })
+    return r.ok || r.status === 404 // 404 = old browser-only account, nothing to sync
+  } catch { return false }
 }
 
 const fns = { loginWithRedirect, logout, getAccessTokenSilently, updateProfile }

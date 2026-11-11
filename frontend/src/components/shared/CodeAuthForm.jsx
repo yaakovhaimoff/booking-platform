@@ -62,7 +62,7 @@ export default function CodeAuthForm({ primary, onVerified }) {
         const r = await authCall('signup', { identity, password, name: name.trim() })
         if (r.status === 409) { setError(t('pAccountExists')); return }
         if (!r.ok) { setError(t('pAuthFailed')); return }
-        onVerified(identity, name.trim())
+        onVerified(identity, name.trim(), '')
         return
       }
       let r = await authCall('login', { identity, password })
@@ -72,13 +72,14 @@ export default function CodeAuthForm({ primary, onVerified }) {
         const entry = readLegacy(identity)
         if (entry && entry.h === await legacyHash(`${identity}:${password}`)) {
           const up = await authCall('signup', { identity, password, name: entry.name || '' })
-          if (up.ok) { onVerified(identity, entry.name); return }
+          if (up.ok) { onVerified(identity, entry.name, ''); return }
         }
         setError(t('pNoAccount')); return
       }
       if (r.status === 401) { setError(t('pWrongPassword')); return }
       if (!r.ok) { setError(t('pAuthFailed')); return }
-      onVerified(identity, (await r.json()).name || undefined)
+      const acct = await r.json()
+      onVerified(identity, acct.name || undefined, acct.phone || '')
     } catch {
       setError(t('pAuthFailed'))
     } finally {

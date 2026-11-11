@@ -2,7 +2,7 @@
 export const PUBLIC = {
   en: {
     pMenu: 'Menu', pCloseMenu: 'Close menu',
-    pLogIn: 'Log in', pLogInOrSignUp: 'Log in or sign up', pLogOut: 'Log out', pMyBookings: 'My bookings', pAccount: 'Account', pProfile: 'Profile', pProfileSub: 'Your details are used to fill in your bookings.', pLoginDetail: 'Signed in with', pSaveProfile: 'Save changes', pProfileSaved: 'Saved.', pPhoneHint: 'Digits only, used for your bookings.', pNoBookings: 'No bookings yet.', pBrowse: 'Find a shop',
+    pLogIn: 'Log in', pLogInOrSignUp: 'Log in or sign up', pLogOut: 'Log out', pMyBookings: 'My bookings', pAccount: 'Account', pProfile: 'Profile', pProfileSub: 'Your details are used to fill in your bookings.', pLoginDetail: 'Signed in with', pSaveProfile: 'Save changes', pProfileSyncFailed: 'Saved on this device, but could not reach the server. Try again later.', pProfileSaved: 'Saved.', pPhoneHint: 'Digits only, used for your bookings.', pNoBookings: 'No bookings yet.', pBrowse: 'Find a shop',
     pForCustomers: 'For customers', pForBusinesses: 'For businesses', pHelp: 'Help and support',
     pLangName: 'English', pSignUp: 'Sign up', pMarketplace: 'Marketplace',
     pBusinessTypes: 'Business types', pFeatures: 'Features',
@@ -55,7 +55,7 @@ export const PUBLIC = {
   },
   it: {
     pMenu: 'Menu', pCloseMenu: 'Chiudi menu',
-    pLogIn: 'Accedi', pLogInOrSignUp: 'Accedi o registrati', pLogOut: 'Esci', pMyBookings: 'Le mie prenotazioni', pAccount: 'Account', pProfile: 'Profilo', pProfileSub: 'I tuoi dati vengono usati per compilare le prenotazioni.', pLoginDetail: 'Accesso con', pSaveProfile: 'Salva modifiche', pProfileSaved: 'Salvato.', pPhoneHint: 'Solo cifre, usato per le tue prenotazioni.', pNoBookings: 'Ancora nessuna prenotazione.', pBrowse: 'Trova un negozio',
+    pLogIn: 'Accedi', pLogInOrSignUp: 'Accedi o registrati', pLogOut: 'Esci', pMyBookings: 'Le mie prenotazioni', pAccount: 'Account', pProfile: 'Profilo', pProfileSub: 'I tuoi dati vengono usati per compilare le prenotazioni.', pLoginDetail: 'Accesso con', pSaveProfile: 'Salva modifiche', pProfileSyncFailed: 'Salvato su questo dispositivo, ma il server non risponde. Riprova più tardi.', pProfileSaved: 'Salvato.', pPhoneHint: 'Solo cifre, usato per le tue prenotazioni.', pNoBookings: 'Ancora nessuna prenotazione.', pBrowse: 'Trova un negozio',
     pForCustomers: 'Per i clienti', pForBusinesses: 'Per le attività', pHelp: 'Assistenza',
     pLangName: 'Italiano', pSignUp: 'Registrati', pMarketplace: 'Marketplace',
     pBusinessTypes: 'Tipi di attività', pFeatures: 'Funzionalità',

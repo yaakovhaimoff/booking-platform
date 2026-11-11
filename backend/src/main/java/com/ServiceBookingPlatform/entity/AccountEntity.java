@@ -19,6 +19,10 @@ public class AccountEntity {
     @Column(length = 100)
     private String name;
 
+    // Digits only; the number the customer wants prefilled in bookings. Optional.
+    @Column(length = 30)
+    private String phone;
+
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
 

@@ -27,6 +27,14 @@ public class AuthController {
 
     public record Credentials(String identity, String password, String name) {}
 
+    public record ProfileUpdate(String identity, String name, String phone) {}
+
+    private static Map<String, Object> body(AccountEntity a) {
+        return Map.of("identity", a.getIdentity(),
+                "name", a.getName() == null ? "" : a.getName(),
+                "phone", a.getPhone() == null ? "" : a.getPhone());
+    }
+
     private static String norm(String identity) {
         return identity == null ? "" : identity.trim().toLowerCase();
     }
@@ -47,7 +55,22 @@ public class AuthController {
                 .identity(id).name(name)
                 .passwordHash(encoder.encode(c.password()))
                 .createdAt(LocalDateTime.now()).build());
-        return ResponseEntity.ok(Map.of("identity", id, "name", name == null ? "" : name));
+        return ResponseEntity.ok(Map.of("identity", id, "name", name == null ? "" : name, "phone", ""));
+    }
+
+    // Demo-grade like the rest of auth: identifies the account by identity, no session yet.
+    @PutMapping("/profile")
+    public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody ProfileUpdate p) {
+        var found = accounts.findByIdentity(norm(p.identity()));
+        if (found.isEmpty()) return err(HttpStatus.NOT_FOUND, "NO_ACCOUNT");
+        String name = p.name() == null ? "" : p.name().trim();
+        if (name.isEmpty() || name.length() > 100) return err(HttpStatus.BAD_REQUEST, "INVALID");
+        String phone = p.phone() == null ? "" : p.phone().replaceAll("\\D", "");
+        if (phone.length() > 30) return err(HttpStatus.BAD_REQUEST, "INVALID");
+        AccountEntity a = found.get();
+        a.setName(name);
+        a.setPhone(phone.isEmpty() ? null : phone);
+        return ResponseEntity.ok(body(accounts.save(a)));
     }
 
     @PostMapping("/login")
@@ -58,6 +81,6 @@ public class AuthController {
         if (c.password() == null || !encoder.matches(c.password(), a.getPasswordHash())) {
             return err(HttpStatus.UNAUTHORIZED, "WRONG_PASSWORD");
         }
-        return ResponseEntity.ok(Map.of("identity", a.getIdentity(), "name", a.getName() == null ? "" : a.getName()));
+        return ResponseEntity.ok(body(a));
     }
 }

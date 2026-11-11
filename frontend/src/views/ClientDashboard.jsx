@@ -134,14 +134,15 @@ function ProfileTab() {
   const [saved, setSaved] = useState(false)
   const inputCls = 'w-full h-12 rounded-xl border border-gray-300 bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400'
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault()
     setSaved(false)
     if (!name.trim()) { setError(t('nameRequired')); return }
     const digits = phone.replace(/\D/g, '')
     if (phone.trim() && digits.length < 6) { setError(t('pBadPhone')); return }
     setError('')
-    updateProfile({ name: name.trim(), phone: digits })
+    const synced = await updateProfile({ name: name.trim(), phone: digits })
+    if (!synced) setError(t('pProfileSyncFailed'))
     setSaved(true)
   }
 
