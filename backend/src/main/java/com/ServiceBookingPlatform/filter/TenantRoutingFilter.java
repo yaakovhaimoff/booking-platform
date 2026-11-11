@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Order(1)
@@ -46,17 +47,21 @@ public class TenantRoutingFilter extends OncePerRequestFilter {
                             "TENANT_REQUIRED", "X-Tenant-ID must be a number");
                     return;
                 }
-                // Validate tenant exists and get its schema name.
+                // Validate tenant exists and is enabled, and get its schema name.
                 // Uses publicJdbcTemplate so this query always hits public.tenants.
-                List<String> schemas = publicJdbcTemplate.queryForList(
-                        "SELECT schema_name FROM tenants WHERE id = ?",
-                        String.class, tenantId);
-                if (schemas.isEmpty()) {
+                List<Map<String, Object>> rows = publicJdbcTemplate.queryForList(
+                        "SELECT schema_name, enabled FROM tenants WHERE id = ?", tenantId);
+                if (rows.isEmpty()) {
                     writeErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
                             "TENANT_REQUIRED", "Tenant not found: " + tenantId);
                     return;
                 }
-                TenantContextHolder.setCurrentSchema(schemas.get(0));
+                if (!Boolean.TRUE.equals(rows.get(0).get("enabled"))) {
+                    writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
+                            "TENANT_DISABLED", "This store is disabled");
+                    return;
+                }
+                TenantContextHolder.setCurrentSchema((String) rows.get(0).get("schema_name"));
             }
             chain.doFilter(request, response);
         } finally {

@@ -52,6 +52,9 @@ Controllers return response DTOs, not JPA entities. Entities stay inside the ser
 Every new feature, endpoint, service method, or bug fix ships with tests in the same change. A bug fix
 starts with a test that fails for the bug. Backend: unit tests for service logic and MockMvc tests for
 access rules (401 logged out, 403 wrong owner, success path); run `./mvnw test` before reporting done.
+`TenantIsolationIntegrationTest` runs the whole app against a throw-away database on a local Postgres
+(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD; it skips when none is reachable). Any change touching tenant
+routing, ownership checks or tenant data must keep it green and extend it.
 Frontend: Vitest with Testing Library (`*.test.js` / `*.test.jsx` next to the code, helpers in
 `frontend/src/test/`); run `npm test` and `npm run lint` before reporting done. If a change cannot be tested, say so explicitly
 instead of skipping silently. Do not mark work done on a green build alone: state which tests cover it.

@@ -45,11 +45,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -89,8 +89,8 @@ class AccessRulesTest {
 
     @BeforeEach
     void tenantOneExists() {
-        when(publicJdbcTemplate.queryForList(any(String.class), eq(String.class), anyLong()))
-                .thenReturn(List.of("tenant_1"));
+        when(publicJdbcTemplate.queryForList(any(String.class), eq(1L)))
+                .thenReturn(List.of(Map.of("schema_name", "tenant_1", "enabled", true)));
     }
 
     private AccountEntity account(long id, String identity, String type) {
@@ -147,8 +147,8 @@ class AccessRulesTest {
     void ownershipIsCheckedAgainstTheTenantInTheHeader() throws Exception {
         when(tenantService.isOwner(1L, "local|7")).thenReturn(true);
         when(tenantService.isOwner(2L, "local|7")).thenReturn(false);
-        when(publicJdbcTemplate.queryForList(any(String.class), eq(String.class), eq(2L)))
-                .thenReturn(List.of("tenant_2"));
+        when(publicJdbcTemplate.queryForList(any(String.class), eq(2L)))
+                .thenReturn(List.of(Map.of("schema_name", "tenant_2", "enabled", true)));
 
         mockMvc.perform(get("/api/v1/appointments").header(TENANT, "2").header("Authorization", owner()))
                 .andExpect(status().isForbidden());
