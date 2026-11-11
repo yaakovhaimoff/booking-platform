@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth0 } from '../../mockAuth'
+import { useAuth0 } from '../../auth'
 import { useI18n } from '../../i18n'
 import Logo from '../shared/Logo'
 import HeaderMenu from '../shared/HeaderMenu'

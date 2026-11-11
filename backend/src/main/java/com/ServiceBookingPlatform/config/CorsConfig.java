@@ -22,7 +22,7 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("Content-Type", "Authorization", "X-Tenant-ID", "X-Dev-User-Sub", "X-Dev-User-Email");
+                .allowedHeaders("Content-Type", "Authorization", "X-Tenant-ID");
     }
 
     // Spring Security reads this bean (not the MVC registry above) when .cors() is configured.
@@ -32,7 +32,7 @@ public class CorsConfig implements WebMvcConfigurer {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(allowedOrigins));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Tenant-ID", "X-Dev-User-Sub", "X-Dev-User-Email"));
+        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Tenant-ID"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
         return source;

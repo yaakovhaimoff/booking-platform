@@ -1,5 +1,7 @@
 package com.ServiceBookingPlatform.controller;
 
+import com.ServiceBookingPlatform.config.AuthenticatedUser;
+import com.ServiceBookingPlatform.config.OwnerGuard;
 import com.ServiceBookingPlatform.dto.AppointmentRequest;
 import com.ServiceBookingPlatform.dto.AppointmentResponse;
 import com.ServiceBookingPlatform.dto.StatusUpdateRequest;
@@ -9,8 +11,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-// DEV MODE: JwtAuthenticationToken removed; identity passed via X-Dev-User-Sub header.
-// To re-enable: restore the JwtAuthenticationToken import and swap @RequestHeader params back.
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,15 +22,20 @@ import java.util.stream.Collectors;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+    private final OwnerGuard ownerGuard;
 
     @PostMapping
-    public ResponseEntity<AppointmentResponse> book(@Valid @RequestBody AppointmentRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.book(request));
+    public ResponseEntity<AppointmentResponse> book(@Valid @RequestBody AppointmentRequest request,
+                                                    AuthenticatedUser user) {
+        String clientSubject = user == null ? null : user.subject();
+        return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.book(request, clientSubject));
     }
 
     @GetMapping
     public ResponseEntity<List<AppointmentResponse>> getAppointments(
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            AuthenticatedUser user) {
+        ownerGuard.assertOwnsCurrentTenant(user);
         List<AppointmentResponse> result = appointmentService.getAppointments(status).stream()
                 .map(AppointmentResponse::from)
                 .collect(Collectors.toList());
@@ -38,9 +43,8 @@ public class AppointmentController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<AppointmentResponse>> getMyAppointments(
-            @RequestHeader(value = "X-Dev-User-Sub", defaultValue = "dev|client1") String sub) {
-        List<AppointmentResponse> result = appointmentService.getMyAppointments(sub).stream()
+    public ResponseEntity<List<AppointmentResponse>> getMyAppointments(AuthenticatedUser user) {
+        List<AppointmentResponse> result = appointmentService.getMyAppointments(user.subject()).stream()
                 .map(AppointmentResponse::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
@@ -50,8 +54,8 @@ public class AppointmentController {
     public ResponseEntity<AppointmentResponse> updateStatus(
             @PathVariable Long id,
             @Valid @RequestBody StatusUpdateRequest request,
-            @RequestHeader(value = "X-Dev-User-Sub", defaultValue = "dev|owner1") String callerSub) {
-        AppointmentEntity updated = appointmentService.updateStatus(id, request.getStatus(), callerSub);
+            AuthenticatedUser user) {
+        AppointmentEntity updated = appointmentService.updateStatus(id, request.getStatus(), user.subject());
         return ResponseEntity.ok(AppointmentResponse.from(updated));
     }
 }

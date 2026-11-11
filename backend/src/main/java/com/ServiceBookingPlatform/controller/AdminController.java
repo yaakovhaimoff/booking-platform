@@ -1,12 +1,12 @@
 package com.ServiceBookingPlatform.controller;
 
 import com.ServiceBookingPlatform.config.AdminGuard;
+import com.ServiceBookingPlatform.config.AuthenticatedUser;
 import com.ServiceBookingPlatform.dto.AdminTenantResponse;
 import com.ServiceBookingPlatform.dto.EnabledRequest;
 import com.ServiceBookingPlatform.entity.TenantEntity;
 import com.ServiceBookingPlatform.service.TenantService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,8 +25,8 @@ public class AdminController {
     }
 
     @GetMapping("/tenants")
-    public ResponseEntity<List<AdminTenantResponse>> listAllTenants(JwtAuthenticationToken auth) {
-        adminGuard.assertAdmin(auth);
+    public ResponseEntity<List<AdminTenantResponse>> listAllTenants(AuthenticatedUser user) {
+        adminGuard.assertAdmin(user);
         return ResponseEntity.ok(
             tenantService.listAllTenants().stream()
                 .map(AdminTenantResponse::from)
@@ -38,8 +38,8 @@ public class AdminController {
     public ResponseEntity<AdminTenantResponse> setEnabled(
             @PathVariable Long id,
             @RequestBody EnabledRequest request,
-            JwtAuthenticationToken auth) {
-        adminGuard.assertAdmin(auth);
+            AuthenticatedUser user) {
+        adminGuard.assertAdmin(user);
         TenantEntity updated = tenantService.setTenantEnabled(id, request.isEnabled());
         return ResponseEntity.ok(AdminTenantResponse.from(updated));
     }

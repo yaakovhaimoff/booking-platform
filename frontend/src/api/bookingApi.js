@@ -1,4 +1,5 @@
 import { http } from './http'
+import { authToken } from '../auth'
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 // Set once by PublicStorePage after slug resolution.
@@ -10,6 +11,13 @@ export function setTenantId(id) {
 
 function tenantHeaders(extra = {}) {
   return { 'Content-Type': 'application/json', 'X-Tenant-ID': _tenantId, ...extra }
+}
+
+// Public routes that also accept a signed-in customer: attach the token when there is one so the booking
+// or review is tied to the account. Guests send no Authorization header.
+function optionalAuthHeaders() {
+  const token = authToken()
+  return tenantHeaders(token ? { Authorization: `Bearer ${token}` } : {})
 }
 
 export async function getServices() {
@@ -27,7 +35,7 @@ export async function getSlots(date, serviceId) {
 export async function createAppointment(payload) {
   const res = await http(`${BASE}/appointments`, {
     method: 'POST',
-    headers: tenantHeaders(),
+    headers: optionalAuthHeaders(),
     body: JSON.stringify(payload)
   })
   if (!res.ok) throw await res.json()
@@ -55,7 +63,7 @@ export async function getReviews() {
 export async function createReview(payload) {
   const res = await http(`${BASE}/reviews`, {
     method: 'POST',
-    headers: tenantHeaders(),
+    headers: optionalAuthHeaders(),
     body: JSON.stringify(payload)
   })
   if (!res.ok) throw await res.json()

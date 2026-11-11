@@ -15,7 +15,4 @@ public class ReviewRequest {
 
     @Size(max = 1000)
     private String comment;
-
-    // Present when the reviewer is signed in (same mechanism as AppointmentRequest.clientAuth0Sub).
-    private String authorAuth0Sub;
 }

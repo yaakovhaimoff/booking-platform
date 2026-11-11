@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth0 } from '../mockAuth'
+import { useAuth0 } from '../auth'
 import { listTenants } from '../api/tenantApi'
 import { getMyAppointments, cancelMyAppointment } from '../api/clientApi'
 import { useI18n } from '../i18n'

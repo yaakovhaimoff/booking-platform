@@ -77,6 +77,11 @@ public class GlobalExceptionHandler {
             .body(Map.of("error", "INVALID_TRANSITION", "message", ex.getMessage()));
     }
 
+    @ExceptionHandler(AccountException.class)
+    public ResponseEntity<Map<String, String>> handleAccount(AccountException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(Map.of("error", ex.getCode()));
+    }
+
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Map<String, String>> handleForbidden(ForbiddenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)

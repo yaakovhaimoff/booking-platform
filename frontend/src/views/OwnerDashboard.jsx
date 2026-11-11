@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useAuth0 } from '../mockAuth'
+import { useAuth0 } from '../auth'
 import { getMyTenant, getPendingAppointments } from '../api/ownerApi'
 import { setPendingCount, usePendingCount } from '../pendingStore'
 import { useI18n } from '../i18n'

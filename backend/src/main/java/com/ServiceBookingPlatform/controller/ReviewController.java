@@ -1,5 +1,6 @@
 package com.ServiceBookingPlatform.controller;
 
+import com.ServiceBookingPlatform.config.AuthenticatedUser;
 import com.ServiceBookingPlatform.dto.ReviewRequest;
 import com.ServiceBookingPlatform.dto.ReviewResponse;
 import com.ServiceBookingPlatform.dto.ReviewsResponse;
@@ -23,7 +24,9 @@ public class ReviewController {
     }
 
     @PostMapping
-    public ResponseEntity<ReviewResponse> submit(@Valid @RequestBody ReviewRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.submit(request));
+    public ResponseEntity<ReviewResponse> submit(@Valid @RequestBody ReviewRequest request,
+                                                 AuthenticatedUser user) {
+        String authorSubject = user == null ? null : user.subject();
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.submit(request, authorSubject));
     }
 }

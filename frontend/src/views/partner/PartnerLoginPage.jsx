@@ -1,24 +1,18 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { useAuth0 } from '../../mockAuth'
+import { useAuth0 } from '../../auth'
 import CodeAuthForm from '../../components/shared/CodeAuthForm'
 import { useI18n } from '../../i18n'
 import Logo from '../../components/shared/Logo'
 
 // Business portal entry. Login and signup share this screen (email-first). Own layout: no marketplace chrome.
 export default function PartnerLoginPage() {
-  const { loginWithRedirect, isAuthenticated, accountType } = useAuth0()
+  const { signIn, isAuthenticated, accountType } = useAuth0()
   const navigate = useNavigate()
   const { t } = useI18n()
   if (isAuthenticated && accountType === 'business') return <Navigate to="/auth/routing" replace />
 
-  function done(identity, name) {
-    loginWithRedirect({ accountType: 'business', identity, name })
-    navigate('/auth/routing', { replace: true })
-  }
-
-  // Demo shortcut: the original shop's owner, so it is always reachable without remembering an email.
-  function openDemo() {
-    loginWithRedirect({ accountType: 'business' })
+  function done(response) {
+    signIn(response)
     navigate('/auth/routing', { replace: true })
   }
 
@@ -29,11 +23,7 @@ export default function PartnerLoginPage() {
         <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto py-10">
           <h1 className="text-3xl font-extrabold text-gray-950">{t('pProsHeading')}</h1>
           <p className="mt-2 mb-8 text-sm text-gray-600">{t('pProsSub')}</p>
-          <CodeAuthForm primary="email" onVerified={done} />
-          <button type="button" onClick={openDemo} className="mt-4 w-full rounded-xl border-2 border-dashed border-gray-300 px-4 py-3 text-left hover:border-indigo-600 transition">
-            <span className="block text-sm font-bold text-gray-950">{t('pDemoOwner')}</span>
-            <span className="block text-xs text-gray-600">{t('pDemoOwnerHint')}</span>
-          </button>
+          <CodeAuthForm primary="email" accountType="business" onVerified={done} />
           <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm">
             <p className="font-semibold text-gray-900">{t('pAreCustomer')}</p>
             <Link to="/" className="text-indigo-700 font-semibold hover:underline">{t('pGoCustomers')}</Link>

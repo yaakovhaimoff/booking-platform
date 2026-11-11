@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { useAuth0 } from '../../mockAuth'
+import { useAuth0 } from '../../auth'
 import { getAppointments, getServices } from '../../api/ownerApi'
 import { useI18n } from '../../i18n'
 import { STATUS_STYLES } from './statusStyles'

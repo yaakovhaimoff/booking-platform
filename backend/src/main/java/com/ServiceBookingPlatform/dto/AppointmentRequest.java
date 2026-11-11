@@ -20,6 +20,4 @@ public class AppointmentRequest {
 
     @Size(max = 500)
     private String notes;
-
-    private String clientAuth0Sub;
 }

@@ -27,10 +27,10 @@ public class ReviewService {
                 .build();
     }
 
+    // The author subject comes from the caller's token, never from the request body.
     // A signed-in user has one review per store: posting again replaces the previous one.
     // Guests can post freely (there is nothing to identify them by).
-    public ReviewResponse submit(ReviewRequest r) {
-        String sub = r.getAuthorAuth0Sub() == null || r.getAuthorAuth0Sub().isBlank() ? null : r.getAuthorAuth0Sub();
+    public ReviewResponse submit(ReviewRequest r, String sub) {
         ReviewEntity entity = sub == null ? new ReviewEntity()
                 : reviewRepository.findByAuthorAuth0Sub(sub).orElseGet(ReviewEntity::new);
         entity.setAuthorName(r.getAuthorName().trim());

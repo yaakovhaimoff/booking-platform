@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import StoreQrModal from './StoreQrModal'
 import StorePreviewFrame from './StorePreviewFrame'
 import StorePreviewModal from './StorePreviewModal'
-import { useAuth0 } from '../../mockAuth'
+import { useAuth0 } from '../../auth'
 import { updateMyTenant } from '../../api/ownerApi'
 import { useI18n } from '../../i18n'
 

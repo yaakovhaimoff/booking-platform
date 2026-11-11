@@ -1,5 +1,7 @@
 package com.ServiceBookingPlatform.controller;
 
+import com.ServiceBookingPlatform.config.AuthenticatedUser;
+import com.ServiceBookingPlatform.config.OwnerGuard;
 import com.ServiceBookingPlatform.dto.OperatingHoursRequest;
 import com.ServiceBookingPlatform.entity.OperatingHoursEntity;
 import com.ServiceBookingPlatform.multitenancy.TenantContextHolder;
@@ -16,6 +18,7 @@ import java.util.List;
 public class OperatingHoursController {
 
     private final OperatingHoursService operatingHoursService;
+    private final OwnerGuard ownerGuard;
 
     @GetMapping
     public ResponseEntity<List<OperatingHoursEntity>> getHours() {
@@ -25,7 +28,9 @@ public class OperatingHoursController {
 
     @PutMapping
     public ResponseEntity<List<OperatingHoursEntity>> updateHours(
-            @RequestBody List<OperatingHoursRequest> rows) {
+            @RequestBody List<OperatingHoursRequest> rows,
+            AuthenticatedUser user) {
+        ownerGuard.assertOwnsCurrentTenant(user);
         Long tenantId = TenantContextHolder.getTenantId();
         return ResponseEntity.ok(operatingHoursService.updateHours(tenantId, rows));
     }

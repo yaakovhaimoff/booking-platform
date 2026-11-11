@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth0 } from '../mockAuth'
+import { useAuth0 } from '../auth'
 import { useNavigate } from 'react-router-dom'
 import { createTenant } from '../api/ownerApi'
 import { useI18n } from '../i18n'

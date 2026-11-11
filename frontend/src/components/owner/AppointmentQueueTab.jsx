@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useAuth0 } from '../../mockAuth'
+import { useAuth0 } from '../../auth'
 import { getAppointments, getServices, updateAppointmentStatus } from '../../api/ownerApi'
 import AppointmentList from './AppointmentList'
 import AppointmentCalendar from './AppointmentCalendar'

@@ -1,4 +1,4 @@
-import { useAuth0 } from '../mockAuth'
+import { useAuth0 } from '../auth'
 import { Navigate } from 'react-router-dom'
 
 // type: which account world this route belongs to. Wrong or missing session -> that world's login.

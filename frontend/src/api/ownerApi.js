@@ -1,12 +1,10 @@
 import { http } from './http'
-import { devHeaders } from '../mockAuth'
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 function authHeaders(token, tenantId = null) {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
-    ...devHeaders(),
   }
   if (tenantId != null) headers['X-Tenant-ID'] = tenantId
   return headers

@@ -11,7 +11,7 @@ import Gallery from '../components/Gallery'
 import Reviews from '../components/Reviews'
 import StoreInfo from '../components/StoreInfo'
 import { useI18n } from '../i18n'
-import { useAuth0 } from '../mockAuth'
+import { useAuth0 } from '../auth'
 
 export default function BookingPage({ tenant }) {
   const { t, fmtDate, fmtPrice } = useI18n()
@@ -69,8 +69,6 @@ export default function BookingPage({ tenant }) {
         clientPhone,
         notes: notes || null,
         startTime: selectedSlot,
-        // Link the booking to a signed-in customer so it appears under "My bookings"
-        clientAuth0Sub: signedIn ? user.sub : undefined,
       })
       setAppointment(response)
       setStep('confirmed')

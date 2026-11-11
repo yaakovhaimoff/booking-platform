@@ -1,5 +1,4 @@
 import { http } from './http'
-import { devHeaders } from '../mockAuth'
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 function headers(token, tenantId) {
@@ -7,7 +6,6 @@ function headers(token, tenantId) {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
     'X-Tenant-ID': tenantId,
-    ...devHeaders(),
   }
 }
 

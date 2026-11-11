@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createReview } from '../api/bookingApi'
 import { useI18n } from '../i18n'
-import { useAuth0 } from '../mockAuth'
+import { useAuth0 } from '../auth'
 
 function Stars({ value, size = 'text-base' }) {
   return (
@@ -56,7 +56,6 @@ export default function Reviews({ data, failed, onSubmitted }) {
         rating,
         authorName,
         comment: comment.trim() || null,
-        authorAuth0Sub: signedIn ? user.sub : undefined,
       })
       setRating(0); setComment(''); setName('')
       setThanks(true)

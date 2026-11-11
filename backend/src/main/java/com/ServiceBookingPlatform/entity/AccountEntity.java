@@ -23,6 +23,10 @@ public class AccountEntity {
     @Column(length = 30)
     private String phone;
 
+    // "consumer" or "business". Null on accounts made before types existed; set on their next login.
+    @Column(name = "account_type", length = 20)
+    private String accountType;
+
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
 

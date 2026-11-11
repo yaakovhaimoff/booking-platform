@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth0 } from '../mockAuth'
+import { useAuth0 } from '../auth'
 
 export default function AdminRoute({ children }) {
   const { isAuthenticated, isLoading, accountType, user } = useAuth0()
@@ -14,8 +14,8 @@ export default function AdminRoute({ children }) {
     )
   }
 
-  // DEV MODE: skip admin email check — re-enable when restoring real auth
-  if (!isAuthenticated || accountType !== 'business') {
+  // Only a hint for the UI: the backend enforces the real admin list on every /admin request.
+  if (!isAuthenticated || accountType !== 'business' || !adminEmails.includes(user?.email)) {
     return <Navigate to="/partner" replace />
   }
 

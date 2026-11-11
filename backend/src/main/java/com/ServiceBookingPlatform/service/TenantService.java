@@ -104,6 +104,12 @@ public class TenantService {
         return (v == null || v.isBlank()) ? null : v.trim();
     }
 
+    public boolean isOwner(Long tenantId, String subject) {
+        return tenantRepository.findById(tenantId)
+                .map(tenant -> tenant.getOwnerAuth0Id().equals(subject))
+                .orElse(false);
+    }
+
     public TenantEntity getTenantByOwnerAuth0Id(String auth0Id) {
         return tenantRepository.findByOwnerAuth0Id(auth0Id)
                 .orElseThrow(() -> new TenantNotFoundException(auth0Id));

@@ -42,7 +42,7 @@ public class AppointmentService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public AppointmentResponse book(AppointmentRequest request) {
+    public AppointmentResponse book(AppointmentRequest request, String clientAuth0Sub) {
         ServiceEntity service = serviceCatalogService.getById(request.getServiceId());
 
         LocalDateTime startTime;
@@ -71,7 +71,7 @@ public class AppointmentService {
                     .endTime(endTime)
                     .status(AppointmentStatus.PENDING)
                     .notes(request.getNotes() == null || request.getNotes().isBlank() ? null : request.getNotes().trim())
-                    .clientAuth0Sub(request.getClientAuth0Sub())
+                    .clientAuth0Sub(clientAuth0Sub)
                     .build());
         });
 

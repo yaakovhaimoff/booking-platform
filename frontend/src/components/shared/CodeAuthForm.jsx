@@ -30,8 +30,10 @@ async function legacyHash(text) {
 }
 
 // primary: 'phone' | 'email' decides which identifier is shown first; the other is an alternative.
+// accountType: 'consumer' | 'business', the portal this form belongs to. onVerified receives the server
+// response ({ token, identity, name, phone, accountType }) once the login or sign-up succeeded.
 // Name kept for existing imports; it is now a password form (log in / sign up).
-export default function CodeAuthForm({ primary, onVerified }) {
+export default function CodeAuthForm({ primary, accountType, onVerified }) {
   const { t } = useI18n()
   const [method, setMethod] = useState(primary)
   const [mode, setMode] = useState('login')
@@ -59,27 +61,28 @@ export default function CodeAuthForm({ primary, onVerified }) {
     setBusy(true)
     try {
       if (isSignup) {
-        const r = await authCall('signup', { identity, password, name: name.trim() })
+        const r = await authCall('signup', { identity, password, name: name.trim(), accountType })
         if (r.status === 409) { setError(t('pAccountExists')); return }
         if (!r.ok) { setError(t('pAuthFailed')); return }
-        onVerified(identity, name.trim(), '')
+        onVerified(await r.json())
         return
       }
-      let r = await authCall('login', { identity, password })
+      let r = await authCall('login', { identity, password, accountType })
       if (r.status === 404) {
         // Account made before accounts moved to the server: it only exists in this browser.
         // If the password matches the old local hash, upload it once and continue.
         const entry = readLegacy(identity)
         if (entry && entry.h === await legacyHash(`${identity}:${password}`)) {
-          const up = await authCall('signup', { identity, password, name: entry.name || '' })
-          if (up.ok) { onVerified(identity, entry.name, ''); return }
+          const up = await authCall('signup', { identity, password, name: entry.name || '', accountType })
+          if (up.ok) { onVerified(await up.json()); return }
         }
         setError(t('pNoAccount')); return
       }
       if (r.status === 401) { setError(t('pWrongPassword')); return }
       if (!r.ok) { setError(t('pAuthFailed')); return }
-      const acct = await r.json()
-      onVerified(identity, acct.name || undefined, acct.phone || '')
+      const account = await r.json()
+      if (account.accountType !== accountType) { setError(t('pWrongPortal')); return }
+      onVerified(account)
     } catch {
       setError(t('pAuthFailed'))
     } finally {
