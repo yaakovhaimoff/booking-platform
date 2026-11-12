@@ -21,3 +21,12 @@ export async function setTenantEnabled(token, id, enabled) {
   if (!res.ok) throw await res.json()
   return res.json()
 }
+
+export async function cleanUpUnusedImages(token, dryRun) {
+  const res = await http(`${BASE}/admin/images/cleanup?dryRun=${dryRun}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}

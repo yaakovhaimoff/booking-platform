@@ -8,6 +8,7 @@ import com.ServiceBookingPlatform.config.OwnerGuard;
 import com.ServiceBookingPlatform.config.SecurityConfig;
 import com.ServiceBookingPlatform.config.WebConfig;
 import com.ServiceBookingPlatform.dto.AppointmentResponse;
+import com.ServiceBookingPlatform.dto.UnusedImageReport;
 import com.ServiceBookingPlatform.dto.UploadResponse;
 import com.ServiceBookingPlatform.entity.AccountEntity;
 import com.ServiceBookingPlatform.entity.AppointmentEntity;
@@ -53,6 +54,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -341,6 +343,34 @@ class AccessRulesTest {
         mockMvc.perform(get("/api/v1/admin/tenants")
                 .header("Authorization", bearer(account(1, "boss@torni.test", "business"))))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void onlyAdminsCanCleanUpUnusedImagesAndItDefaultsToADryRun() throws Exception {
+        when(tenantService.removeUnusedImages(true)).thenReturn(
+                UnusedImageReport.builder().dryRun(true).unusedFiles(List.of()).build());
+
+        mockMvc.perform(post("/api/v1/admin/images/cleanup")).andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/v1/admin/images/cleanup").header("Authorization", owner()))
+                .andExpect(status().isForbidden());
+        verify(tenantService, never()).removeUnusedImages(anyBoolean());
+
+        mockMvc.perform(post("/api/v1/admin/images/cleanup")
+                .header("Authorization", bearer(account(1, "boss@torni.test", "business"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.dryRun").value(true));
+        verify(tenantService).removeUnusedImages(true);
+    }
+
+    @Test
+    void anAdminMustAskExplicitlyToReallyDelete() throws Exception {
+        when(tenantService.removeUnusedImages(false)).thenReturn(
+                UnusedImageReport.builder().dryRun(false).deleted(3).unusedFiles(List.of()).build());
+
+        mockMvc.perform(post("/api/v1/admin/images/cleanup").param("dryRun", "false")
+                .header("Authorization", bearer(account(1, "boss@torni.test", "business"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.deleted").value(3));
     }
 
     @Test

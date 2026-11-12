@@ -13,6 +13,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
@@ -20,7 +23,10 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 import java.net.URI;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -30,11 +36,15 @@ import java.util.regex.Pattern;
 /**
  * Hands out short-lived presigned PUT addresses for Cloudflare R2, so photos go from the browser straight to
  * storage and never pass through this server. The signed type and size make R2 refuse anything else.
+ * Files live under {environment}/tenants/{tenantId}/ so dev and prod can share one bucket without their
+ * tenant ids colliding.
  * Also removes a shop's own files from storage once the profile no longer uses them.
  */
 @Slf4j
 @Service
 public class ImageUploadService {
+
+    public record StoredImage(String url, Instant lastModified) {}
 
     static final long MAX_BYTES = 2_000_000;
     private static final Duration LINK_LIFETIME = Duration.ofMinutes(5);
@@ -43,8 +53,11 @@ public class ImageUploadService {
 
     private static final Pattern FILE_NAME = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.(webp|jpg|png)");
 
+    private static final Pattern ENVIRONMENT_NAME = Pattern.compile("[a-z0-9-]+");
+
     private final String bucket;
     private final String publicBaseUrl;
+    private final String environment;
     private final S3Presigner presigner;
     private final S3Client storageClient;
 
@@ -54,11 +67,16 @@ public class ImageUploadService {
             @Value("${app.uploads.access-key-id:}") String accessKeyId,
             @Value("${app.uploads.secret-access-key:}") String secretAccessKey,
             @Value("${app.uploads.bucket:}") String bucket,
-            @Value("${app.uploads.public-url:}") String publicUrl) {
+            @Value("${app.uploads.public-url:}") String publicUrl,
+            @Value("${app.uploads.environment:}") String environment) {
         this.bucket = bucket;
         this.publicBaseUrl = publicUrl.replaceAll("/+$", "");
+        this.environment = environment.trim();
         boolean configured = !accountId.isBlank() && !accessKeyId.isBlank() && !secretAccessKey.isBlank()
-                && !bucket.isBlank() && !publicBaseUrl.isBlank();
+                && !bucket.isBlank() && !publicBaseUrl.isBlank() && !this.environment.isEmpty();
+        if (configured && !ENVIRONMENT_NAME.matcher(this.environment).matches()) {
+            throw new IllegalStateException("app.uploads.environment must be lowercase letters, digits or dashes, for example dev or prod");
+        }
         if (configured) {
             URI endpoint = URI.create("https://" + accountId + ".r2.cloudflarestorage.com");
             StaticCredentialsProvider credentials = StaticCredentialsProvider.create(
@@ -83,9 +101,10 @@ public class ImageUploadService {
         }
     }
 
-    ImageUploadService(String bucket, String publicUrl, S3Presigner presigner, S3Client storageClient) {
+    ImageUploadService(String bucket, String publicUrl, String environment, S3Presigner presigner, S3Client storageClient) {
         this.bucket = bucket;
         this.publicBaseUrl = publicUrl.replaceAll("/+$", "");
+        this.environment = environment;
         this.presigner = presigner;
         this.storageClient = storageClient;
     }
@@ -105,7 +124,7 @@ public class ImageUploadService {
         if (sizeBytes < 1 || sizeBytes > MAX_BYTES) {
             throw new IllegalArgumentException("Images must be 2 MB or smaller");
         }
-        String key = "tenants/" + tenantId + "/" + UUID.randomUUID() + "." + extension;
+        String key = tenantFolder(tenantId) + UUID.randomUUID() + "." + extension;
         PutObjectRequest put = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
@@ -152,13 +171,42 @@ public class ImageUploadService {
         }
     }
 
+    /**
+     * Lists the image files stored in this shop's own folder of the current environment, newest data included.
+     * Only files with the generated name pattern are returned, so nothing foreign can be picked up for deletion.
+     */
+    public List<StoredImage> listStoredImages(Long tenantId) {
+        if (!isConfigured() || storageClient == null) {
+            return List.of();
+        }
+        String folder = tenantFolder(tenantId);
+        List<StoredImage> images = new ArrayList<>();
+        String continuationToken = null;
+        do {
+            ListObjectsV2Response page = storageClient.listObjectsV2(ListObjectsV2Request.builder()
+                    .bucket(bucket).prefix(folder).continuationToken(continuationToken).build());
+            for (S3Object object : page.contents()) {
+                String fileName = object.key().substring(folder.length());
+                if (FILE_NAME.matcher(fileName).matches()) {
+                    images.add(new StoredImage(publicBaseUrl + "/" + object.key(), object.lastModified()));
+                }
+            }
+            continuationToken = Boolean.TRUE.equals(page.isTruncated()) ? page.nextContinuationToken() : null;
+        } while (continuationToken != null);
+        return images;
+    }
+
     private String ownedKey(Long tenantId, String url) {
-        String folder = publicBaseUrl + "/tenants/" + tenantId + "/";
+        String folder = publicBaseUrl + "/" + tenantFolder(tenantId);
         if (url == null || !url.startsWith(folder)) {
             return null;
         }
         String fileName = url.substring(folder.length());
         Matcher matcher = FILE_NAME.matcher(fileName);
-        return matcher.matches() ? "tenants/" + tenantId + "/" + fileName : null;
+        return matcher.matches() ? tenantFolder(tenantId) + fileName : null;
+    }
+
+    private String tenantFolder(Long tenantId) {
+        return environment + "/tenants/" + tenantId + "/";
     }
 }

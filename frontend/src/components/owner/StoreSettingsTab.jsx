@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import StoreQrModal from './StoreQrModal'
 import StorePreviewFrame from './StorePreviewFrame'
 import StorePreviewModal from './StorePreviewModal'
@@ -6,6 +6,7 @@ import { SinglePhotoField, GalleryField } from './PhotoUpload'
 import { useAuth0 } from '../../auth'
 import { updateMyTenant } from '../../api/ownerApi'
 import { useI18n } from '../../i18n'
+import { discardAllStaged, discardStagedImages, uploadStagedImages } from '../../utils/stagedImages'
 
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500'
@@ -45,6 +46,8 @@ export default function StoreSettingsTab({ tenant }) {
   // Unsaved form state, shaped like the tenant the public page expects
   const draft = form
 
+  useEffect(() => discardAllStaged, [])
+
   const set = key => e => setForm(f => ({ ...f, [key]: e.target.value }))
 
   function handleCopy() {
@@ -60,10 +63,16 @@ export default function StoreSettingsTab({ tenant }) {
     setMessage(null)
     try {
       const token = await getAccessTokenSilently()
-      await updateMyTenant(token, form)
+      const saved = { ...form, ...(await uploadStagedImages(token, form)) }
+      await updateMyTenant(token, saved)
+      discardStagedImages(form)
+      setForm(saved)
       setMessage({ type: 'ok', text: t('profileSaved') })
-    } catch {
-      setMessage({ type: 'error', text: t('profileSaveFailed') })
+    } catch (e) {
+      const text = e?.error === 'UPLOADS_NOT_CONFIGURED' ? t('photoUploadsUnavailable')
+        : e?.error === 'UPLOAD_FAILED' ? t('photoUploadFailed')
+        : t('profileSaveFailed')
+      setMessage({ type: 'error', text })
     } finally {
       setSaving(false)
     }

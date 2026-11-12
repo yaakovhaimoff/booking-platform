@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useAuth0 } from '../auth'
-import { getAdminTenants, setTenantEnabled } from '../api/adminApi'
+import { cleanUpUnusedImages, getAdminTenants, setTenantEnabled } from '../api/adminApi'
 
 export default function AdminPage() {
   const { getAccessTokenSilently } = useAuth0()
   const [tenants, setTenants] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [photoScan, setPhotoScan] = useState(null)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [photoMessage, setPhotoMessage] = useState(null)
 
   useEffect(() => {
     getAccessTokenSilently()
@@ -31,6 +34,25 @@ export default function AdminPage() {
     }
   }
 
+  async function runPhotoCleanup(dryRun) {
+    setPhotoBusy(true)
+    setPhotoMessage(null)
+    try {
+      const token = await getAccessTokenSilently()
+      const report = await cleanUpUnusedImages(token, dryRun)
+      if (dryRun) {
+        setPhotoScan(report)
+      } else {
+        setPhotoScan(null)
+        setPhotoMessage(`Deleted ${report.deleted} unused photo${report.deleted === 1 ? '' : 's'}.`)
+      }
+    } catch (e) {
+      setPhotoMessage(e?.error === 'UPLOADS_NOT_CONFIGURED' ? 'Photo storage is not configured.' : 'Photo cleanup failed.')
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -48,6 +70,41 @@ export default function AdminPage() {
           {error}
         </div>
       )}
+
+      <div className="mb-6 p-4 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <h2 className="text-sm font-semibold text-gray-800">Unused photos</h2>
+        <p className="text-xs text-gray-500 mt-1">
+          Finds photos in storage that no shop profile uses (older than an hour). Scanning deletes nothing.
+        </p>
+        <div className="flex flex-wrap items-center gap-3 mt-3">
+          <button
+            type="button"
+            disabled={photoBusy}
+            onClick={() => runPhotoCleanup(true)}
+            className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-50 transition disabled:opacity-60"
+          >
+            Scan for unused photos
+          </button>
+          {photoScan && photoScan.unusedFiles.length > 0 && (
+            <button
+              type="button"
+              disabled={photoBusy}
+              onClick={() => runPhotoCleanup(false)}
+              className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition disabled:opacity-60"
+            >
+              Delete {photoScan.unusedFiles.length} unused photo{photoScan.unusedFiles.length === 1 ? '' : 's'}
+            </button>
+          )}
+        </div>
+        {photoScan && (
+          <p className="text-sm text-gray-700 mt-3">
+            {photoScan.unusedFiles.length === 0
+              ? 'No unused photos found.'
+              : `Found ${photoScan.unusedFiles.length} unused photo${photoScan.unusedFiles.length === 1 ? '' : 's'} across ${photoScan.tenantsScanned} shops.`}
+          </p>
+        )}
+        {photoMessage && <p className="text-sm text-gray-700 mt-3">{photoMessage}</p>}
+      </div>
 
       <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
         <table className="min-w-full divide-y divide-gray-200 text-sm">

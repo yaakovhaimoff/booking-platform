@@ -3,10 +3,12 @@ package com.ServiceBookingPlatform.service;
 import com.ServiceBookingPlatform.config.AuthenticatedUser;
 import com.ServiceBookingPlatform.config.DataSourceConfig;
 import com.ServiceBookingPlatform.dto.TenantProfileRequest;
+import com.ServiceBookingPlatform.dto.UnusedImageReport;
 import com.ServiceBookingPlatform.entity.TenantEntity;
 import com.ServiceBookingPlatform.exception.SlugAlreadyTakenException;
 import com.ServiceBookingPlatform.exception.TenantDisabledException;
 import com.ServiceBookingPlatform.exception.TenantNotFoundException;
+import com.ServiceBookingPlatform.exception.UploadsNotConfiguredException;
 import com.ServiceBookingPlatform.multitenancy.TenantRoutingDataSource;
 import com.ServiceBookingPlatform.repository.TenantRepository;
 import jakarta.annotation.PostConstruct;
@@ -18,7 +20,10 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.sql.DataSource;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +32,8 @@ import java.util.Set;
 @Slf4j
 @Service
 public class TenantService {
+
+    private static final Duration UNUSED_IMAGE_MINIMUM_AGE = Duration.ofHours(1);
 
     private final TenantRepository tenantRepository;
     private final TenantRoutingDataSource tenantRoutingDataSource;
@@ -119,6 +126,47 @@ public class TenantService {
         removedImages.removeAll(imageUrlsOf(saved));
         deleteImagesAfterCommit(saved.getId(), removedImages);
         return saved;
+    }
+
+    /**
+     * Finds image files in storage that no shop's saved profile uses and that are older than an hour (so a file
+     * uploaded a moment ago while its profile is being saved is never touched). With dryRun it only reports.
+     */
+    public UnusedImageReport removeUnusedImages(boolean dryRun) {
+        if (!imageUploadService.isConfigured()) {
+            throw new UploadsNotConfiguredException();
+        }
+        Instant cutoff = Instant.now().minus(UNUSED_IMAGE_MINIMUM_AGE);
+        List<TenantEntity> tenants = tenantRepository.findAll();
+        List<String> unusedFiles = new ArrayList<>();
+        int skippedBecauseRecent = 0;
+        int deleted = 0;
+        for (TenantEntity tenant : tenants) {
+            Set<String> used = imageUrlsOf(tenant);
+            List<String> unusedOfTenant = new ArrayList<>();
+            for (ImageUploadService.StoredImage stored : imageUploadService.listStoredImages(tenant.getId())) {
+                if (used.contains(stored.url())) {
+                    continue;
+                }
+                if (stored.lastModified().isAfter(cutoff)) {
+                    skippedBecauseRecent++;
+                } else {
+                    unusedOfTenant.add(stored.url());
+                }
+            }
+            if (!dryRun && !unusedOfTenant.isEmpty()) {
+                imageUploadService.deleteOwnedImages(tenant.getId(), unusedOfTenant);
+                deleted += unusedOfTenant.size();
+            }
+            unusedFiles.addAll(unusedOfTenant);
+        }
+        return UnusedImageReport.builder()
+                .dryRun(dryRun)
+                .tenantsScanned(tenants.size())
+                .unusedFiles(unusedFiles)
+                .skippedBecauseRecent(skippedBecauseRecent)
+                .deleted(deleted)
+                .build();
     }
 
     private static Set<String> imageUrlsOf(TenantEntity tenant) {

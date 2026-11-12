@@ -6,6 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Start every reply with "Yaakov". End every reply with a horizontal rule (`---`) as the bottom line.
 
+Every answer must also end with a short "Bottom line" (1-3 lines, plain words) just above the closing
+horizontal rule, stating the result and anything the user must do next.
+
 ## Accuracy & Verification
 
 Always verify claims against actual source code and live state – never source facts from README

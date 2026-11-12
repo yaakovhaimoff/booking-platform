@@ -4,6 +4,7 @@ import com.ServiceBookingPlatform.config.AdminGuard;
 import com.ServiceBookingPlatform.config.AuthenticatedUser;
 import com.ServiceBookingPlatform.dto.AdminTenantResponse;
 import com.ServiceBookingPlatform.dto.EnabledRequest;
+import com.ServiceBookingPlatform.dto.UnusedImageReport;
 import com.ServiceBookingPlatform.entity.TenantEntity;
 import com.ServiceBookingPlatform.service.TenantService;
 import org.springframework.http.ResponseEntity;
@@ -42,5 +43,13 @@ public class AdminController {
         adminGuard.assertAdmin(user);
         TenantEntity updated = tenantService.setTenantEnabled(id, request.isEnabled());
         return ResponseEntity.ok(AdminTenantResponse.from(updated));
+    }
+
+    @PostMapping("/images/cleanup")
+    public ResponseEntity<UnusedImageReport> cleanUpUnusedImages(
+            @RequestParam(defaultValue = "true") boolean dryRun,
+            AuthenticatedUser user) {
+        adminGuard.assertAdmin(user);
+        return ResponseEntity.ok(tenantService.removeUnusedImages(dryRun));
     }
 }
