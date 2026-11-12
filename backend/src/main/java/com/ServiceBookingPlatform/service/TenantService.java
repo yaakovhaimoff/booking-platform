@@ -14,11 +14,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -27,6 +31,7 @@ public class TenantService {
     private final TenantRepository tenantRepository;
     private final TenantRoutingDataSource tenantRoutingDataSource;
     private final SchemaProvisioningService schemaProvisioningService;
+    private final ImageUploadService imageUploadService;
 
     // spring.datasource.url / username / password — injected from application.properties
     // Used to create per-tenant HikariCP DataSource instances
@@ -41,10 +46,12 @@ public class TenantService {
 
     public TenantService(TenantRepository tenantRepository,
                          TenantRoutingDataSource tenantRoutingDataSource,
-                         SchemaProvisioningService schemaProvisioningService) {
+                         SchemaProvisioningService schemaProvisioningService,
+                         ImageUploadService imageUploadService) {
         this.tenantRepository = tenantRepository;
         this.tenantRoutingDataSource = tenantRoutingDataSource;
         this.schemaProvisioningService = schemaProvisioningService;
+        this.imageUploadService = imageUploadService;
     }
 
     // On startup: load all existing tenants and register their DataSources.
@@ -92,6 +99,7 @@ public class TenantService {
     @Transactional
     public TenantEntity updateProfile(AuthenticatedUser owner, TenantProfileRequest r) {
         TenantEntity t = getTenantByOwner(owner);
+        Set<String> previousImages = imageUrlsOf(t);
         t.setName(r.getName().trim());
         t.setAddress(blankToNull(r.getAddress()));
         t.setPhone(blankToNull(r.getPhone()));
@@ -106,7 +114,39 @@ public class TenantService {
                     .collect(java.util.stream.Collectors.joining("\n"));
             t.setGalleryUrls(joined.isEmpty() ? null : joined);
         }
-        return tenantRepository.save(t);
+        TenantEntity saved = tenantRepository.save(t);
+        Set<String> removedImages = new LinkedHashSet<>(previousImages);
+        removedImages.removeAll(imageUrlsOf(saved));
+        deleteImagesAfterCommit(saved.getId(), removedImages);
+        return saved;
+    }
+
+    private static Set<String> imageUrlsOf(TenantEntity tenant) {
+        Set<String> urls = new LinkedHashSet<>();
+        if (tenant.getLogoUrl() != null) urls.add(tenant.getLogoUrl());
+        if (tenant.getCoverUrl() != null) urls.add(tenant.getCoverUrl());
+        if (tenant.getGalleryUrls() != null) {
+            for (String url : tenant.getGalleryUrls().split("\n")) {
+                if (!url.isBlank()) urls.add(url.trim());
+            }
+        }
+        return urls;
+    }
+
+    private void deleteImagesAfterCommit(Long tenantId, Set<String> urls) {
+        if (urls.isEmpty()) {
+            return;
+        }
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    imageUploadService.deleteOwnedImages(tenantId, urls);
+                }
+            });
+        } else {
+            imageUploadService.deleteOwnedImages(tenantId, urls);
+        }
     }
 
     private static String blankToNull(String v) {

@@ -3,11 +3,23 @@ package com.ServiceBookingPlatform.service;
 import com.ServiceBookingPlatform.dto.UploadResponse;
 import com.ServiceBookingPlatform.exception.UploadsNotConfiguredException;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class ImageUploadServiceTest {
 
@@ -68,5 +80,71 @@ class ImageUploadServiceTest {
         assertThrows(IllegalArgumentException.class, () -> service.createUpload(1L, "image/webp", 0));
         assertThrows(IllegalArgumentException.class, () -> service.createUpload(1L, "image/webp", 2_000_001));
         service.createUpload(1L, "image/webp", 2_000_000);
+    }
+
+    private static final String FILE = "fb6a409a-fe10-479b-9c2e-c987ac6b4596.webp";
+    private static final String OTHER_FILE = "8b1b5e07-a170-4ccb-96ff-079594b4775d.jpg";
+
+    private static ImageUploadService withStorage(S3Client storage) {
+        return new ImageUploadService("torni-images", "https://img.example.com/", mock(S3Presigner.class), storage);
+    }
+
+    @Test
+    void deletesTheShopsOwnFilesFromTheBucket() {
+        S3Client storage = mock(S3Client.class);
+
+        withStorage(storage).deleteOwnedImages(16L, List.of(
+                "https://img.example.com/tenants/16/" + FILE,
+                "https://img.example.com/tenants/16/" + OTHER_FILE));
+
+        ArgumentCaptor<DeleteObjectRequest> captor = ArgumentCaptor.forClass(DeleteObjectRequest.class);
+        verify(storage, times(2)).deleteObject(captor.capture());
+        assertEquals("torni-images", captor.getAllValues().get(0).bucket());
+        assertEquals("tenants/16/" + FILE, captor.getAllValues().get(0).key());
+        assertEquals("tenants/16/" + OTHER_FILE, captor.getAllValues().get(1).key());
+    }
+
+    @Test
+    void neverDeletesAnotherShopsFileOrAnOutsideLink() {
+        S3Client storage = mock(S3Client.class);
+
+        withStorage(storage).deleteOwnedImages(16L, List.of(
+                "https://img.example.com/tenants/17/" + FILE,
+                "https://elsewhere.example.com/tenants/16/" + FILE,
+                "https://images.unsplash.com/photo-1.jpg"));
+
+        verify(storage, never()).deleteObject(any(DeleteObjectRequest.class));
+    }
+
+    @Test
+    void refusesFileNamesThatCouldEscapeTheShopsFolder() {
+        S3Client storage = mock(S3Client.class);
+
+        withStorage(storage).deleteOwnedImages(16L, List.of(
+                "https://img.example.com/tenants/16/../17/" + FILE,
+                "https://img.example.com/tenants/16/" + FILE + "?x=1",
+                "https://img.example.com/tenants/16/sub/" + FILE,
+                "https://img.example.com/tenants/16/notauuid.webp",
+                "https://img.example.com/tenants/16/"));
+
+        verify(storage, never()).deleteObject(any(DeleteObjectRequest.class));
+    }
+
+    @Test
+    void aFailedDeleteIsSwallowedAndTheRestStillRun() {
+        S3Client storage = mock(S3Client.class);
+        doThrow(new RuntimeException("R2 down")).when(storage).deleteObject(any(DeleteObjectRequest.class));
+
+        withStorage(storage).deleteOwnedImages(16L, List.of(
+                "https://img.example.com/tenants/16/" + FILE,
+                "https://img.example.com/tenants/16/" + OTHER_FILE));
+
+        verify(storage, times(2)).deleteObject(any(DeleteObjectRequest.class));
+    }
+
+    @Test
+    void withoutCredentialsDeletingDoesNothing() {
+        new ImageUploadService("", "", "", "", "")
+                .deleteOwnedImages(16L, List.of("https://img.example.com/tenants/16/" + FILE));
     }
 }

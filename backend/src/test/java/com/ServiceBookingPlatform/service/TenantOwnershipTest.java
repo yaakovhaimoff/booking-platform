@@ -25,7 +25,7 @@ class TenantOwnershipTest {
     @BeforeEach
     void setUp() {
         repository = mock(TenantRepository.class);
-        service = new TenantService(repository, mock(TenantRoutingDataSource.class), mock(SchemaProvisioningService.class));
+        service = new TenantService(repository, mock(TenantRoutingDataSource.class), mock(SchemaProvisioningService.class), mock(ImageUploadService.class));
     }
 
     private static AuthenticatedUser user(String subject, Long accountId) {
