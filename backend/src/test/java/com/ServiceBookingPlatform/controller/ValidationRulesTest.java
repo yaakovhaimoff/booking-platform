@@ -12,6 +12,7 @@ import com.ServiceBookingPlatform.entity.AppointmentEntity;
 import com.ServiceBookingPlatform.entity.AppointmentStatus;
 import com.ServiceBookingPlatform.service.AccountService;
 import com.ServiceBookingPlatform.service.AppointmentService;
+import com.ServiceBookingPlatform.service.ImageUploadService;
 import com.ServiceBookingPlatform.service.OperatingHoursService;
 import com.ServiceBookingPlatform.service.ReviewService;
 import com.ServiceBookingPlatform.service.ServiceCatalogService;
@@ -56,6 +57,7 @@ class ValidationRulesTest {
     @Autowired TokenService tokenService;
 
     @MockitoBean TenantService tenantService;
+    @MockitoBean ImageUploadService imageUploadService;
     @MockitoBean AppointmentService appointmentService;
     @MockitoBean ServiceCatalogService serviceCatalogService;
     @MockitoBean OperatingHoursService operatingHoursService;

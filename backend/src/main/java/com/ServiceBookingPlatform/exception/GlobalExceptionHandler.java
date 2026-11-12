@@ -88,6 +88,12 @@ public class GlobalExceptionHandler {
             .body(Map.of("error", "FORBIDDEN", "message", ex.getMessage()));
     }
 
+    @ExceptionHandler(UploadsNotConfiguredException.class)
+    public ResponseEntity<Map<String, String>> handleUploadsNotConfigured(UploadsNotConfiguredException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+            .body(Map.of("error", "UPLOADS_NOT_CONFIGURED", "message", ex.getMessage()));
+    }
+
     @ExceptionHandler(SlotTakenException.class)
     public ResponseEntity<Map<String, Object>> handleSlotTaken(SlotTakenException ex) {
         Map<String, Object> body = new HashMap<>();

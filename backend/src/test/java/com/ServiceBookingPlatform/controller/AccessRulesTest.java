@@ -7,6 +7,7 @@ import com.ServiceBookingPlatform.config.OwnerGuard;
 import com.ServiceBookingPlatform.config.SecurityConfig;
 import com.ServiceBookingPlatform.config.WebConfig;
 import com.ServiceBookingPlatform.dto.AppointmentResponse;
+import com.ServiceBookingPlatform.dto.UploadResponse;
 import com.ServiceBookingPlatform.entity.AccountEntity;
 import com.ServiceBookingPlatform.entity.AppointmentEntity;
 import com.ServiceBookingPlatform.entity.AppointmentStatus;
@@ -15,6 +16,7 @@ import com.ServiceBookingPlatform.entity.TenantEntity;
 import com.ServiceBookingPlatform.repository.AccountRepository;
 import com.ServiceBookingPlatform.service.AccountService;
 import com.ServiceBookingPlatform.service.AppointmentService;
+import com.ServiceBookingPlatform.service.ImageUploadService;
 import com.ServiceBookingPlatform.service.OperatingHoursService;
 import com.ServiceBookingPlatform.service.ReviewService;
 import com.ServiceBookingPlatform.service.ServiceCatalogService;
@@ -80,6 +82,7 @@ class AccessRulesTest {
     @Autowired TokenService tokenService;
 
     @MockitoBean TenantService tenantService;
+    @MockitoBean ImageUploadService imageUploadService;
     @MockitoBean AppointmentService appointmentService;
     @MockitoBean ServiceCatalogService serviceCatalogService;
     @MockitoBean OperatingHoursService operatingHoursService;
@@ -153,6 +156,37 @@ class AccessRulesTest {
 
         mockMvc.perform(get("/api/v1/appointments").header(TENANT, "2").header("Authorization", owner()))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void uploadLinksNeedALoginAndAreIssuedForTheCallersOwnStoreOnly() throws Exception {
+        String body = "{\"contentType\":\"image/webp\",\"sizeBytes\":150000}";
+        TenantEntity tenant = TenantEntity.builder().id(5L).slug("shop").name("Shop").schemaName("tenant_5")
+                .ownerAuth0Id("local|7").createdAt(LocalDateTime.now()).build();
+        when(tenantService.getTenantByOwnerAuth0Id("local|7")).thenReturn(tenant);
+        when(imageUploadService.createUpload(5L, "image/webp", 150000L)).thenReturn(UploadResponse.builder()
+                .uploadUrl("https://signed.example/put").publicUrl("https://img.example/tenants/5/a.webp")
+                .headers(Map.of("content-type", "image/webp")).build());
+
+        mockMvc.perform(post("/api/v1/tenants/me/uploads").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/v1/tenants/me/uploads").header("Authorization", owner())
+                .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.uploadUrl").value("https://signed.example/put"))
+                .andExpect(jsonPath("$.publicUrl").value("https://img.example/tenants/5/a.webp"));
+        verify(imageUploadService).createUpload(5L, "image/webp", 150000L);
+    }
+
+    @Test
+    void uploadLinksAreRefusedForAccountsWithoutAStore() throws Exception {
+        when(tenantService.getTenantByOwnerAuth0Id("local|9"))
+                .thenThrow(new com.ServiceBookingPlatform.exception.TenantNotFoundException("local|9"));
+
+        mockMvc.perform(post("/api/v1/tenants/me/uploads").header("Authorization", bearer(account(9, "ann@torni.test", "consumer")))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"contentType\":\"image/webp\",\"sizeBytes\":1000}"))
+                .andExpect(status().isNotFound());
+        verify(imageUploadService, never()).createUpload(any(), any(), org.mockito.ArgumentMatchers.anyLong());
     }
 
     @Test

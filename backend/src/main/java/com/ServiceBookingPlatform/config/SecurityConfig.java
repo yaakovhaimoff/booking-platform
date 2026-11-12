@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup", "/api/v1/auth/login").permitAll()
-                .requestMatchers("/api/v1/tenants/me").authenticated()
+                .requestMatchers("/api/v1/tenants/me", "/api/v1/tenants/me/uploads").authenticated()
                 .requestMatchers(HttpMethod.GET,
                         "/api/v1/tenants", "/api/v1/tenants/{slug}",
                         "/api/v1/services", "/api/v1/operating-hours",

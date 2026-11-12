@@ -16,6 +16,16 @@ export async function getMyTenant(token) {
   return res.json()
 }
 
+export async function requestImageUpload(token, { contentType, sizeBytes }) {
+  const res = await http(`${BASE}/tenants/me/uploads`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ contentType, sizeBytes }),
+  })
+  if (!res.ok) throw await res.json()
+  return res.json()
+}
+
 export async function createTenant(token, name) {
   const res = await http(`${BASE}/tenants`, {
     method: 'POST',

@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import StoreQrModal from './StoreQrModal'
 import StorePreviewFrame from './StorePreviewFrame'
 import StorePreviewModal from './StorePreviewModal'
+import { SinglePhotoField, GalleryField } from './PhotoUpload'
 import { useAuth0 } from '../../auth'
 import { updateMyTenant } from '../../api/ownerApi'
 import { useI18n } from '../../i18n'
@@ -33,7 +34,7 @@ export default function StoreSettingsTab({ tenant }) {
     logoUrl: tenant.logoUrl || '',
     coverUrl: tenant.coverUrl || '',
     about: tenant.about || '',
-    galleryUrls: (tenant.galleryUrls || []).join('\n'),
+    galleryUrls: tenant.galleryUrls || [],
     defaultLanguage: tenant.defaultLanguage || 'it',
     currency: tenant.currency || 'EUR',
   })
@@ -42,10 +43,7 @@ export default function StoreSettingsTab({ tenant }) {
   const storeUrl = `${window.location.origin}/store/${tenant.slug}`
 
   // Unsaved form state, shaped like the tenant the public page expects
-  const draft = useMemo(() => ({
-    ...form,
-    galleryUrls: form.galleryUrls.split('\n').map(u => u.trim()).filter(Boolean),
-  }), [form])
+  const draft = form
 
   const set = key => e => setForm(f => ({ ...f, [key]: e.target.value }))
 
@@ -62,8 +60,7 @@ export default function StoreSettingsTab({ tenant }) {
     setMessage(null)
     try {
       const token = await getAccessTokenSilently()
-      const galleryUrls = form.galleryUrls.split('\n').map(u => u.trim()).filter(Boolean)
-      await updateMyTenant(token, { ...form, galleryUrls })
+      await updateMyTenant(token, form)
       setMessage({ type: 'ok', text: t('profileSaved') })
     } catch {
       setMessage({ type: 'error', text: t('profileSaveFailed') })
@@ -123,13 +120,13 @@ export default function StoreSettingsTab({ tenant }) {
           <textarea className={inputCls} rows={4} value={form.about} onChange={set('about')} maxLength={1000} />
         </Field>
         <Field label={t('profileImageUrl')} hint={t('profileImageHint')}>
-          <input className={inputCls} type="url" value={form.logoUrl} onChange={set('logoUrl')} maxLength={1000} placeholder="https://…" />
+          <SinglePhotoField kind="logo" value={form.logoUrl} onChange={url => setForm(f => ({ ...f, logoUrl: url }))} />
         </Field>
         <Field label={t('coverImageUrl')} hint={t('coverImageHint')}>
-          <input className={inputCls} type="url" value={form.coverUrl} onChange={set('coverUrl')} maxLength={1000} placeholder="https://…" />
+          <SinglePhotoField kind="cover" value={form.coverUrl} onChange={url => setForm(f => ({ ...f, coverUrl: url }))} />
         </Field>
         <Field label={t('galleryImages')} hint={t('galleryImagesHint')}>
-          <textarea className={inputCls} rows={4} value={form.galleryUrls} onChange={set('galleryUrls')} placeholder="https://…" />
+          <GalleryField urls={form.galleryUrls} onChange={urls => setForm(f => ({ ...f, galleryUrls: urls }))} />
         </Field>
 
         <Field label={t('defaultLanguage')} hint={t('defaultLanguageHint')}>

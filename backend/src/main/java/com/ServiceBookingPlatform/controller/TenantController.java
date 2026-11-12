@@ -5,8 +5,11 @@ import com.ServiceBookingPlatform.dto.PublicTenantResponse;
 import com.ServiceBookingPlatform.dto.TenantProfileRequest;
 import com.ServiceBookingPlatform.dto.TenantRequest;
 import com.ServiceBookingPlatform.dto.TenantResponse;
+import com.ServiceBookingPlatform.dto.UploadRequest;
+import com.ServiceBookingPlatform.dto.UploadResponse;
 import com.ServiceBookingPlatform.entity.TenantEntity;
 import com.ServiceBookingPlatform.exception.ForbiddenException;
+import com.ServiceBookingPlatform.service.ImageUploadService;
 import com.ServiceBookingPlatform.service.TenantService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,9 +24,11 @@ import java.util.stream.Collectors;
 public class TenantController {
 
     private final TenantService tenantService;
+    private final ImageUploadService imageUploadService;
 
-    public TenantController(TenantService tenantService) {
+    public TenantController(TenantService tenantService, ImageUploadService imageUploadService) {
         this.tenantService = tenantService;
+        this.imageUploadService = imageUploadService;
     }
 
     // GET /api/v1/tenants/{slug}
@@ -45,6 +50,15 @@ public class TenantController {
             @Valid @RequestBody TenantProfileRequest request,
             AuthenticatedUser user) {
         return ResponseEntity.ok(TenantResponse.from(tenantService.updateProfile(user.subject(), request)));
+    }
+
+    @PostMapping("/me/uploads")
+    public ResponseEntity<UploadResponse> createUpload(
+            @Valid @RequestBody UploadRequest request,
+            AuthenticatedUser user) {
+        TenantEntity tenant = tenantService.getTenantByOwnerAuth0Id(user.subject());
+        return ResponseEntity.ok(imageUploadService.createUpload(
+                tenant.getId(), request.getContentType(), request.getSizeBytes()));
     }
 
     @PostMapping
