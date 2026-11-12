@@ -15,7 +15,7 @@ public class OwnerGuard {
 
     public void assertOwnsCurrentTenant(AuthenticatedUser user) {
         Long tenantId = TenantContextHolder.getTenantId();
-        if (user == null || tenantId == null || !tenantService.isOwner(tenantId, user.subject())) {
+        if (user == null || tenantId == null || !tenantService.isOwner(tenantId, user)) {
             throw new ForbiddenException("You do not own this store");
         }
     }

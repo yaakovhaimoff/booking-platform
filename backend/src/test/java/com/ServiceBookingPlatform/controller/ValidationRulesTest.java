@@ -72,7 +72,7 @@ class ValidationRulesTest {
     void setUp() {
         when(publicJdbcTemplate.queryForList(any(String.class), eq(1L)))
                 .thenReturn(List.of(Map.of("schema_name", "tenant_1", "enabled", true)));
-        when(tenantService.isOwner(1L, "local|7")).thenReturn(true);
+        when(tenantService.isOwner(eq(1L), any(com.ServiceBookingPlatform.config.AuthenticatedUser.class))).thenReturn(true);
         AppointmentEntity saved = AppointmentEntity.builder().id(1L).serviceId(1L).clientName("A").clientPhone("123456")
                 .startTime(LocalDateTime.now()).endTime(LocalDateTime.now()).status(AppointmentStatus.PENDING).build();
         when(appointmentService.book(any(), any())).thenReturn(AppointmentResponse.from(saved));

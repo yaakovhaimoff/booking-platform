@@ -41,7 +41,7 @@ public class TenantController {
 
     @GetMapping("/me")
     public ResponseEntity<TenantResponse> getMyTenant(AuthenticatedUser user) {
-        TenantEntity tenant = tenantService.getTenantByOwnerAuth0Id(user.subject());
+        TenantEntity tenant = tenantService.getTenantByOwner(user);
         return ResponseEntity.ok(TenantResponse.from(tenant));
     }
 
@@ -49,14 +49,14 @@ public class TenantController {
     public ResponseEntity<TenantResponse> updateMyTenant(
             @Valid @RequestBody TenantProfileRequest request,
             AuthenticatedUser user) {
-        return ResponseEntity.ok(TenantResponse.from(tenantService.updateProfile(user.subject(), request)));
+        return ResponseEntity.ok(TenantResponse.from(tenantService.updateProfile(user, request)));
     }
 
     @PostMapping("/me/uploads")
     public ResponseEntity<UploadResponse> createUpload(
             @Valid @RequestBody UploadRequest request,
             AuthenticatedUser user) {
-        TenantEntity tenant = tenantService.getTenantByOwnerAuth0Id(user.subject());
+        TenantEntity tenant = tenantService.getTenantByOwner(user);
         return ResponseEntity.ok(imageUploadService.createUpload(
                 tenant.getId(), request.getContentType(), request.getSizeBytes()));
     }
@@ -69,7 +69,7 @@ public class TenantController {
             throw new ForbiddenException("Only business accounts can create a store");
         }
         TenantEntity tenant = tenantService.onboardTenant(
-                request.getSlug(), request.getName(), user.subject(), user.email());
+                request.getSlug(), request.getName(), user, user.email());
         return ResponseEntity.status(HttpStatus.CREATED).body(TenantResponse.from(tenant));
     }
 

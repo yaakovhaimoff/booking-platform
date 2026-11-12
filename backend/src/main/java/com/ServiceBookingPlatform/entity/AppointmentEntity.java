@@ -37,4 +37,7 @@ public class AppointmentEntity {
 
     @Column(name = "client_auth0_sub")
     private String clientAuth0Sub;
+
+    @Column(name = "client_account_id")
+    private Long clientAccountId;
 }

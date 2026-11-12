@@ -56,6 +56,10 @@ public class TenantEntity {
     @Column(name = "owner_auth0_id", nullable = false, unique = true)
     private String ownerAuth0Id;
 
+    // Our own account id for the owner. Replaces ownerAuth0Id, which stays until the cleanup change.
+    @Column(name = "owner_account_id", unique = true)
+    private Long ownerAccountId;
+
     @Column(name = "owner_email")
     private String ownerEmail;
 

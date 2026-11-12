@@ -20,6 +20,9 @@ public class ReviewEntity {
     @Column(name = "author_auth0_sub")
     private String authorAuth0Sub;
 
+    @Column(name = "author_account_id")
+    private Long authorAccountId;
+
     @Column(nullable = false)
     private int rating;
 

@@ -27,8 +27,7 @@ public class AppointmentController {
     @PostMapping
     public ResponseEntity<AppointmentResponse> book(@Valid @RequestBody AppointmentRequest request,
                                                     AuthenticatedUser user) {
-        String clientSubject = user == null ? null : user.subject();
-        return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.book(request, clientSubject));
+        return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.book(request, user));
     }
 
     @GetMapping
@@ -46,7 +45,7 @@ public class AppointmentController {
     public ResponseEntity<List<AppointmentResponse>> getMyAppointments(AuthenticatedUser user) {
         // Only customer accounts claim guest bookings; an owner's token never pulls customers' bookings.
         String claimPhone = user.isConsumer() ? user.phone() : null;
-        List<AppointmentResponse> result = appointmentService.getMyAppointments(user.subject(), user.name(), claimPhone).stream()
+        List<AppointmentResponse> result = appointmentService.getMyAppointments(user, claimPhone).stream()
                 .map(AppointmentResponse::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
@@ -57,7 +56,7 @@ public class AppointmentController {
             @PathVariable Long id,
             @Valid @RequestBody StatusUpdateRequest request,
             AuthenticatedUser user) {
-        AppointmentEntity updated = appointmentService.updateStatus(id, request.getStatus(), user.subject());
+        AppointmentEntity updated = appointmentService.updateStatus(id, request.getStatus(), user);
         return ResponseEntity.ok(AppointmentResponse.from(updated));
     }
 }

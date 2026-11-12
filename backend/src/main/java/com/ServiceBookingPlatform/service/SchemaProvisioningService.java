@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 public class SchemaProvisioningService {
@@ -28,6 +30,8 @@ public class SchemaProvisioningService {
             "ALTER TABLE " + schemaName + ".appointments ADD COLUMN IF NOT EXISTS client_auth0_sub VARCHAR(255)");
         publicJdbcTemplate.execute(
             "ALTER TABLE " + schemaName + ".appointments ADD COLUMN IF NOT EXISTS notes VARCHAR(500)");
+        publicJdbcTemplate.execute(
+            "ALTER TABLE " + schemaName + ".appointments ADD COLUMN IF NOT EXISTS client_account_id BIGINT");
 
         // operating_hours — entire table added in a5fbccc; seed rows only when table is fresh
         publicJdbcTemplate.execute("""
@@ -60,8 +64,49 @@ public class SchemaProvisioningService {
                 comment          VARCHAR(1000),
                 created_at       TIMESTAMP     NOT NULL
             )""".formatted(schemaName));
+        publicJdbcTemplate.execute(
+            "ALTER TABLE " + schemaName + ".reviews ADD COLUMN IF NOT EXISTS author_account_id BIGINT");
+
+        backfillAccountIds(schemaName);
 
         log.info("Migration complete for schema: {}", schemaName);
+    }
+
+    // Fills accounts.auth_subject and tenants.owner_account_id from the existing "local|<id>" subjects.
+    // Only touches rows still empty, so running it any number of times gives the same result.
+    // Returns how many tenants still have no owner account; each one is logged as a warning.
+    public int backfillPublicIdentity() {
+        publicJdbcTemplate.update(
+            "UPDATE public.accounts SET auth_subject = 'local|' || id WHERE auth_subject IS NULL");
+        publicJdbcTemplate.update("""
+            UPDATE public.tenants t SET owner_account_id = a.id
+            FROM public.accounts a
+            WHERE t.owner_account_id IS NULL AND t.owner_auth0_id = a.auth_subject""");
+        List<String> unmapped = publicJdbcTemplate.queryForList(
+            "SELECT id || ' (' || slug || ')' FROM public.tenants WHERE owner_account_id IS NULL ORDER BY id",
+            String.class);
+        unmapped.forEach(tenant -> log.warn("IDENTITY BACKFILL: tenant {} has no matching owner account", tenant));
+        return unmapped.size();
+    }
+
+    // Same for one tenant schema: appointments.client_account_id and reviews.author_account_id.
+    // Returns the number of rows that carry an old subject but could not be mapped to an account.
+    public int backfillAccountIds(String schemaName) {
+        publicJdbcTemplate.update("UPDATE " + schemaName + ".appointments p SET client_account_id = a.id "
+            + "FROM public.accounts a WHERE p.client_account_id IS NULL AND p.client_auth0_sub = a.auth_subject");
+        publicJdbcTemplate.update("UPDATE " + schemaName + ".reviews r SET author_account_id = a.id "
+            + "FROM public.accounts a WHERE r.author_account_id IS NULL AND r.author_auth0_sub = a.auth_subject");
+        Integer unmappedAppointments = publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + schemaName
+            + ".appointments WHERE client_auth0_sub IS NOT NULL AND client_account_id IS NULL", Integer.class);
+        Integer unmappedReviews = publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + schemaName
+            + ".reviews WHERE author_auth0_sub IS NOT NULL AND author_account_id IS NULL", Integer.class);
+        int unmapped = (unmappedAppointments == null ? 0 : unmappedAppointments)
+            + (unmappedReviews == null ? 0 : unmappedReviews);
+        if (unmapped > 0) {
+            log.warn("IDENTITY BACKFILL: {} appointment(s)/review(s) in schema {} have no matching account",
+                unmapped, schemaName);
+        }
+        return unmapped;
     }
 
     // Creates the schema and provisions all tables with seed data.
@@ -87,6 +132,7 @@ public class SchemaProvisioningService {
                 end_time         TIMESTAMP     NOT NULL,
                 status           VARCHAR(20)   NOT NULL DEFAULT 'CONFIRMED',
                 client_auth0_sub VARCHAR(255),
+                client_account_id BIGINT,
                 notes            VARCHAR(500)
             )""".formatted(schemaName));
 
@@ -105,6 +151,7 @@ public class SchemaProvisioningService {
                 id               BIGSERIAL     PRIMARY KEY,
                 author_name      VARCHAR(100)  NOT NULL,
                 author_auth0_sub VARCHAR(255),
+                author_account_id BIGINT,
                 rating           INT           NOT NULL,
                 comment          VARCHAR(1000),
                 created_at       TIMESTAMP     NOT NULL

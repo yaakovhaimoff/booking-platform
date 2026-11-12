@@ -1,5 +1,6 @@
 package com.ServiceBookingPlatform.service;
 
+import com.ServiceBookingPlatform.config.AuthenticatedUser;
 import com.ServiceBookingPlatform.config.DataSourceConfig;
 import com.ServiceBookingPlatform.dto.TenantProfileRequest;
 import com.ServiceBookingPlatform.entity.TenantEntity;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -49,6 +51,7 @@ public class TenantService {
     // This ensures tenants created before the last restart can still be routed to.
     @PostConstruct
     public void initTenantDataSources() {
+        schemaProvisioningService.backfillPublicIdentity();
         tenantRepository.findAll().forEach(tenant -> {
             log.info("Migrating schema: {} (tenant {})", tenant.getSchemaName(), tenant.getId());
             schemaProvisioningService.migrate(tenant.getSchemaName(), tenant.getId());
@@ -87,8 +90,8 @@ public class TenantService {
     }
 
     @Transactional
-    public TenantEntity updateProfile(String ownerAuth0Id, TenantProfileRequest r) {
-        TenantEntity t = getTenantByOwnerAuth0Id(ownerAuth0Id);
+    public TenantEntity updateProfile(AuthenticatedUser owner, TenantProfileRequest r) {
+        TenantEntity t = getTenantByOwner(owner);
         t.setName(r.getName().trim());
         t.setAddress(blankToNull(r.getAddress()));
         t.setPhone(blankToNull(r.getPhone()));
@@ -110,15 +113,23 @@ public class TenantService {
         return (v == null || v.isBlank()) ? null : v.trim();
     }
 
-    public boolean isOwner(Long tenantId, String subject) {
+    public boolean isOwner(Long tenantId, AuthenticatedUser user) {
+        if (user == null) {
+            return false;
+        }
         return tenantRepository.findById(tenantId)
-                .map(tenant -> tenant.getOwnerAuth0Id().equals(subject))
+                .map(tenant -> user.isSameAs(tenant.getOwnerAccountId(), tenant.getOwnerAuth0Id()))
                 .orElse(false);
     }
 
-    public TenantEntity getTenantByOwnerAuth0Id(String auth0Id) {
-        return tenantRepository.findByOwnerAuth0Id(auth0Id)
-                .orElseThrow(() -> new TenantNotFoundException(auth0Id));
+    // By account id; for a shop from before account ids existed (no owner_account_id yet), by the old subject.
+    public TenantEntity getTenantByOwner(AuthenticatedUser owner) {
+        Optional<TenantEntity> byAccount = owner.accountId() == null ? Optional.empty()
+                : tenantRepository.findByOwnerAccountId(owner.accountId());
+        return byAccount
+                .or(() -> tenantRepository.findByOwnerAuth0Id(owner.subject())
+                        .filter(tenant -> tenant.getOwnerAccountId() == null))
+                .orElseThrow(() -> new TenantNotFoundException(owner.subject()));
     }
 
     // "Mike's Barbershop" -> "mikes-barbershop-k3x9q2"; retried until unused.
@@ -148,9 +159,11 @@ public class TenantService {
     // 5. Registers the new DataSource in TenantRoutingDataSource
     // 6. Returns the saved TenantEntity
     @Transactional
-    public TenantEntity onboardTenant(String slug, String name, String ownerAuth0Id, String ownerEmail) {
+    public TenantEntity onboardTenant(String slug, String name, AuthenticatedUser owner, String ownerEmail) {
         slug = generateUniqueSlug(name);
-        if (tenantRepository.findByOwnerAuth0Id(ownerAuth0Id).isPresent()) {
+        boolean alreadyOwns = (owner.accountId() != null && tenantRepository.findByOwnerAccountId(owner.accountId()).isPresent())
+                || tenantRepository.findByOwnerAuth0Id(owner.subject()).isPresent();
+        if (alreadyOwns) {
             throw new IllegalStateException("Owner already has a registered tenant");
         }
 
@@ -159,7 +172,8 @@ public class TenantService {
                 .slug(slug)
                 .name(name)
                 .schemaName("pending")  // will be updated after save gives us the ID
-                .ownerAuth0Id(ownerAuth0Id)
+                .ownerAuth0Id(owner.subject())
+                .ownerAccountId(owner.accountId())
                 .ownerEmail(ownerEmail)
                 .createdAt(LocalDateTime.now())
                 .build();

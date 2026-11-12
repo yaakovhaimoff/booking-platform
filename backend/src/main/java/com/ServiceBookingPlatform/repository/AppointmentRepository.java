@@ -29,6 +29,12 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
 
     List<AppointmentEntity> findByClientAuth0SubOrderByStartTimeDesc(String clientAuth0Sub);
 
+    // By account id, or by the old subject for rows written before account ids existed. Never call with a null id.
+    @org.springframework.data.jpa.repository.Query(
+            "select a from AppointmentEntity a where a.clientAccountId = :accountId or a.clientAuth0Sub = :subject order by a.startTime desc")
+    List<AppointmentEntity> findMine(@org.springframework.data.repository.query.Param("accountId") Long accountId,
+                                     @org.springframework.data.repository.query.Param("subject") String subject);
+
     // Guest bookings (no account attached) whose phone ends with the given digits: candidates to claim.
     List<AppointmentEntity> findByClientAuth0SubIsNullAndClientPhoneEndingWith(String phoneSuffix);
 }

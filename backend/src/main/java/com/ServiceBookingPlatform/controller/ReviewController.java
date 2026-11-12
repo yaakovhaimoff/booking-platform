@@ -26,7 +26,6 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<ReviewResponse> submit(@Valid @RequestBody ReviewRequest request,
                                                  AuthenticatedUser user) {
-        String authorSubject = user == null ? null : user.subject();
-        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.submit(request, authorSubject));
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.submit(request, user));
     }
 }

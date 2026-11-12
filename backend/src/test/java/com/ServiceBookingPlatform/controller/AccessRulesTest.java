@@ -1,6 +1,7 @@
 package com.ServiceBookingPlatform.controller;
 
 import com.ServiceBookingPlatform.config.AdminGuard;
+import com.ServiceBookingPlatform.config.AuthenticatedUser;
 import com.ServiceBookingPlatform.config.CurrentUserArgumentResolver;
 import com.ServiceBookingPlatform.config.LocalAuthConfig;
 import com.ServiceBookingPlatform.config.OwnerGuard;
@@ -52,7 +53,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,9 +95,22 @@ class AccessRulesTest {
     @MockitoBean(name = "publicJdbcTemplate") JdbcTemplate publicJdbcTemplate;
 
     @BeforeEach
-    void tenantOneExists() {
+    void tenantOneExistsAndAccountsAreKnownBySubject() {
         when(publicJdbcTemplate.queryForList(any(String.class), eq(1L)))
                 .thenReturn(List.of(Map.of("schema_name", "tenant_1", "enabled", true)));
+        for (long id : new long[]{1, 7, 9}) {
+            when(accountRepository.findByAuthSubject("local|" + id)).thenReturn(Optional.of(
+                    AccountEntity.builder().id(id).authSubject("local|" + id).build()));
+        }
+    }
+
+    private static AuthenticatedUser callerWithAccount(long accountId) {
+        return argThat(user -> user != null && Long.valueOf(accountId).equals(user.accountId()));
+    }
+
+    private static AuthenticatedUser callerWithAccountAndName(long accountId, String name) {
+        return argThat(user -> user != null && Long.valueOf(accountId).equals(user.accountId())
+                && name.equals(user.name()));
     }
 
     private AccountEntity account(long id, String identity, String type) {
@@ -127,7 +143,7 @@ class AccessRulesTest {
 
     @Test
     void ownerEndpointsRejectSomeoneWhoDoesNotOwnTheTenant() throws Exception {
-        when(tenantService.isOwner(1L, "local|7")).thenReturn(false);
+        when(tenantService.isOwner(eq(1L), callerWithAccount(7))).thenReturn(false);
 
         mockMvc.perform(get("/api/v1/appointments").header(TENANT, "1").header("Authorization", owner()))
                 .andExpect(status().isForbidden());
@@ -140,7 +156,7 @@ class AccessRulesTest {
 
     @Test
     void theOwnerOfTheTenantIsAllowed() throws Exception {
-        when(tenantService.isOwner(1L, "local|7")).thenReturn(true);
+        when(tenantService.isOwner(eq(1L), callerWithAccount(7))).thenReturn(true);
         when(appointmentService.getAppointments(any())).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/appointments").header(TENANT, "1").header("Authorization", owner()))
@@ -148,9 +164,35 @@ class AccessRulesTest {
     }
 
     @Test
+    void aTokenForAnAccountWithoutAnAuthSubjectYetIsFixedOnTheFlyAndStillWorks() throws Exception {
+        AccountEntity notYetBackfilled = account(5, "late@torni.test", "business");
+        when(accountRepository.findByAuthSubject("local|5")).thenReturn(Optional.empty());
+        when(accountRepository.findById(5L)).thenReturn(Optional.of(notYetBackfilled));
+        when(accountRepository.save(any(AccountEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(tenantService.isOwner(eq(1L), callerWithAccount(5))).thenReturn(true);
+        when(appointmentService.getAppointments(any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/appointments").header(TENANT, "1").header("Authorization", bearer(notYetBackfilled)))
+                .andExpect(status().isOk());
+
+        assertTrue("local|5".equals(notYetBackfilled.getAuthSubject()));
+    }
+
+    @Test
+    void aTokenForASubjectWithNoAccountHasNoAccountIdAndIsNotTreatedAsAnOwner() throws Exception {
+        when(accountRepository.findByAuthSubject("local|404")).thenReturn(Optional.empty());
+        when(accountRepository.findById(404L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/v1/appointments").header(TENANT, "1")
+                        .header("Authorization", bearer(account(404, "ghost@torni.test", "business"))))
+                .andExpect(status().isForbidden());
+        verify(tenantService).isOwner(eq(1L), argThat(user -> user != null && user.accountId() == null));
+    }
+
+    @Test
     void ownershipIsCheckedAgainstTheTenantInTheHeader() throws Exception {
-        when(tenantService.isOwner(1L, "local|7")).thenReturn(true);
-        when(tenantService.isOwner(2L, "local|7")).thenReturn(false);
+        when(tenantService.isOwner(eq(1L), callerWithAccount(7))).thenReturn(true);
+        when(tenantService.isOwner(eq(2L), callerWithAccount(7))).thenReturn(false);
         when(publicJdbcTemplate.queryForList(any(String.class), eq(2L)))
                 .thenReturn(List.of(Map.of("schema_name", "tenant_2", "enabled", true)));
 
@@ -163,7 +205,7 @@ class AccessRulesTest {
         String body = "{\"contentType\":\"image/webp\",\"sizeBytes\":150000}";
         TenantEntity tenant = TenantEntity.builder().id(5L).slug("shop").name("Shop").schemaName("tenant_5")
                 .ownerAuth0Id("local|7").createdAt(LocalDateTime.now()).build();
-        when(tenantService.getTenantByOwnerAuth0Id("local|7")).thenReturn(tenant);
+        when(tenantService.getTenantByOwner(callerWithAccount(7))).thenReturn(tenant);
         when(imageUploadService.createUpload(5L, "image/webp", 150000L)).thenReturn(UploadResponse.builder()
                 .uploadUrl("https://signed.example/put").publicUrl("https://img.example/tenants/5/a.webp")
                 .headers(Map.of("content-type", "image/webp")).build());
@@ -180,7 +222,7 @@ class AccessRulesTest {
 
     @Test
     void uploadLinksAreRefusedForAccountsWithoutAStore() throws Exception {
-        when(tenantService.getTenantByOwnerAuth0Id("local|9"))
+        when(tenantService.getTenantByOwner(callerWithAccount(9)))
                 .thenThrow(new com.ServiceBookingPlatform.exception.TenantNotFoundException("local|9"));
 
         mockMvc.perform(post("/api/v1/tenants/me/uploads").header("Authorization", bearer(account(9, "ann@torni.test", "consumer")))
@@ -210,7 +252,7 @@ class AccessRulesTest {
                 .ownerAuth0Id("local|7").createdAt(LocalDateTime.now()).build();
         when(tenantService.listEnabledTenants()).thenReturn(List.of(tenant));
         when(tenantService.getTenantBySlug("shop")).thenReturn(tenant);
-        when(tenantService.getTenantByOwnerAuth0Id("local|7")).thenReturn(tenant);
+        when(tenantService.getTenantByOwner(callerWithAccount(7))).thenReturn(tenant);
 
         mockMvc.perform(get("/api/v1/tenants")).andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].slug").value("shop")).andExpect(jsonPath("$[0].schemaName").doesNotExist());
@@ -226,24 +268,24 @@ class AccessRulesTest {
         AccountEntity customer = account(9, "ann@torni.test", "consumer");
         customer.setName("Anna Bianchi");
         customer.setPhone("393331112222");
-        when(appointmentService.getMyAppointments(any(), any(), any())).thenReturn(List.of());
+        when(appointmentService.getMyAppointments(any(), any())).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/appointments/me").header(TENANT, "1").header("Authorization", bearer(customer)))
                 .andExpect(status().isOk());
 
-        verify(appointmentService).getMyAppointments("local|9", "Anna Bianchi", "393331112222");
+        verify(appointmentService).getMyAppointments(callerWithAccountAndName(9, "Anna Bianchi"), eq("393331112222"));
     }
 
     @Test
     void anOwnerTokenNeverTriesToClaimGuestBookings() throws Exception {
         AccountEntity businessWithPhone = account(7, "owner@torni.test", "business");
         businessWithPhone.setPhone("393331112222");
-        when(appointmentService.getMyAppointments(any(), any(), any())).thenReturn(List.of());
+        when(appointmentService.getMyAppointments(any(), any())).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/appointments/me").header(TENANT, "1").header("Authorization", bearer(businessWithPhone)))
                 .andExpect(status().isOk());
 
-        verify(appointmentService).getMyAppointments("local|7", "Test", null);
+        verify(appointmentService).getMyAppointments(callerWithAccount(7), isNull());
     }
 
     @Test
@@ -251,7 +293,7 @@ class AccessRulesTest {
         AppointmentEntity saved = AppointmentEntity.builder().id(5L).serviceId(1L).clientName("Guest")
                 .clientPhone("3331112222").startTime(LocalDateTime.now()).endTime(LocalDateTime.now())
                 .status(AppointmentStatus.PENDING).build();
-        when(appointmentService.book(any(), eq(null))).thenReturn(AppointmentResponse.from(saved));
+        when(appointmentService.book(any(), isNull())).thenReturn(AppointmentResponse.from(saved));
 
         mockMvc.perform(post("/api/v1/appointments").header(TENANT, "1").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"serviceId\":1,\"clientName\":\"Guest\",\"clientPhone\":\"3331112222\",\"startTime\":\"2030-01-01T10:00:00\"}"))
@@ -263,14 +305,14 @@ class AccessRulesTest {
         AppointmentEntity saved = AppointmentEntity.builder().id(5L).serviceId(1L).clientName("Ann")
                 .clientPhone("3331112222").startTime(LocalDateTime.now()).endTime(LocalDateTime.now())
                 .status(AppointmentStatus.PENDING).build();
-        when(appointmentService.book(any(), eq("local|9"))).thenReturn(AppointmentResponse.from(saved));
+        when(appointmentService.book(any(), callerWithAccount(9))).thenReturn(AppointmentResponse.from(saved));
 
         mockMvc.perform(post("/api/v1/appointments").header(TENANT, "1")
                 .header("Authorization", bearer(account(9, "ann@torni.test", "consumer")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"serviceId\":1,\"clientName\":\"Ann\",\"clientPhone\":\"3331112222\",\"startTime\":\"2030-01-01T10:00:00\",\"clientAuth0Sub\":\"local|1\"}"))
                 .andExpect(status().isCreated());
-        verify(appointmentService).book(any(), eq("local|9"));
+        verify(appointmentService).book(any(), callerWithAccount(9));
     }
 
     @Test
@@ -280,7 +322,7 @@ class AccessRulesTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"rating\":5,\"authorName\":\"Ann\",\"authorAuth0Sub\":\"local|1\"}"))
                 .andExpect(status().isCreated());
-        verify(reviewService).submit(any(), eq("local|9"));
+        verify(reviewService).submit(any(), callerWithAccount(9));
     }
 
     @Test
@@ -331,8 +373,10 @@ class AccessRulesTest {
     void loggingInReturnsATokenThatUnlocksTheOwnerRoutes() throws Exception {
         AccountEntity stored = account(7, "owner@torni.test", "business");
         stored.setPasswordHash(new BCryptPasswordEncoder().encode("secret1"));
+        stored.setAuthSubject("local|7");
         when(accountRepository.findByIdentity("owner@torni.test")).thenReturn(Optional.of(stored));
-        when(tenantService.isOwner(1L, "local|7")).thenReturn(true);
+        when(accountRepository.findByAuthSubject("local|7")).thenReturn(Optional.of(stored));
+        when(tenantService.isOwner(eq(1L), callerWithAccount(7))).thenReturn(true);
         when(appointmentService.getAppointments(any())).thenReturn(List.of());
 
         MvcResult login = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)

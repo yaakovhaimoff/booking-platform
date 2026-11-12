@@ -29,22 +29,32 @@ class OwnerGuardTest {
         TenantContextHolder.clear();
     }
 
-    private static AuthenticatedUser user(String subject) {
-        return new AuthenticatedUser(subject, null, null, "business");
+    private static AuthenticatedUser user(String subject, Long accountId) {
+        return new AuthenticatedUser(subject, null, null, "business", null, accountId);
     }
 
     @Test
     void theOwnerOfTheCurrentTenantPasses() {
-        when(tenantService.isOwner(5L, "local|7")).thenReturn(true);
+        AuthenticatedUser owner = user("local|7", 7L);
+        when(tenantService.isOwner(5L, owner)).thenReturn(true);
 
-        assertDoesNotThrow(() -> guard.assertOwnsCurrentTenant(user("local|7")));
+        assertDoesNotThrow(() -> guard.assertOwnsCurrentTenant(owner));
     }
 
     @Test
     void anotherUserIsRefused() {
-        when(tenantService.isOwner(5L, "local|8")).thenReturn(false);
+        AuthenticatedUser stranger = user("local|8", 8L);
+        when(tenantService.isOwner(5L, stranger)).thenReturn(false);
 
-        assertThrows(ForbiddenException.class, () -> guard.assertOwnsCurrentTenant(user("local|8")));
+        assertThrows(ForbiddenException.class, () -> guard.assertOwnsCurrentTenant(stranger));
+    }
+
+    @Test
+    void aCallerWithoutAnAccountIdIsPassedOnSoTheShopCanApplyItsOwnFallbackRule() {
+        AuthenticatedUser withoutAccount = user("dev|owner1", null);
+        when(tenantService.isOwner(5L, withoutAccount)).thenReturn(true);
+
+        assertDoesNotThrow(() -> guard.assertOwnsCurrentTenant(withoutAccount));
     }
 
     @Test
@@ -56,6 +66,6 @@ class OwnerGuardTest {
     void noTenantContextIsRefused() {
         TenantContextHolder.clear();
 
-        assertThrows(ForbiddenException.class, () -> guard.assertOwnsCurrentTenant(user("local|7")));
+        assertThrows(ForbiddenException.class, () -> guard.assertOwnsCurrentTenant(user("local|7", 7L)));
     }
 }

@@ -27,6 +27,10 @@ public class AccountEntity {
     @Column(name = "account_type", length = 20)
     private String accountType;
 
+    // The identity provider's id for this account ("local|<id>" today). The only place that value is stored.
+    @Column(name = "auth_subject", unique = true, length = 255)
+    private String authSubject;
+
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
 

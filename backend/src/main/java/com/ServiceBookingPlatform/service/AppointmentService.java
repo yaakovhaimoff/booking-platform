@@ -1,5 +1,6 @@
 package com.ServiceBookingPlatform.service;
 
+import com.ServiceBookingPlatform.config.AuthenticatedUser;
 import com.ServiceBookingPlatform.dto.AppointmentRequest;
 import com.ServiceBookingPlatform.dto.AppointmentResponse;
 import com.ServiceBookingPlatform.entity.AppointmentEntity;
@@ -42,7 +43,7 @@ public class AppointmentService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public AppointmentResponse book(AppointmentRequest request, String clientAuth0Sub) {
+    public AppointmentResponse book(AppointmentRequest request, AuthenticatedUser client) {
         ServiceEntity service = serviceCatalogService.getById(request.getServiceId());
 
         LocalDateTime startTime;
@@ -71,7 +72,8 @@ public class AppointmentService {
                     .endTime(endTime)
                     .status(AppointmentStatus.PENDING)
                     .notes(request.getNotes() == null || request.getNotes().isBlank() ? null : request.getNotes().trim())
-                    .clientAuth0Sub(clientAuth0Sub)
+                    .clientAuth0Sub(client == null ? null : client.subject())
+                    .clientAccountId(client == null ? null : client.accountId())
                     .build());
         });
 
@@ -101,7 +103,7 @@ public class AppointmentService {
         return appointmentRepository.findByStatusNot(AppointmentStatus.CANCELLED);
     }
 
-    public AppointmentEntity updateStatus(Long id, String newStatus, String callerAuth0Sub) {
+    public AppointmentEntity updateStatus(Long id, String newStatus, AuthenticatedUser caller) {
         AppointmentEntity entity = appointmentRepository.findById(id)
                 .orElseThrow(() -> new AppointmentNotFoundException(id));
 
@@ -109,9 +111,8 @@ public class AppointmentService {
         TenantEntity tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new TenantNotFoundException("id:" + tenantId));
 
-        boolean isOwner = tenant.getOwnerAuth0Id().equals(callerAuth0Sub);
-        boolean isClient = entity.getClientAuth0Sub() != null
-                && entity.getClientAuth0Sub().equals(callerAuth0Sub);
+        boolean isOwner = caller.isSameAs(tenant.getOwnerAccountId(), tenant.getOwnerAuth0Id());
+        boolean isClient = caller.isSameAs(entity.getClientAccountId(), entity.getClientAuth0Sub());
 
         if (!isOwner && !isClient) {
             throw new ForbiddenException();
@@ -140,7 +141,7 @@ public class AppointmentService {
         entity.setStatus(parsed);
         AppointmentEntity updated = appointmentRepository.save(entity);
         log.info("Appointment status updated: id={} {} → {} by={}",
-                id, current, parsed, callerAuth0Sub);
+                id, current, parsed, caller.subject());
         notificationService.statusChanged(tenant, updated, isOwner);
         return updated;
     }
@@ -149,12 +150,14 @@ public class AppointmentService {
      * The customer's bookings in this shop. First attaches any guest booking whose phone and name both match
      * the account's profile; a booking that already belongs to an account is never taken over.
      */
-    public List<AppointmentEntity> getMyAppointments(String clientAuth0Sub, String accountName, String accountPhone) {
-        claimMatchingGuestBookings(clientAuth0Sub, accountName, accountPhone);
-        return appointmentRepository.findByClientAuth0SubOrderByStartTimeDesc(clientAuth0Sub);
+    public List<AppointmentEntity> getMyAppointments(AuthenticatedUser client, String accountPhone) {
+        claimMatchingGuestBookings(client, client.name(), accountPhone);
+        return client.accountId() == null
+                ? appointmentRepository.findByClientAuth0SubOrderByStartTimeDesc(client.subject())
+                : appointmentRepository.findMine(client.accountId(), client.subject());
     }
 
-    private void claimMatchingGuestBookings(String clientAuth0Sub, String accountName, String accountPhone) {
+    private void claimMatchingGuestBookings(AuthenticatedUser client, String accountName, String accountPhone) {
         String suffix = GuestBookingMatcher.lookupSuffix(accountPhone);
         if (suffix.isEmpty() || accountName == null || accountName.isBlank()) {
             return;
@@ -162,7 +165,10 @@ public class AppointmentService {
         List<AppointmentEntity> claimed = appointmentRepository
                 .findByClientAuth0SubIsNullAndClientPhoneEndingWith(suffix).stream()
                 .filter(a -> GuestBookingMatcher.matches(a.getClientName(), a.getClientPhone(), accountName, accountPhone))
-                .peek(a -> a.setClientAuth0Sub(clientAuth0Sub))
+                .peek(a -> {
+                    a.setClientAuth0Sub(client.subject());
+                    a.setClientAccountId(client.accountId());
+                })
                 .toList();
         if (!claimed.isEmpty()) {
             appointmentRepository.saveAll(claimed);

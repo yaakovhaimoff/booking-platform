@@ -1,5 +1,6 @@
 package com.ServiceBookingPlatform.service;
 
+import com.ServiceBookingPlatform.config.AuthenticatedUser;
 import com.ServiceBookingPlatform.entity.AppointmentEntity;
 import com.ServiceBookingPlatform.entity.AppointmentStatus;
 import com.ServiceBookingPlatform.repository.AppointmentRepository;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.*;
 class AppointmentServiceClaimTest {
 
     private static final String ME = "local|9";
+    private static final long MY_ACCOUNT_ID = 9L;
 
     private AppointmentRepository repository;
     private AppointmentService service;
@@ -30,7 +32,12 @@ class AppointmentServiceClaimTest {
         repository = mock(AppointmentRepository.class);
         service = new AppointmentService(repository, mock(ServiceCatalogService.class), mock(TenantRepository.class),
                 mock(SlotCalculatorService.class), mock(NotificationService.class), mock(TransactionTemplate.class));
+        when(repository.findMine(MY_ACCOUNT_ID, ME)).thenReturn(List.of());
         when(repository.findByClientAuth0SubOrderByStartTimeDesc(ME)).thenReturn(List.of());
+    }
+
+    private static AuthenticatedUser me(String name) {
+        return new AuthenticatedUser(ME, null, name, "consumer", null, MY_ACCOUNT_ID);
     }
 
     private static AppointmentEntity guest(String name, String phone) {
@@ -47,9 +54,10 @@ class AppointmentServiceClaimTest {
         AppointmentEntity mine = guest("Anna Bianchi", "3331112222");
         candidates(mine);
 
-        service.getMyAppointments(ME, "anna  bianchi", "393331112222");
+        service.getMyAppointments(me("anna  bianchi"), "393331112222");
 
         assertEquals(ME, mine.getClientAuth0Sub());
+        assertEquals(MY_ACCOUNT_ID, mine.getClientAccountId());
         ArgumentCaptor<List<AppointmentEntity>> saved = ArgumentCaptor.forClass(List.class);
         verify(repository).saveAll(saved.capture());
         assertEquals(List.of(mine), saved.getValue());
@@ -62,9 +70,10 @@ class AppointmentServiceClaimTest {
         AppointmentEntity sameNameOtherNumber = guest("Anna Bianchi", "3339998888");
         candidates(mine, sameNumberOtherPerson, sameNameOtherNumber);
 
-        service.getMyAppointments(ME, "Anna Bianchi", "3331112222");
+        service.getMyAppointments(me("Anna Bianchi"), "3331112222");
 
         assertEquals(ME, mine.getClientAuth0Sub());
+        assertEquals(MY_ACCOUNT_ID, mine.getClientAccountId());
         assertNull(sameNumberOtherPerson.getClientAuth0Sub());
         assertNull(sameNameOtherNumber.getClientAuth0Sub());
     }
@@ -73,7 +82,7 @@ class AppointmentServiceClaimTest {
     void nothingIsSavedWhenNothingMatches() {
         candidates(guest("Marta Rossi", "3331112222"));
 
-        service.getMyAppointments(ME, "Anna Bianchi", "3331112222");
+        service.getMyAppointments(me("Anna Bianchi"), "3331112222");
 
         verify(repository, never()).saveAll(anyList());
     }
@@ -82,7 +91,7 @@ class AppointmentServiceClaimTest {
     void lookupUsesOnlyGuestBookingsSoAnotherAccountsBookingCanNeverBeTaken() {
         candidates();
 
-        service.getMyAppointments(ME, "Anna Bianchi", "+39 333 111 2222");
+        service.getMyAppointments(me("Anna Bianchi"), "+39 333 111 2222");
 
         verify(repository).findByClientAuth0SubIsNullAndClientPhoneEndingWith("31112222");
         verify(repository, never()).findAll();
@@ -90,10 +99,10 @@ class AppointmentServiceClaimTest {
 
     @Test
     void noClaimIsAttemptedWithoutAPhoneOrAName() {
-        service.getMyAppointments(ME, "Anna Bianchi", null);
-        service.getMyAppointments(ME, "Anna Bianchi", "");
-        service.getMyAppointments(ME, null, "3331112222");
-        service.getMyAppointments(ME, "  ", "3331112222");
+        service.getMyAppointments(me("Anna Bianchi"), null);
+        service.getMyAppointments(me("Anna Bianchi"), "");
+        service.getMyAppointments(me(null), "3331112222");
+        service.getMyAppointments(me("  "), "3331112222");
 
         verify(repository, never()).findByClientAuth0SubIsNullAndClientPhoneEndingWith(any());
         verify(repository, never()).saveAll(anyList());
@@ -103,10 +112,33 @@ class AppointmentServiceClaimTest {
     void theReturnedListIsTheAccountsBookingsAfterLinking() {
         AppointmentEntity existing = guest("Anna Bianchi", "3331112222");
         existing.setClientAuth0Sub(ME);
-        when(repository.findByClientAuth0SubOrderByStartTimeDesc(ME)).thenReturn(List.of(existing));
+        existing.setClientAccountId(MY_ACCOUNT_ID);
+        when(repository.findMine(MY_ACCOUNT_ID, ME)).thenReturn(List.of(existing));
         candidates();
 
-        assertEquals(List.of(existing), service.getMyAppointments(ME, "Anna Bianchi", "3331112222"));
-        verify(repository, times(1)).findByClientAuth0SubOrderByStartTimeDesc(eq(ME));
+        assertEquals(List.of(existing), service.getMyAppointments(me("Anna Bianchi"), "3331112222"));
+        verify(repository, times(1)).findMine(eq(MY_ACCOUNT_ID), eq(ME));
+    }
+
+    @Test
+    void aCallerWhoseSubjectResolvedToNoAccountIsStillServedByTheOldSubject() {
+        AppointmentEntity legacy = guest("Anna Bianchi", "3331112222");
+        legacy.setClientAuth0Sub(ME);
+        when(repository.findByClientAuth0SubOrderByStartTimeDesc(ME)).thenReturn(List.of(legacy));
+        AuthenticatedUser withoutAccount = new AuthenticatedUser(ME, null, "Anna Bianchi", "consumer", null, null);
+
+        assertEquals(List.of(legacy), service.getMyAppointments(withoutAccount, null));
+        verify(repository, never()).findMine(any(), any());
+    }
+
+    @Test
+    void aClaimedBookingKeepsTheOldSubjectColumnWrittenToo() {
+        AppointmentEntity mine = guest("Anna Bianchi", "3331112222");
+        candidates(mine);
+
+        service.getMyAppointments(me("Anna Bianchi"), "3331112222");
+
+        assertEquals(ME, mine.getClientAuth0Sub(), "old column is still written until the cleanup change");
+        assertEquals(MY_ACCOUNT_ID, mine.getClientAccountId());
     }
 }

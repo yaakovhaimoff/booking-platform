@@ -126,7 +126,10 @@ class AccountServiceTest {
 
     @Test
     void updateProfileRejectsBadInputAndForeignSubjects() {
-        when(repository.findById(3L)).thenReturn(Optional.of(stored("a@torni.test", "secret1", "consumer")));
+        AccountEntity account = stored("a@torni.test", "secret1", "consumer");
+        account.setAuthSubject("local|3");
+        when(repository.findByAuthSubject("local|3")).thenReturn(Optional.of(account));
+        when(repository.findById(3L)).thenReturn(Optional.of(account));
         AuthenticatedUser user = new AuthenticatedUser("local|3", null, null, null);
 
         assertEquals("INVALID", failure(() -> service.updateProfile(user, " ", "1")).getCode());
@@ -143,5 +146,68 @@ class AccountServiceTest {
     @Test
     void subjectsAreStableAndPrefixed() {
         assertEquals("local|3", AccountService.subjectOf(stored("a@torni.test", "secret1", null)));
+    }
+
+    @Test
+    void signUpStoresTheProviderSubjectOnTheAccount() {
+        when(repository.save(any(AccountEntity.class))).thenAnswer(invocation -> {
+            AccountEntity account = invocation.getArgument(0);
+            if (account.getId() == null) {
+                account.setId(12L);
+            }
+            return account;
+        });
+
+        assertEquals("local|12", service.signUp("new@torni.test", "secret1", "New", "consumer").getAuthSubject());
+    }
+
+    @Test
+    void logInFillsAMissingAuthSubject() {
+        AccountEntity legacy = stored("old@torni.test", "secret1", "consumer");
+        when(repository.findByIdentity("old@torni.test")).thenReturn(Optional.of(legacy));
+
+        assertEquals("local|3", service.logIn("old@torni.test", "secret1", null).getAuthSubject());
+    }
+
+    @Test
+    void resolveAccountIdIsOneLookupOnAuthSubject() {
+        AccountEntity account = stored("a@torni.test", "secret1", "consumer");
+        account.setAuthSubject("local|3");
+        when(repository.findByAuthSubject("local|3")).thenReturn(Optional.of(account));
+
+        assertEquals(3L, service.resolveAccountId("local|3"));
+        verify(repository, never()).findById(any());
+    }
+
+    @Test
+    void resolveAccountIdFixesAnAccountThatHasNoAuthSubjectYet() {
+        AccountEntity account = stored("a@torni.test", "secret1", "consumer");
+        when(repository.findByAuthSubject("local|3")).thenReturn(Optional.empty());
+        when(repository.findById(3L)).thenReturn(Optional.of(account));
+
+        assertEquals(3L, service.resolveAccountId("local|3"));
+        assertEquals("local|3", account.getAuthSubject());
+    }
+
+    @Test
+    void resolveAccountIdNeverReassignsAnAccountThatAlreadyHasAnotherSubject() {
+        AccountEntity account = stored("a@torni.test", "secret1", "consumer");
+        account.setAuthSubject("auth0|abc");
+        when(repository.findByAuthSubject("local|3")).thenReturn(Optional.empty());
+        when(repository.findById(3L)).thenReturn(Optional.of(account));
+
+        assertNull(service.resolveAccountId("local|3"));
+        assertEquals("auth0|abc", account.getAuthSubject());
+    }
+
+    @Test
+    void resolveAccountIdIsNullForUnknownOrMalformedSubjects() {
+        when(repository.findByAuthSubject(any())).thenReturn(Optional.empty());
+
+        assertNull(service.resolveAccountId(null));
+        assertNull(service.resolveAccountId(" "));
+        assertNull(service.resolveAccountId("auth0|abc"));
+        assertNull(service.resolveAccountId("local|notanumber"));
+        assertNull(service.resolveAccountId("local|404"));
     }
 }

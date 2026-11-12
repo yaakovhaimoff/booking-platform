@@ -1,5 +1,7 @@
 package com.ServiceBookingPlatform.config;
 
+import com.ServiceBookingPlatform.service.AccountService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,7 +17,10 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * which only happens on routes that SecurityConfig leaves public (guest booking, guest reviews).
  */
 @Component
+@RequiredArgsConstructor
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private final AccountService accountService;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -27,7 +32,8 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
                                   NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JwtAuthenticationToken token) {
-            return AuthenticatedUser.from(token.getToken());
+            AuthenticatedUser user = AuthenticatedUser.from(token.getToken());
+            return user.withAccountId(accountService.resolveAccountId(user.subject()));
         }
         return null;
     }

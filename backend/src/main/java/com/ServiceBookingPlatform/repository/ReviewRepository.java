@@ -10,4 +10,6 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     List<ReviewEntity> findAllByOrderByCreatedAtDesc();
 
     Optional<ReviewEntity> findByAuthorAuth0Sub(String authorAuth0Sub);
+
+    Optional<ReviewEntity> findByAuthorAccountId(Long authorAccountId);
 }

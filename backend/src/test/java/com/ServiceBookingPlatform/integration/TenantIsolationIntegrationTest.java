@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import com.ServiceBookingPlatform.service.SchemaProvisioningService;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
@@ -57,6 +58,7 @@ class TenantIsolationIntegrationTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired @Qualifier("publicJdbcTemplate") JdbcTemplate publicJdbcTemplate;
+    @Autowired SchemaProvisioningService schemaProvisioningService;
 
     private static String env(String name, String fallback) {
         String value = System.getenv(name);
@@ -463,5 +465,102 @@ class TenantIsolationIntegrationTest {
         long untouched = book(null, shopA, serviceA, "Anna Bianchi", "09:30:00");
         assertEquals(List.of(), ids("/api/v1/appointments/me", ownerLookalike, shopA));
         assertEquals(false, ids("/api/v1/appointments/me", annToken, shopB).contains((int) untouched));
+    }
+    @Test
+    @Order(97)
+    void everythingCreatedThroughTheAppCarriesAccountIdsAlongsideTheOldSubjects() {
+        assertEquals(0, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM accounts WHERE auth_subject IS DISTINCT FROM 'local|' || id", Integer.class));
+        assertEquals(0, publicJdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM tenants WHERE owner_account_id IS NULL OR owner_auth0_id <> 'local|' || owner_account_id", Integer.class));
+        assertEquals(true, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM tenants WHERE id IN (?, ?)", Integer.class, shopA, shopB) == 2);
+
+        int signedInRows = 0;
+        for (String schemaName : publicJdbcTemplate.queryForList("SELECT schema_name FROM tenants", String.class)) {
+            assertEquals(0, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + schemaName + ".appointments "
+                    + "WHERE client_auth0_sub IS NOT NULL AND (client_account_id IS NULL OR client_auth0_sub <> 'local|' || client_account_id)", Integer.class), schemaName);
+            assertEquals(0, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + schemaName + ".reviews "
+                    + "WHERE author_auth0_sub IS NOT NULL AND (author_account_id IS NULL OR author_auth0_sub <> 'local|' || author_account_id)", Integer.class), schemaName);
+            signedInRows += publicJdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM " + schemaName + ".appointments WHERE client_account_id IS NOT NULL", Integer.class);
+        }
+        assertEquals(true, signedInRows > 0, "the suite books as signed-in customers, so some rows must carry an account id");
+    }
+
+    @Test
+    @Order(98)
+    void identityBackfillFillsAccountIdsFromOldSubjectsAndIsSafeToRunTwice() throws Exception {
+        String schemaA = publicJdbcTemplate.queryForObject("SELECT schema_name FROM tenants WHERE id = ?", String.class, shopA);
+        Long ownerAccountId = publicJdbcTemplate.queryForObject(
+                "SELECT a.id FROM accounts a JOIN tenants t ON t.owner_auth0_id = 'local|' || a.id WHERE t.id = ?", Long.class, shopA);
+        Long clientAccountId = publicJdbcTemplate.queryForObject(
+                "SELECT MIN(id) FROM accounts WHERE id <> ?", Long.class, ownerAccountId);
+
+        publicJdbcTemplate.update("UPDATE accounts SET auth_subject = NULL");
+        publicJdbcTemplate.update("UPDATE tenants SET owner_account_id = NULL");
+        publicJdbcTemplate.update("INSERT INTO " + schemaA + ".appointments (service_id, client_name, client_phone, start_time, end_time, status, client_auth0_sub, client_account_id) "
+                + "VALUES (?, 'Legacy One', '111', now(), now(), 'CONFIRMED', ?, NULL), (?, 'Legacy Two', '222', now(), now(), 'CONFIRMED', 'local|999999999', NULL)",
+                serviceA, "local|" + clientAccountId, serviceA);
+        publicJdbcTemplate.update("INSERT INTO " + schemaA + ".reviews (author_name, author_auth0_sub, author_account_id, rating, created_at) "
+                + "VALUES ('Legacy Reviewer', ?, NULL, 5, now())", "local|" + clientAccountId);
+
+        // Before any backfill: a shop and bookings that only have the old subject columns keep working.
+        send(get("/api/v1/tenants/me"), ownerAToken, null, null).andExpect(status().isOk());
+        send(get("/api/v1/appointments"), ownerAToken, shopA, null).andExpect(status().isOk());
+        send(get("/api/v1/appointments"), ownerBToken, shopA, null).andExpect(status().isForbidden());
+        send(get("/api/v1/appointments/me"), customerOneToken, shopA, null).andExpect(status().isOk());
+
+        int unmappedTenants = schemaProvisioningService.backfillPublicIdentity();
+        int unmappedRows = schemaProvisioningService.backfillAccountIds(schemaA);
+
+        assertEquals(0, unmappedTenants);
+        assertEquals(1, unmappedRows, "only the booking for the non-existent account stays unmapped");
+        assertEquals(0, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM accounts WHERE auth_subject IS DISTINCT FROM 'local|' || id", Integer.class));
+        assertEquals(0, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM tenants WHERE owner_account_id IS NULL", Integer.class));
+        assertEquals(ownerAccountId, publicJdbcTemplate.queryForObject("SELECT owner_account_id FROM tenants WHERE id = ?", Long.class, shopA));
+        assertEquals(clientAccountId, publicJdbcTemplate.queryForObject(
+                "SELECT client_account_id FROM " + schemaA + ".appointments WHERE client_name = 'Legacy One'", Long.class));
+        assertEquals(clientAccountId, publicJdbcTemplate.queryForObject(
+                "SELECT author_account_id FROM " + schemaA + ".reviews WHERE author_name = 'Legacy Reviewer'", Long.class));
+        assertEquals(null, publicJdbcTemplate.queryForObject(
+                "SELECT client_account_id FROM " + schemaA + ".appointments WHERE client_name = 'Legacy Two'", Long.class));
+        assertEquals(0, publicJdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM " + schemaA + ".appointments WHERE client_auth0_sub LIKE 'local|%' AND client_account_id IS NOT NULL "
+                        + "AND 'local|' || client_account_id <> client_auth0_sub", Integer.class));
+
+        String snapshotBefore = snapshot(schemaA);
+        assertEquals(0, schemaProvisioningService.backfillPublicIdentity());
+        assertEquals(1, schemaProvisioningService.backfillAccountIds(schemaA));
+        schemaProvisioningService.migrate(schemaA, 0L);
+        assertEquals(snapshotBefore, snapshot(schemaA), "a second run must change nothing");
+    }
+
+    private String snapshot(String schemaName) {
+        return "" + publicJdbcTemplate.queryForList("SELECT id || ':' || COALESCE(auth_subject, '') FROM accounts ORDER BY id", String.class)
+                + publicJdbcTemplate.queryForList("SELECT id || ':' || COALESCE(owner_account_id::text, '') FROM tenants ORDER BY id", String.class)
+                + publicJdbcTemplate.queryForList("SELECT id || ':' || COALESCE(client_account_id::text, '') FROM " + schemaName + ".appointments ORDER BY id", String.class)
+                + publicJdbcTemplate.queryForList("SELECT id || ':' || COALESCE(author_account_id::text, '') FROM " + schemaName + ".reviews ORDER BY id", String.class);
+    }
+
+    @Test
+    @Order(99)
+    void accountIdColumnsExistInEveryTenantSchemaAndMigrationCanRunTwice() {
+        assertEquals(1, columnCount("public", "accounts", "auth_subject"));
+        assertEquals(1, columnCount("public", "tenants", "owner_account_id"));
+
+        List<String> schemaNames = publicJdbcTemplate.queryForList("SELECT schema_name FROM tenants", String.class);
+        assertEquals(true, schemaNames.size() >= 2);
+        for (String schemaName : schemaNames) {
+            assertEquals(1, columnCount(schemaName, "appointments", "client_account_id"), schemaName);
+            assertEquals(1, columnCount(schemaName, "reviews", "author_account_id"), schemaName);
+            schemaProvisioningService.migrate(schemaName, 0L);
+            schemaProvisioningService.migrate(schemaName, 0L);
+            assertEquals(1, columnCount(schemaName, "appointments", "client_account_id"), schemaName);
+        }
+    }
+
+    private int columnCount(String schemaName, String tableName, String columnName) {
+        return publicJdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name = ?",
+                Integer.class, schemaName, tableName, columnName);
     }
 }
