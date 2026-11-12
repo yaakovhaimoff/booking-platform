@@ -28,4 +28,7 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
     List<AppointmentEntity> findByStatusNot(AppointmentStatus status);
 
     List<AppointmentEntity> findByClientAuth0SubOrderByStartTimeDesc(String clientAuth0Sub);
+
+    // Guest bookings (no account attached) whose phone ends with the given digits: candidates to claim.
+    List<AppointmentEntity> findByClientAuth0SubIsNullAndClientPhoneEndingWith(String phoneSuffix);
 }

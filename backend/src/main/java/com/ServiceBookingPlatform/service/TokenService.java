@@ -40,7 +40,20 @@ public class TokenService {
         if (account.getName() != null && !account.getName().isBlank()) {
             claims.claim("name", account.getName());
         }
+        String phone = phoneOf(account);
+        if (!phone.isEmpty()) {
+            claims.claim("phone", phone);
+        }
         return jwtEncoder.encode(JwtEncoderParameters.from(
                 JwsHeader.with(MacAlgorithm.HS256).build(), claims.build())).getTokenValue();
+    }
+
+    // The profile phone if the customer saved one, otherwise the number they signed up with.
+    private static String phoneOf(AccountEntity account) {
+        String profile = GuestBookingMatcher.digitsOnly(account.getPhone());
+        if (!profile.isEmpty()) {
+            return profile;
+        }
+        return account.getIdentity().contains("@") ? "" : GuestBookingMatcher.digitsOnly(account.getIdentity());
     }
 }

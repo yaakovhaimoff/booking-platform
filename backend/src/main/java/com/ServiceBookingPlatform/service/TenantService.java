@@ -68,8 +68,14 @@ public class TenantService {
         return tenant;
     }
 
+    /** Every tenant including disabled ones: for the admin panel only. */
     public List<TenantEntity> listAllTenants() {
         return tenantRepository.findAll();
+    }
+
+    /** What customers can search: disabled shops never appear. */
+    public List<TenantEntity> listEnabledTenants() {
+        return tenantRepository.findByEnabledTrue();
     }
 
     @Transactional

@@ -8,7 +8,6 @@ import lombok.Data;
 public class TenantResponse {
     private Long id;
     private String slug;
-    private String schemaName;
     private String name;
     private String address;
     private String phone;
@@ -24,7 +23,6 @@ public class TenantResponse {
         return TenantResponse.builder()
                 .id(entity.getId())
                 .slug(entity.getSlug())
-                .schemaName(entity.getSchemaName())
                 .name(entity.getName())
                 .address(entity.getAddress())
                 .phone(entity.getPhone())

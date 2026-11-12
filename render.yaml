@@ -22,5 +22,9 @@ services:
         fromDatabase: { name: booking-db, property: password }
       - key: SHOW_SQL
         value: "false"
+      - key: AUTH_LOCAL_SECRET
+        generateValue: true   # random signing key for login tokens, kept across deploys
+      - key: ADMIN_EMAILS
+        sync: false   # comma-separated emails allowed into /admin
       - key: CORS_ALLOWED_ORIGINS
         sync: false   # set to your Vercel URL after the frontend deploys

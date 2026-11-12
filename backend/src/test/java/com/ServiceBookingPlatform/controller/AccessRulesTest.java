@@ -51,6 +51,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -161,7 +162,7 @@ class AccessRulesTest {
         TenantEntity tenant = TenantEntity.builder().id(1L).slug("shop").name("Shop").schemaName("tenant_1")
                 .ownerAuth0Id("local|7").createdAt(LocalDateTime.now()).build();
         when(tenantService.getTenantBySlug("shop")).thenReturn(tenant);
-        when(tenantService.listAllTenants()).thenReturn(List.of(tenant));
+        when(tenantService.listEnabledTenants()).thenReturn(List.of(tenant));
 
         mockMvc.perform(get("/api/v1/services").header(TENANT, "1")).andExpect(status().isOk());
         mockMvc.perform(get("/api/v1/operating-hours").header(TENANT, "1")).andExpect(status().isOk());
@@ -170,28 +171,70 @@ class AccessRulesTest {
     }
 
     @Test
+    void searchListsOnlyEnabledShopsAndNoPublicResponseExposesTheSchemaName() throws Exception {
+        TenantEntity tenant = TenantEntity.builder().id(1L).slug("shop").name("Shop").schemaName("tenant_1")
+                .ownerAuth0Id("local|7").createdAt(LocalDateTime.now()).build();
+        when(tenantService.listEnabledTenants()).thenReturn(List.of(tenant));
+        when(tenantService.getTenantBySlug("shop")).thenReturn(tenant);
+        when(tenantService.getTenantByOwnerAuth0Id("local|7")).thenReturn(tenant);
+
+        mockMvc.perform(get("/api/v1/tenants")).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].slug").value("shop")).andExpect(jsonPath("$[0].schemaName").doesNotExist());
+        mockMvc.perform(get("/api/v1/tenants/shop")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Shop")).andExpect(jsonPath("$.schemaName").doesNotExist());
+        mockMvc.perform(get("/api/v1/tenants/me").header("Authorization", owner())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.schemaName").doesNotExist()).andExpect(jsonPath("$.ownerEmail").doesNotExist());
+        verify(tenantService, never()).listAllTenants();
+    }
+
+    @Test
+    void aCustomersListIsRequestedWithTheNameAndPhoneFromTheirToken() throws Exception {
+        AccountEntity customer = account(9, "ann@torni.test", "consumer");
+        customer.setName("Anna Bianchi");
+        customer.setPhone("393331112222");
+        when(appointmentService.getMyAppointments(any(), any(), any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/appointments/me").header(TENANT, "1").header("Authorization", bearer(customer)))
+                .andExpect(status().isOk());
+
+        verify(appointmentService).getMyAppointments("local|9", "Anna Bianchi", "393331112222");
+    }
+
+    @Test
+    void anOwnerTokenNeverTriesToClaimGuestBookings() throws Exception {
+        AccountEntity businessWithPhone = account(7, "owner@torni.test", "business");
+        businessWithPhone.setPhone("393331112222");
+        when(appointmentService.getMyAppointments(any(), any(), any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/appointments/me").header(TENANT, "1").header("Authorization", bearer(businessWithPhone)))
+                .andExpect(status().isOk());
+
+        verify(appointmentService).getMyAppointments("local|7", "Test", null);
+    }
+
+    @Test
     void aGuestCanBookWithoutAnAccount() throws Exception {
         AppointmentEntity saved = AppointmentEntity.builder().id(5L).serviceId(1L).clientName("Guest")
-                .clientPhone("333").startTime(LocalDateTime.now()).endTime(LocalDateTime.now())
+                .clientPhone("3331112222").startTime(LocalDateTime.now()).endTime(LocalDateTime.now())
                 .status(AppointmentStatus.PENDING).build();
         when(appointmentService.book(any(), eq(null))).thenReturn(AppointmentResponse.from(saved));
 
         mockMvc.perform(post("/api/v1/appointments").header(TENANT, "1").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"serviceId\":1,\"clientName\":\"Guest\",\"clientPhone\":\"333\",\"startTime\":\"2030-01-01T10:00:00\"}"))
+                .content("{\"serviceId\":1,\"clientName\":\"Guest\",\"clientPhone\":\"3331112222\",\"startTime\":\"2030-01-01T10:00:00\"}"))
                 .andExpect(status().isCreated());
     }
 
     @Test
     void aSignedInBookingIsTiedToTheTokenSubjectNotTheBody() throws Exception {
         AppointmentEntity saved = AppointmentEntity.builder().id(5L).serviceId(1L).clientName("Ann")
-                .clientPhone("333").startTime(LocalDateTime.now()).endTime(LocalDateTime.now())
+                .clientPhone("3331112222").startTime(LocalDateTime.now()).endTime(LocalDateTime.now())
                 .status(AppointmentStatus.PENDING).build();
         when(appointmentService.book(any(), eq("local|9"))).thenReturn(AppointmentResponse.from(saved));
 
         mockMvc.perform(post("/api/v1/appointments").header(TENANT, "1")
                 .header("Authorization", bearer(account(9, "ann@torni.test", "consumer")))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"serviceId\":1,\"clientName\":\"Ann\",\"clientPhone\":\"333\",\"startTime\":\"2030-01-01T10:00:00\",\"clientAuth0Sub\":\"local|1\"}"))
+                .content("{\"serviceId\":1,\"clientName\":\"Ann\",\"clientPhone\":\"3331112222\",\"startTime\":\"2030-01-01T10:00:00\",\"clientAuth0Sub\":\"local|1\"}"))
                 .andExpect(status().isCreated());
         verify(appointmentService).book(any(), eq("local|9"));
     }

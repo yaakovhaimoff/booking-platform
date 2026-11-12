@@ -2,7 +2,7 @@ import { http } from './http'
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 
 // GET /api/v1/tenants/{slug}
-// Returns: { id: number, slug: string, schemaName: string }
+// Returns the public store profile: { id, slug, name, address, phone, ... } (no internal fields)
 // Throws the parsed JSON body on 4xx/5xx (same convention as bookingApi.js)
 export async function getTenantBySlug(slug) {
   const res = await http(`${BASE}/tenants/${slug}`)

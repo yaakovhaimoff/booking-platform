@@ -123,6 +123,21 @@ class TenantIsolationIntegrationTest {
         return JsonPath.read(body, "$.token");
     }
 
+    private String signUpNamed(String identity, String accountType, String name) throws Exception {
+        String body = mockMvc.perform(post("/api/v1/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"identity\":\"" + identity + "\",\"password\":\"" + PASSWORD_FOR_ACCOUNTS
+                                + "\",\"name\":\"" + name + "\",\"accountType\":\"" + accountType + "\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.token");
+    }
+
+    private String savePhone(String token, String name, String phone) throws Exception {
+        String body = send(put("/api/v1/auth/profile"), token, null,
+                "{\"name\":\"" + name + "\",\"phone\":\"" + phone + "\"}")
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.token");
+    }
+
     private static String suffix() {
         return UUID.randomUUID().toString().substring(0, 8);
     }
@@ -159,6 +174,12 @@ class TenantIsolationIntegrationTest {
                         + "\",\"clientPhone\":\"3331112222\",\"startTime\":\"" + TOMORROW + "T" + time + "\"}")
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         return ((Number) JsonPath.read(body, "$.id")).longValue();
+    }
+
+    private List<Integer> ids(String path, String token, long shop) throws Exception {
+        String body = send(get(path), token, shop, null).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$[*].id");
     }
 
     private List<String> names(String path, String token, long shop, String jsonPath) throws Exception {
@@ -226,10 +247,10 @@ class TenantIsolationIntegrationTest {
         assertEquals(false, ((List<?>) JsonPath.read(slotsInA, "$")).contains(TOMORROW + "T10:00:00"));
         assertEquals(false, ((List<?>) JsonPath.read(slotsInB, "$")).contains(TOMORROW + "T10:00:00"));
         send(post("/api/v1/appointments"), null, shopA,
-                "{\"serviceId\":" + serviceA + ",\"clientName\":\"Again\",\"clientPhone\":\"333\",\"startTime\":\"" + TOMORROW + "T10:00:00\"}")
+                "{\"serviceId\":" + serviceA + ",\"clientName\":\"Again\",\"clientPhone\":\"3331112222\",\"startTime\":\"" + TOMORROW + "T10:00:00\"}")
                 .andExpect(status().isConflict());
         send(post("/api/v1/appointments"), null, shopA,
-                "{\"serviceId\":" + serviceA + ",\"clientName\":\"Later\",\"clientPhone\":\"333\",\"startTime\":\"" + TOMORROW + "T11:00:00\"}")
+                "{\"serviceId\":" + serviceA + ",\"clientName\":\"Later\",\"clientPhone\":\"3331112222\",\"startTime\":\"" + TOMORROW + "T11:00:00\"}")
                 .andExpect(status().isCreated());
     }
 
@@ -339,6 +360,15 @@ class TenantIsolationIntegrationTest {
     @Test
     @Order(11)
     void aDisabledShopRefusesEveryTenantRequestAndOtherShopsKeepWorking() throws Exception {
+        String slugA = JsonPath.read(send(get("/api/v1/tenants/me"), ownerAToken, null, null)
+                .andReturn().getResponse().getContentAsString(), "$.slug");
+        String slugB = JsonPath.read(send(get("/api/v1/tenants/me"), ownerBToken, null, null)
+                .andReturn().getResponse().getContentAsString(), "$.slug");
+        String searchBefore = send(get("/api/v1/tenants"), null, null, null).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertEquals(true, ((List<?>) JsonPath.read(searchBefore, "$[*].slug")).containsAll(List.of(slugA, slugB)));
+        assertEquals(false, searchBefore.contains("tenant_"), "search must not expose schema names");
+
         send(patch("/api/v1/admin/tenants/" + shopB + "/enabled"), ownerAToken, null, "{\"enabled\":false}")
                 .andExpect(status().isForbidden());
         send(patch("/api/v1/admin/tenants/" + shopB + "/enabled"), adminToken, null, "{\"enabled\":false}")
@@ -347,15 +377,30 @@ class TenantIsolationIntegrationTest {
         send(get("/api/v1/services"), null, shopB, null)
                 .andExpect(status().isForbidden()).andExpect(jsonPath("$.error").value("TENANT_DISABLED"));
         send(post("/api/v1/appointments"), null, shopB,
-                "{\"serviceId\":" + serviceB + ",\"clientName\":\"Late\",\"clientPhone\":\"333\",\"startTime\":\"" + TOMORROW + "T15:00:00\"}")
+                "{\"serviceId\":" + serviceB + ",\"clientName\":\"Late\",\"clientPhone\":\"3331112222\",\"startTime\":\"" + TOMORROW + "T15:00:00\"}")
                 .andExpect(status().isForbidden());
         send(get("/api/v1/appointments"), ownerBToken, shopB, null).andExpect(status().isForbidden());
         send(get("/api/v1/tenants/me"), ownerBToken, null, null).andExpect(status().isOk());
         send(get("/api/v1/services"), null, shopA, null).andExpect(status().isOk());
 
+        String searchWhileDisabled = send(get("/api/v1/tenants"), null, null, null).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        List<?> slugsWhileDisabled = JsonPath.read(searchWhileDisabled, "$[*].slug");
+        assertEquals(true, slugsWhileDisabled.contains(slugA));
+        assertEquals(false, slugsWhileDisabled.contains(slugB), "a disabled shop must not appear in search");
+        send(get("/api/v1/tenants/" + slugB), null, null, null).andExpect(status().isForbidden());
+        send(get("/api/v1/tenants/" + slugA), null, null, null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.schemaName").doesNotExist());
+        String adminList = send(get("/api/v1/admin/tenants"), adminToken, null, null).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertEquals(true, ((List<?>) JsonPath.read(adminList, "$[*].slug")).contains(slugB),
+                "the admin panel must still list disabled shops so they can be re-enabled");
+
         send(patch("/api/v1/admin/tenants/" + shopB + "/enabled"), adminToken, null, "{\"enabled\":true}")
                 .andExpect(status().isOk());
         send(get("/api/v1/services"), null, shopB, null).andExpect(status().isOk());
+        assertEquals(true, ((List<?>) JsonPath.read(send(get("/api/v1/tenants"), null, null, null)
+                .andReturn().getResponse().getContentAsString(), "$[*].slug")).contains(slugB));
     }
 
     @Test
@@ -373,5 +418,50 @@ class TenantIsolationIntegrationTest {
             assertEquals(List.of("Alpha Haircut"), names("/api/v1/services", null, shopA, "$[*].name"));
             assertEquals(List.of("Beta Haircut", "Beta Color"), names("/api/v1/services", null, shopB, "$[*].name"));
         }
+    }
+
+    @Test
+    @Order(14)
+    void guestBookingsAreLinkedOnlyToTheAccountWhosePhoneAndNameBothMatch() throws Exception {
+        long annInA = book(null, shopA, serviceA, "Anna Bianchi", "12:00:00");
+        long annInB = book(null, shopB, serviceB, "Anna Bianchi", "12:00:00");
+        long martaInA = book(null, shopA, serviceA, "Marta Rossi", "12:30:00");
+
+        String run = suffix();
+        String annToken = savePhone(signUpNamed("anna-" + run + "@torni.test", "consumer", "anna  BIANCHI"),
+                "anna  BIANCHI", "+39 333 111 2222");
+
+        // Nothing is linked until she looks, then exactly her two bookings (one per shop) are.
+        List<Integer> inA = ids("/api/v1/appointments/me", annToken, shopA);
+        List<Integer> inB = ids("/api/v1/appointments/me", annToken, shopB);
+        assertEquals(true, inA.contains((int) annInA), "her guest booking in shop A should be linked");
+        assertEquals(false, inA.contains((int) martaInA), "same phone but another name must not be linked");
+        assertEquals(true, inB.contains((int) annInB), "her guest booking in shop B should be linked");
+
+        // The first account to claim a booking keeps it: a second account with the same details gets nothing.
+        String lateToken = savePhone(signUpNamed("late-" + run + "@torni.test", "consumer", "Anna Bianchi"),
+                "Anna Bianchi", "3331112222");
+        assertEquals(false, ids("/api/v1/appointments/me", lateToken, shopA).contains((int) annInA));
+        assertEquals(false, ids("/api/v1/appointments/me", lateToken, shopB).contains((int) annInB));
+
+        // Same phone, other name: only Marta's own booking, never Anna's.
+        String martaToken = savePhone(signUpNamed("marta-" + run + "@torni.test", "consumer", "Marta Rossi"),
+                "Marta Rossi", "3331112222");
+        List<Integer> martaInAList = ids("/api/v1/appointments/me", martaToken, shopA);
+        assertEquals(true, martaInAList.contains((int) martaInA));
+        assertEquals(false, martaInAList.contains((int) annInA));
+
+        // A linked booking behaves like any other of hers: she can cancel it, the late account cannot.
+        send(patch("/api/v1/appointments/" + annInA + "/status"), lateToken, shopA, "{\"status\":\"CANCELLED\"}")
+                .andExpect(status().isForbidden());
+        send(patch("/api/v1/appointments/" + annInA + "/status"), annToken, shopA, "{\"status\":\"CANCELLED\"}")
+                .andExpect(status().isOk());
+
+        // Owners never claim: a business account with the same name and phone sees nothing of it.
+        String ownerLookalike = savePhone(signUpNamed("lookalike-" + run + "@torni.test", "business", "Anna Bianchi"),
+                "Anna Bianchi", "3331112222");
+        long untouched = book(null, shopA, serviceA, "Anna Bianchi", "09:30:00");
+        assertEquals(List.of(), ids("/api/v1/appointments/me", ownerLookalike, shopA));
+        assertEquals(false, ids("/api/v1/appointments/me", annToken, shopB).contains((int) untouched));
     }
 }

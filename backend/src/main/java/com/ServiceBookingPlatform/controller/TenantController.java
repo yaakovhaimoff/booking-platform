@@ -29,9 +29,9 @@ public class TenantController {
     // GET /api/v1/tenants/{slug}
     // Public endpoint. Frontend calls this on every /store/:slug load to get the tenant ID.
     @GetMapping("/{slug}")
-    public ResponseEntity<TenantResponse> getBySlug(@PathVariable String slug) {
+    public ResponseEntity<PublicTenantResponse> getBySlug(@PathVariable String slug) {
         TenantEntity tenant = tenantService.getTenantBySlug(slug);
-        return ResponseEntity.ok(TenantResponse.from(tenant));
+        return ResponseEntity.ok(PublicTenantResponse.from(tenant));
     }
 
     @GetMapping("/me")
@@ -62,7 +62,7 @@ public class TenantController {
     @GetMapping
     public ResponseEntity<List<PublicTenantResponse>> listTenants() {
         return ResponseEntity.ok(
-            tenantService.listAllTenants().stream()
+            tenantService.listEnabledTenants().stream()
                 .map(PublicTenantResponse::from)
                 .collect(Collectors.toList())
         );

@@ -21,6 +21,8 @@ export default function CheckoutForm({ onSubmit, error, knownName = '', knownPho
       errors.clientPhone = 'phoneRequired'
     } else if (!/^\d+$/.test(clientPhone.trim())) {
       errors.clientPhone = 'phoneDigits'
+    } else if (clientPhone.trim().length < 6 || clientPhone.trim().length > 15) {
+      errors.clientPhone = 'phoneLength'
     }
     return errors
   }

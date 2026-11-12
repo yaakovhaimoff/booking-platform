@@ -44,7 +44,9 @@ public class AppointmentController {
 
     @GetMapping("/me")
     public ResponseEntity<List<AppointmentResponse>> getMyAppointments(AuthenticatedUser user) {
-        List<AppointmentResponse> result = appointmentService.getMyAppointments(user.subject()).stream()
+        // Only customer accounts claim guest bookings; an owner's token never pulls customers' bookings.
+        String claimPhone = user.isConsumer() ? user.phone() : null;
+        List<AppointmentResponse> result = appointmentService.getMyAppointments(user.subject(), user.name(), claimPhone).stream()
                 .map(AppointmentResponse::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);

@@ -66,6 +66,35 @@ class TokenServiceTest {
     }
 
     @Test
+    void thePhoneClaimIsTheProfilePhoneInDigits() {
+        AccountEntity withProfilePhone = account("ann@torni.test", "Ann", "consumer");
+        withProfilePhone.setPhone("393331112222");
+
+        assertEquals("393331112222", AuthenticatedUser.from(decoder.decode(tokenService.issue(withProfilePhone))).phone());
+    }
+
+    @Test
+    void aPhoneLoginUsesItsOwnNumberWhenNoProfilePhoneIsSaved() {
+        AuthenticatedUser user = AuthenticatedUser.from(
+                decoder.decode(tokenService.issue(account("+39 333 111 2222", "Ann", "consumer"))));
+
+        assertEquals("393331112222", user.phone());
+    }
+
+    @Test
+    void theProfilePhoneWinsOverTheLoginNumber() {
+        AccountEntity account = account("+39333000111", "Ann", "consumer");
+        account.setPhone("3331112222");
+
+        assertEquals("3331112222", AuthenticatedUser.from(decoder.decode(tokenService.issue(account))).phone());
+    }
+
+    @Test
+    void anEmailLoginWithoutAProfilePhoneHasNoPhoneClaim() {
+        assertNull(AuthenticatedUser.from(decoder.decode(tokenService.issue(account("ann@torni.test", "Ann", "consumer")))).phone());
+    }
+
+    @Test
     void theTokenExpiresAfterTheConfiguredHours() {
         Jwt jwt = decoder.decode(tokenService.issue(account("a@torni.test", "A", "consumer")));
 

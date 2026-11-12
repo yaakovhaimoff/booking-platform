@@ -11,11 +11,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OperatingHoursService {
+
+    // 24-hour HH:mm, which is what the owner's time inputs send and what the slot calculator parses.
+    private static final Pattern CLOCK_TIME = Pattern.compile("^([01]\\d|2[0-3]):[0-5]\\d$");
 
     private final OperatingHoursRepository operatingHoursRepository;
 
@@ -41,6 +45,9 @@ public class OperatingHoursService {
                 if (row.getOpenTime() == null || row.getCloseTime() == null) {
                     throw new IllegalArgumentException(
                             "openTime and closeTime required when isClosed=false");
+                }
+                if (!CLOCK_TIME.matcher(row.getOpenTime()).matches() || !CLOCK_TIME.matcher(row.getCloseTime()).matches()) {
+                    throw new IllegalArgumentException("openTime and closeTime must look like 09:00");
                 }
                 if (row.getOpenTime().compareTo(row.getCloseTime()) >= 0) {
                     throw new IllegalArgumentException("openTime must be before closeTime");

@@ -20,7 +20,8 @@ PostgreSQL, and a React + Vite SPA (`/frontend`).
 ## Commands
 
 ```bash
-# Backend (/backend)
+# Backend (/backend). First copy backend/.env.example to backend/.env and fill DB_USER / DB_PASSWORD
+# (the app refuses to start without them).
 ./mvnw spring-boot:run
 ./mvnw test
 ./mvnw package -DskipTests

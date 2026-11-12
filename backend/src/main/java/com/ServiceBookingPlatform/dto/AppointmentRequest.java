@@ -12,7 +12,7 @@ public class AppointmentRequest {
     @NotBlank @Size(min = 1, max = 100)
     private String clientName;
 
-    @NotBlank @Pattern(regexp = "\\d+")
+    @NotBlank @Pattern(regexp = "\\d{6,15}", message = "Phone must be 6 to 15 digits")
     private String clientPhone;
 
     @NotBlank

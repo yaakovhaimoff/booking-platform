@@ -145,7 +145,28 @@ public class AppointmentService {
         return updated;
     }
 
-    public List<AppointmentEntity> getMyAppointments(String clientAuth0Sub) {
+    /**
+     * The customer's bookings in this shop. First attaches any guest booking whose phone and name both match
+     * the account's profile; a booking that already belongs to an account is never taken over.
+     */
+    public List<AppointmentEntity> getMyAppointments(String clientAuth0Sub, String accountName, String accountPhone) {
+        claimMatchingGuestBookings(clientAuth0Sub, accountName, accountPhone);
         return appointmentRepository.findByClientAuth0SubOrderByStartTimeDesc(clientAuth0Sub);
+    }
+
+    private void claimMatchingGuestBookings(String clientAuth0Sub, String accountName, String accountPhone) {
+        String suffix = GuestBookingMatcher.lookupSuffix(accountPhone);
+        if (suffix.isEmpty() || accountName == null || accountName.isBlank()) {
+            return;
+        }
+        List<AppointmentEntity> claimed = appointmentRepository
+                .findByClientAuth0SubIsNullAndClientPhoneEndingWith(suffix).stream()
+                .filter(a -> GuestBookingMatcher.matches(a.getClientName(), a.getClientPhone(), accountName, accountPhone))
+                .peek(a -> a.setClientAuth0Sub(clientAuth0Sub))
+                .toList();
+        if (!claimed.isEmpty()) {
+            appointmentRepository.saveAll(claimed);
+            log.info("Linked {} guest booking(s) to an account in tenant {}", claimed.size(), TenantContextHolder.getTenantId());
+        }
     }
 }
