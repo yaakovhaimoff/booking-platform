@@ -31,7 +31,7 @@ export default function ClientDashboard() {
           onLogout={() => { logout(); navigate('/', { replace: true }) }}
           logoutLabel={t('pLogOut')}
           label={t('pAccount')}
-          className="sticky top-16 h-[calc(100vh-4rem)]"
+          className="sticky top-[78px] h-[calc(100vh-78px)]"
         />
         <div className="flex-1 min-w-0 px-4 md:px-8 py-10">
           <div className="flex items-center gap-4 mb-6">
