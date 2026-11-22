@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Password accounts for the local auth mode, and the one place that turns a token subject into our own account
@@ -55,6 +56,19 @@ public class AccountService {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    public List<AccountEntity> listAll() {
+        return accountRepository.findAll();
+    }
+
+    public AccountEntity getById(Long accountId) {
+        return findByAccountId(accountId);
+    }
+
+    @Transactional
+    public void deleteAccount(Long accountId) {
+        accountRepository.delete(findByAccountId(accountId));
     }
 
     @Transactional

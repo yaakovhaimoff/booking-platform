@@ -224,4 +224,30 @@ class ImageUploadServiceTest {
     void withoutCredentialsListingFindsNothing() {
         assertTrue(new ImageUploadService("", "", "", "", "", "").listStoredImages(16L).isEmpty());
     }
+
+    @Test
+    void deletingAShopForGoodRemovesEveryFileInItsFolderAcrossPagesAndNothingElse() {
+        S3Client storage = mock(S3Client.class);
+        Instant modified = Instant.parse("2026-01-01T00:00:00Z");
+        when(storage.listObjectsV2(any(ListObjectsV2Request.class))).thenReturn(
+                ListObjectsV2Response.builder().contents(stored("dev/tenants/16/" + FILE, modified),
+                        stored("dev/tenants/16/odd-name.txt", modified)).isTruncated(true).nextContinuationToken("p2").build(),
+                ListObjectsV2Response.builder().contents(stored("dev/tenants/16/" + OTHER_FILE, modified))
+                        .isTruncated(false).build());
+
+        int deleted = withStorage(storage).deleteAllImagesOf(16L);
+
+        assertEquals(3, deleted);
+        ArgumentCaptor<ListObjectsV2Request> listing = ArgumentCaptor.forClass(ListObjectsV2Request.class);
+        verify(storage, times(2)).listObjectsV2(listing.capture());
+        assertEquals("dev/tenants/16/", listing.getAllValues().get(0).prefix());
+        ArgumentCaptor<DeleteObjectRequest> removed = ArgumentCaptor.forClass(DeleteObjectRequest.class);
+        verify(storage, times(3)).deleteObject(removed.capture());
+        assertTrue(removed.getAllValues().stream().allMatch(request -> request.key().startsWith("dev/tenants/16/")));
+    }
+
+    @Test
+    void deletingAShopForGoodWithoutCredentialsDeletesNothing() {
+        assertEquals(0, new ImageUploadService("", "", "", "", "", "").deleteAllImagesOf(16L));
+    }
 }

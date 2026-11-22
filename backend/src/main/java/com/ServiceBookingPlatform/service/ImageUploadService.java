@@ -196,6 +196,33 @@ public class ImageUploadService {
         return images;
     }
 
+    /**
+     * Removes every file in this shop's folder of the current environment (used when a shop is deleted for good).
+     * Returns how many files were deleted. A failed delete is logged and counted out, never thrown.
+     */
+    public int deleteAllImagesOf(Long tenantId) {
+        if (!isConfigured() || storageClient == null) {
+            return 0;
+        }
+        String folder = tenantFolder(tenantId);
+        int deleted = 0;
+        String continuationToken = null;
+        do {
+            ListObjectsV2Response page = storageClient.listObjectsV2(ListObjectsV2Request.builder()
+                    .bucket(bucket).prefix(folder).continuationToken(continuationToken).build());
+            for (S3Object object : page.contents()) {
+                try {
+                    storageClient.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(object.key()).build());
+                    deleted++;
+                } catch (RuntimeException exception) {
+                    log.warn("Could not delete {} from storage: {}", object.key(), exception.getMessage());
+                }
+            }
+            continuationToken = Boolean.TRUE.equals(page.isTruncated()) ? page.nextContinuationToken() : null;
+        } while (continuationToken != null);
+        return deleted;
+    }
+
     private String ownedKey(Long tenantId, String url) {
         String folder = publicBaseUrl + "/" + tenantFolder(tenantId);
         if (url == null || !url.startsWith(folder)) {

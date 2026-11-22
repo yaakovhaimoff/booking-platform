@@ -90,6 +90,52 @@ public class TenantService {
         return tenantRepository.findAll();
     }
 
+    public TenantEntity getTenantById(Long id) {
+        return tenantRepository.findById(id).orElseThrow(() -> new TenantNotFoundException(String.valueOf(id)));
+    }
+
+    /** The shop an account owns, found by account id or, for shops from before account ids, by the old subject. */
+    public Optional<TenantEntity> findShopOwnedBy(Long accountId, String subject) {
+        Optional<TenantEntity> byAccount = accountId == null ? Optional.empty()
+                : tenantRepository.findByOwnerAccountId(accountId);
+        return byAccount.or(() -> subject == null ? Optional.empty()
+                : tenantRepository.findByOwnerAuth0Id(subject).filter(tenant -> tenant.getOwnerAccountId() == null));
+    }
+
+    /**
+     * Permanently deletes a shop: its stored photos, its database schema with every booking and review, and its
+     * tenant record. The owner's account is left alone. Photos and the tenant record go first so a failure can
+     * never leave a listed shop without data; a schema that fails to drop is logged and left as an invisible orphan.
+     * Returns the number of photos removed.
+     */
+    public int deleteTenant(Long id) {
+        TenantEntity tenant = getTenantById(id);
+        int photos = imageUploadService.deleteAllImagesOf(tenant.getId());
+        tenantRoutingDataSource.removeTenantDataSource(tenant.getSchemaName());
+        tenantRepository.delete(tenant);
+        try {
+            schemaProvisioningService.dropSchema(tenant.getSchemaName());
+        } catch (RuntimeException exception) {
+            log.error("Tenant {} was deleted but its schema {} could not be dropped: {}",
+                    tenant.getId(), tenant.getSchemaName(), exception.getMessage());
+        }
+        log.info("Tenant deleted: id={} slug={} schema={}", tenant.getId(), tenant.getSlug(), tenant.getSchemaName());
+        return photos;
+    }
+
+    /** Detaches a deleted account from the bookings and reviews it left in every shop. Returns rows changed. */
+    public int unlinkAccountEverywhere(Long accountId, String subject) {
+        int changed = 0;
+        for (TenantEntity tenant : tenantRepository.findAll()) {
+            try {
+                changed += schemaProvisioningService.unlinkAccount(tenant.getSchemaName(), accountId, subject);
+            } catch (org.springframework.dao.DataAccessException exception) {
+                log.warn("Could not detach account {} in schema {}: {}", accountId, tenant.getSchemaName(), exception.getMessage());
+            }
+        }
+        return changed;
+    }
+
     /** What customers can search: disabled shops never appear. */
     public List<TenantEntity> listEnabledTenants() {
         return tenantRepository.findByEnabledTrue();

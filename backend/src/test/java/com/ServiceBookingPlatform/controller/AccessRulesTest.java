@@ -7,6 +7,7 @@ import com.ServiceBookingPlatform.config.LocalAuthConfig;
 import com.ServiceBookingPlatform.config.OwnerGuard;
 import com.ServiceBookingPlatform.config.SecurityConfig;
 import com.ServiceBookingPlatform.config.WebConfig;
+import com.ServiceBookingPlatform.dto.AdminSummaryResponse;
 import com.ServiceBookingPlatform.dto.AppointmentResponse;
 import com.ServiceBookingPlatform.dto.UnusedImageReport;
 import com.ServiceBookingPlatform.dto.UploadResponse;
@@ -17,6 +18,7 @@ import com.ServiceBookingPlatform.entity.ServiceEntity;
 import com.ServiceBookingPlatform.entity.TenantEntity;
 import com.ServiceBookingPlatform.repository.AccountRepository;
 import com.ServiceBookingPlatform.service.AccountService;
+import com.ServiceBookingPlatform.service.AdminService;
 import com.ServiceBookingPlatform.service.AppointmentService;
 import com.ServiceBookingPlatform.service.ImageUploadService;
 import com.ServiceBookingPlatform.service.OperatingHoursService;
@@ -61,6 +63,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -87,6 +90,7 @@ class AccessRulesTest {
     @Autowired TokenService tokenService;
 
     @MockitoBean TenantService tenantService;
+    @MockitoBean AdminService adminService;
     @MockitoBean ImageUploadService imageUploadService;
     @MockitoBean AppointmentService appointmentService;
     @MockitoBean ServiceCatalogService serviceCatalogService;
@@ -336,13 +340,84 @@ class AccessRulesTest {
 
     @Test
     void onlyConfiguredAdminEmailsReachTheAdminPanel() throws Exception {
-        when(tenantService.listAllTenants()).thenReturn(List.of());
+        when(adminService.listShops()).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/admin/tenants").header("Authorization", owner()))
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/api/v1/admin/tenants")
                 .header("Authorization", bearer(account(1, "boss@torni.test", "business"))))
                 .andExpect(status().isOk());
+    }
+
+    private String adminBearer() {
+        return bearer(account(1, "boss@torni.test", "business"));
+    }
+
+    @Test
+    void everyAdminRouteIs401LoggedOutAnd403ForNonAdmins() throws Exception {
+        String[] reads = {"/api/v1/admin/summary", "/api/v1/admin/tenants", "/api/v1/admin/accounts",
+                "/api/v1/admin/clients", "/api/v1/admin/audit-log"};
+        for (String path : reads) {
+            mockMvc.perform(get(path)).andExpect(status().isUnauthorized());
+            mockMvc.perform(get(path).header("Authorization", owner())).andExpect(status().isForbidden());
+        }
+        String body = "{\"confirmation\":\"anything\"}";
+        for (String path : new String[]{"/api/v1/admin/tenants/5", "/api/v1/admin/accounts/5"}) {
+            mockMvc.perform(delete(path).contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isUnauthorized());
+            mockMvc.perform(delete(path).header("Authorization", owner())
+                    .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isForbidden());
+        }
+        mockMvc.perform(patch("/api/v1/admin/tenants/5/enabled").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}")).andExpect(status().isUnauthorized());
+        verify(adminService, never()).deleteShop(any(), any(), any());
+        verify(adminService, never()).deleteAccount(any(), any(), any());
+        verify(adminService, never()).setShopEnabled(any(), any(), anyBoolean());
+    }
+
+    @Test
+    void adminsReadTheSummaryAccountsClientsAndAuditLog() throws Exception {
+        when(adminService.summary()).thenReturn(AdminSummaryResponse.builder().shops(2).accounts(5).build());
+        when(adminService.listAccounts()).thenReturn(List.of());
+        when(adminService.listClients()).thenReturn(List.of());
+        when(adminService.auditLog()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/admin/summary").header("Authorization", adminBearer()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.shops").value(2)).andExpect(jsonPath("$.accounts").value(5));
+        for (String path : new String[]{"/api/v1/admin/accounts", "/api/v1/admin/clients", "/api/v1/admin/audit-log"}) {
+            mockMvc.perform(get(path).header("Authorization", adminBearer())).andExpect(status().isOk());
+        }
+    }
+
+    @Test
+    void adminsDeleteAShopAndAnAccountOnlyWithTheirConfirmationText() throws Exception {
+        mockMvc.perform(delete("/api/v1/admin/tenants/5").header("Authorization", adminBearer())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"confirmation\":\"old-shop-abc123\"}"))
+                .andExpect(status().isNoContent());
+        verify(adminService).deleteShop(argThat(user -> user != null && "boss@torni.test".equals(user.email())),
+                eq(5L), eq("old-shop-abc123"));
+
+        mockMvc.perform(delete("/api/v1/admin/accounts/9").header("Authorization", adminBearer())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"confirmation\":\"old@torni.test\"}"))
+                .andExpect(status().isNoContent());
+        verify(adminService).deleteAccount(any(), eq(9L), eq("old@torni.test"));
+    }
+
+    @Test
+    void aRefusedDeleteIsReportedWithItsReasonCode() throws Exception {
+        org.mockito.Mockito.doThrow(new com.ServiceBookingPlatform.exception.AccountException(
+                org.springframework.http.HttpStatus.BAD_REQUEST, "CONFIRMATION_MISMATCH"))
+                .when(adminService).deleteShop(any(), eq(5L), eq("wrong"));
+        org.mockito.Mockito.doThrow(new com.ServiceBookingPlatform.exception.AccountException(
+                org.springframework.http.HttpStatus.CONFLICT, "ACCOUNT_OWNS_SHOP"))
+                .when(adminService).deleteAccount(any(), eq(9L), any());
+
+        mockMvc.perform(delete("/api/v1/admin/tenants/5").header("Authorization", adminBearer())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"confirmation\":\"wrong\"}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error").value("CONFIRMATION_MISMATCH"));
+        mockMvc.perform(delete("/api/v1/admin/accounts/9").header("Authorization", adminBearer())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"confirmation\":\"x\"}"))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.error").value("ACCOUNT_OWNS_SHOP"));
     }
 
     @Test

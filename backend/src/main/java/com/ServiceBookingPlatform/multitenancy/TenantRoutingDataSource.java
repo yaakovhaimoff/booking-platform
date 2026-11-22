@@ -25,4 +25,18 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource {
         setTargetDataSources(new HashMap<>(tenantDataSources));
         afterPropertiesSet();
     }
+
+    // Forgets a deleted tenant's DataSource and closes its pool so no connection keeps its schema alive.
+    public void removeTenantDataSource(String schemaName) {
+        Object removed = tenantDataSources.remove(schemaName);
+        setTargetDataSources(new HashMap<>(tenantDataSources));
+        afterPropertiesSet();
+        if (removed instanceof AutoCloseable closeable) {
+            try {
+                closeable.close();
+            } catch (Exception ignored) {
+                // The pool is already unreachable for requests; a failed close only leaves idle connections.
+            }
+        }
+    }
 }

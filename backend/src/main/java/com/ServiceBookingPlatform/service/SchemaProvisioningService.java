@@ -5,11 +5,22 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 public class SchemaProvisioningService {
+
+    private static final Pattern TENANT_SCHEMA = Pattern.compile("tenant_\\d+");
+
+    public record ShopStatistics(int bookings, int reviews, LocalDateTime lastActivity) {}
+
+    public record ClientRow(Long accountId, String name, String phone, int bookings, LocalDateTime lastBooking) {}
 
     private final JdbcTemplate publicJdbcTemplate;
 
@@ -164,5 +175,73 @@ public class SchemaProvisioningService {
                 tenantId, day, "09:00", "17:00", false
             );
         }
+    }
+
+    private static String safeSchema(String schemaName) {
+        if (schemaName == null || !TENANT_SCHEMA.matcher(schemaName).matches()) {
+            throw new IllegalArgumentException("Not a tenant schema name: " + schemaName);
+        }
+        return schemaName;
+    }
+
+    /** Booking and review counts and the latest booking or review time of one shop. Zeros when its schema is unreadable. */
+    public ShopStatistics statisticsOf(String schemaName) {
+        String schema = safeSchema(schemaName);
+        try {
+            return publicJdbcTemplate.queryForObject("SELECT (SELECT count(*) FROM " + schema + ".appointments), "
+                + "(SELECT count(*) FROM " + schema + ".reviews), "
+                + "GREATEST((SELECT max(start_time) FROM " + schema + ".appointments), "
+                + "(SELECT max(created_at) FROM " + schema + ".reviews))", (rs, row) -> {
+                    Timestamp last = rs.getTimestamp(3);
+                    return new ShopStatistics(rs.getInt(1), rs.getInt(2), last == null ? null : last.toLocalDateTime());
+                });
+        } catch (org.springframework.dao.DataAccessException exception) {
+            log.warn("Could not read statistics of schema {}: {}", schema, exception.getMessage());
+            return new ShopStatistics(0, 0, null);
+        }
+    }
+
+    /** One row per distinct client of a shop: per account when the booking has one, else per phone and name. */
+    public List<ClientRow> clientsOf(String schemaName) {
+        String schema = safeSchema(schemaName);
+        try {
+            return publicJdbcTemplate.query("SELECT client_account_id, max(client_name), max(client_phone), count(*), "
+                + "max(start_time) FROM " + schema + ".appointments GROUP BY client_account_id, "
+                + "CASE WHEN client_account_id IS NULL THEN client_phone END, "
+                + "CASE WHEN client_account_id IS NULL THEN lower(client_name) END ORDER BY max(start_time) DESC",
+                (rs, row) -> new ClientRow(rs.getObject(1, Long.class), rs.getString(2), rs.getString(3), rs.getInt(4),
+                    rs.getTimestamp(5).toLocalDateTime()));
+        } catch (org.springframework.dao.DataAccessException exception) {
+            log.warn("Could not read clients of schema {}: {}", schema, exception.getMessage());
+            return List.of();
+        }
+    }
+
+    public Map<Long, Integer> reviewCountsByAccount(String schemaName) {
+        String schema = safeSchema(schemaName);
+        Map<Long, Integer> counts = new HashMap<>();
+        try {
+            publicJdbcTemplate.query("SELECT author_account_id, count(*) FROM " + schema
+                + ".reviews WHERE author_account_id IS NOT NULL GROUP BY author_account_id",
+                rs -> { counts.put(rs.getLong(1), rs.getInt(2)); });
+        } catch (org.springframework.dao.DataAccessException exception) {
+            log.warn("Could not read reviews of schema {}: {}", schema, exception.getMessage());
+        }
+        return counts;
+    }
+
+    /** Detaches a deleted account from the bookings and reviews it left in a shop; the rows themselves stay. */
+    public int unlinkAccount(String schemaName, Long accountId, String subject) {
+        String schema = safeSchema(schemaName);
+        int appointments = publicJdbcTemplate.update("UPDATE " + schema + ".appointments SET client_account_id = NULL, "
+            + "client_auth0_sub = NULL WHERE client_account_id = ? OR client_auth0_sub = ?", accountId, subject);
+        int reviews = publicJdbcTemplate.update("UPDATE " + schema + ".reviews SET author_account_id = NULL, "
+            + "author_auth0_sub = NULL WHERE author_account_id = ? OR author_auth0_sub = ?", accountId, subject);
+        return appointments + reviews;
+    }
+
+    /** Permanently removes a shop's schema with every table and row in it. */
+    public void dropSchema(String schemaName) {
+        publicJdbcTemplate.execute("DROP SCHEMA IF EXISTS " + safeSchema(schemaName) + " CASCADE");
     }
 }

@@ -59,6 +59,7 @@ class TenantIsolationIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired @Qualifier("publicJdbcTemplate") JdbcTemplate publicJdbcTemplate;
     @Autowired SchemaProvisioningService schemaProvisioningService;
+    @Autowired com.ServiceBookingPlatform.service.ImageUploadService imageUploadService;
 
     private static String env(String name, String fallback) {
         String value = System.getenv(name);
@@ -100,6 +101,10 @@ class TenantIsolationIntegrationTest {
         registry.add("spring.datasource.username", () -> USER);
         registry.add("spring.datasource.password", () -> PASSWORD);
         registry.add("spring.jpa.show-sql", () -> "false");
+        // backend/.env holds real R2 credentials: blank them so this test can never touch real photo storage.
+        for (String property : new String[]{"account-id", "access-key-id", "secret-access-key", "bucket", "public-url", "environment"}) {
+            registry.add("app.uploads." + property, () -> "");
+        }
         registry.add("app.auth.mode", () -> "local");
         registry.add("app.auth.local.secret", () -> "isolation-test-secret-isolation-test-1234");
         registry.add("app.admin.emails", () -> ADMIN_EMAIL);
@@ -188,6 +193,12 @@ class TenantIsolationIntegrationTest {
         String body = send(get(path), token, shop, null).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         return JsonPath.read(body, jsonPath);
+    }
+
+    @Test
+    @Order(0)
+    void photoStorageIsSwitchedOffSoTestsNeverTouchRealImages() {
+        assertEquals(false, imageUploadService.isConfigured());
     }
 
     @Test
@@ -466,6 +477,148 @@ class TenantIsolationIntegrationTest {
         assertEquals(List.of(), ids("/api/v1/appointments/me", ownerLookalike, shopA));
         assertEquals(false, ids("/api/v1/appointments/me", annToken, shopB).contains((int) untouched));
     }
+    private String slugOf(String ownerToken) throws Exception {
+        return JsonPath.read(send(get("/api/v1/tenants/me"), ownerToken, null, null)
+                .andReturn().getResponse().getContentAsString(), "$.slug");
+    }
+
+    private long accountIdOf(String identity) throws Exception {
+        String body = send(get("/api/v1/admin/accounts"), adminToken, null, null).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        List<Integer> found = JsonPath.read(body, "$[?(@.identity=='" + identity + "')].id");
+        assertEquals(1, found.size(), identity);
+        return found.get(0).longValue();
+    }
+
+    private boolean schemaExists(String schemaName) {
+        return publicJdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = ?", Integer.class, schemaName) > 0;
+    }
+
+    private void deleteWithConfirmation(String path, String token, String confirmation, org.springframework.test.web.servlet.ResultMatcher expected) throws Exception {
+        send(delete(path), token, null, "{\"confirmation\":\"" + confirmation + "\"}").andExpect(expected);
+    }
+
+    private static String suffixedEmail(String prefix, String run) {
+        return prefix + "-" + run + "@torni.test";
+    }
+
+    @Test
+    @Order(60)
+    void theAdminSeesUsageListsAndOthersAreRefusedOnEveryAdminRoute() throws Exception {
+        String run = suffix();
+        String ownerEmail = suffixedEmail("list-owner", run);
+        String clientEmail = suffixedEmail("list-client", run);
+        String ownerToken = signUp(ownerEmail, "business");
+        String clientToken = signUp(clientEmail, "consumer");
+        long shop = createShop(ownerToken, "Listed Shop " + run);
+        long service = createService(ownerToken, shop, "Listed Cut");
+        book(null, shop, service, "Walk In Guest", "10:00:00");
+        book(clientToken, shop, service, "Signed In Client", "11:00:00");
+        send(post("/api/v1/reviews"), clientToken, shop, "{\"rating\":5,\"authorName\":\"Signed In Client\"}")
+                .andExpect(status().isCreated());
+        String slug = slugOf(ownerToken);
+
+        for (String path : new String[]{"/api/v1/admin/summary", "/api/v1/admin/tenants", "/api/v1/admin/accounts",
+                "/api/v1/admin/clients", "/api/v1/admin/audit-log"}) {
+            send(get(path), null, null, null).andExpect(status().isUnauthorized());
+            send(get(path), ownerToken, null, null).andExpect(status().isForbidden());
+            send(get(path), adminToken, null, null).andExpect(status().isOk());
+        }
+
+        String shops = send(get("/api/v1/admin/tenants"), adminToken, null, null).andReturn().getResponse().getContentAsString();
+        assertEquals(List.of(2), JsonPath.read(shops, "$[?(@.slug=='" + slug + "')].bookingCount"));
+        assertEquals(List.of(true), JsonPath.read(shops, "$[?(@.slug=='" + slug + "')].visibleToPublic"));
+        assertEquals(false, shops.contains("tenant_"), "the admin list must not expose schema names");
+
+        String accounts = send(get("/api/v1/admin/accounts"), adminToken, null, null).andReturn().getResponse().getContentAsString();
+        assertEquals(List.of(slug), JsonPath.read(accounts, "$[?(@.identity=='" + ownerEmail + "')].ownedShopSlug"));
+        assertEquals(java.util.Collections.singletonList(null), JsonPath.read(accounts, "$[?(@.identity=='" + clientEmail + "')].ownedShopSlug"));
+        assertEquals(false, accounts.contains("passwordHash") || accounts.contains("$2a$"), "no password data in the account list");
+
+        String clients = send(get("/api/v1/admin/clients"), adminToken, null, null).andReturn().getResponse().getContentAsString();
+        assertEquals(List.of(clientEmail), JsonPath.read(clients, "$[?(@.shopSlug=='" + slug + "' && @.name=='Signed In Client')].email"));
+        assertEquals(List.of(1), JsonPath.read(clients, "$[?(@.shopSlug=='" + slug + "' && @.name=='Signed In Client')].reviewCount"));
+        assertEquals(List.of(1), JsonPath.read(clients, "$[?(@.shopSlug=='" + slug + "' && @.name=='Walk In Guest')].bookingCount"));
+
+        String summary = send(get("/api/v1/admin/summary"), adminToken, null, null).andReturn().getResponse().getContentAsString();
+        assertEquals(true, ((Number) JsonPath.read(summary, "$.shops")).intValue() >= 3);
+        assertEquals(true, ((Number) JsonPath.read(summary, "$.bookings")).intValue() >= 2);
+    }
+
+    @Test
+    @Order(61)
+    void deletingAShopRemovesItsSchemaAndRecordButNothingOfAnotherShopOrItsOwnersAccount() throws Exception {
+        String run = suffix();
+        String ownerEmail = suffixedEmail("doomed-owner", run);
+        String ownerToken = signUp(ownerEmail, "business");
+        long doomed = createShop(ownerToken, "Doomed Shop " + run);
+        long service = createService(ownerToken, doomed, "Doomed Cut");
+        book(null, doomed, service, "Guest Of Doomed", "10:00:00");
+        String slug = slugOf(ownerToken);
+        String schema = "tenant_" + doomed;
+        List<Integer> otherShopBefore = ids("/api/v1/appointments", ownerAToken, shopA);
+        assertEquals(true, schemaExists(schema));
+
+        deleteWithConfirmation("/api/v1/admin/tenants/" + doomed, null, slug, status().isUnauthorized());
+        deleteWithConfirmation("/api/v1/admin/tenants/" + doomed, ownerToken, slug, status().isForbidden());
+        deleteWithConfirmation("/api/v1/admin/tenants/" + doomed, adminToken, "not-the-slug", status().isBadRequest());
+        deleteWithConfirmation("/api/v1/admin/tenants/" + doomed, adminToken, "", status().isBadRequest());
+        assertEquals(true, schemaExists(schema), "a refused or unconfirmed delete must remove nothing");
+        send(get("/api/v1/tenants/" + slug), null, null, null).andExpect(status().isOk());
+
+        deleteWithConfirmation("/api/v1/admin/tenants/" + doomed, adminToken, slug, status().isNoContent());
+
+        assertEquals(false, schemaExists(schema));
+        assertEquals(0, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM tenants WHERE id = ?", Integer.class, doomed));
+        send(get("/api/v1/tenants/" + slug), null, null, null).andExpect(status().isNotFound());
+        send(get("/api/v1/services"), null, doomed, null).andExpect(status().isBadRequest());
+        send(get("/api/v1/tenants/me"), ownerToken, null, null).andExpect(status().isNotFound());
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"identity\":\"" + ownerEmail + "\",\"password\":\"" + PASSWORD_FOR_ACCOUNTS + "\"}"))
+                .andExpect(status().isOk());
+        assertEquals(otherShopBefore, ids("/api/v1/appointments", ownerAToken, shopA), "another shop's data must be untouched");
+        assertEquals(true, schemaExists("tenant_" + shopA) && schemaExists("tenant_" + shopB));
+
+        String log = send(get("/api/v1/admin/audit-log"), adminToken, null, null).andReturn().getResponse().getContentAsString();
+        assertEquals(List.of(ADMIN_EMAIL), JsonPath.read(log, "$[?(@.action=='SHOP_DELETED' && @.targetLabel=='" + slug + "')].adminIdentity"));
+        assertEquals(List.of((int) doomed), JsonPath.read(log, "$[?(@.action=='SHOP_DELETED' && @.targetLabel=='" + slug + "')].targetId"));
+    }
+
+    @Test
+    @Order(62)
+    void deletingAnAccountIsGuardedAndKeepsItsBookingsInTheShopsDetached() throws Exception {
+        String run = suffix();
+        String leaverEmail = suffixedEmail("leaver", run);
+        String leaverToken = signUp(leaverEmail, "consumer");
+        long bookingId = book(leaverToken, shopA, serviceA, "Leaving Client", "16:00:00");
+        send(post("/api/v1/reviews"), leaverToken, shopB, "{\"rating\":3,\"authorName\":\"Leaving Client\"}")
+                .andExpect(status().isCreated());
+        long leaverId = accountIdOf(leaverEmail);
+        long adminId = accountIdOf(ADMIN_EMAIL);
+        long ownerAId = publicJdbcTemplate.queryForObject("SELECT owner_account_id FROM tenants WHERE id = ?", Long.class, shopA);
+
+        deleteWithConfirmation("/api/v1/admin/accounts/" + leaverId, leaverToken, leaverEmail, status().isForbidden());
+        deleteWithConfirmation("/api/v1/admin/accounts/" + leaverId, adminToken, "other@torni.test", status().isBadRequest());
+        send(delete("/api/v1/admin/accounts/" + adminId), adminToken, null, "{\"confirmation\":\"" + ADMIN_EMAIL + "\"}")
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.error").value("CANNOT_DELETE_OWN_ACCOUNT"));
+        String ownerAIdentity = publicJdbcTemplate.queryForObject("SELECT identity FROM accounts WHERE id = ?", String.class, ownerAId);
+        send(delete("/api/v1/admin/accounts/" + ownerAId), adminToken, null, "{\"confirmation\":\"" + ownerAIdentity + "\"}")
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.error").value("ACCOUNT_OWNS_SHOP"));
+        assertEquals(3, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM accounts WHERE id IN (?, ?, ?)", Integer.class, leaverId, adminId, ownerAId), "every refused delete keeps all three accounts");
+
+        deleteWithConfirmation("/api/v1/admin/accounts/" + leaverId, adminToken, leaverEmail, status().isNoContent());
+
+        assertEquals(0, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM accounts WHERE id = ?", Integer.class, leaverId));
+        assertEquals(1, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM tenant_" + shopA + ".appointments WHERE id = ? AND client_name = 'Leaving Client' AND client_account_id IS NULL AND client_auth0_sub IS NULL", Integer.class, bookingId));
+        assertEquals(1, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM tenant_" + shopB + ".reviews WHERE author_name = 'Leaving Client' AND author_account_id IS NULL AND author_auth0_sub IS NULL", Integer.class));
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"identity\":\"" + leaverEmail + "\",\"password\":\"" + PASSWORD_FOR_ACCOUNTS + "\"}"))
+                .andExpect(status().isNotFound());
+        String log = send(get("/api/v1/admin/audit-log"), adminToken, null, null).andReturn().getResponse().getContentAsString();
+        assertEquals(List.of(ADMIN_EMAIL), JsonPath.read(log, "$[?(@.action=='ACCOUNT_DELETED' && @.targetLabel=='" + leaverEmail + "')].adminIdentity"));
+    }
+
     @Test
     @Order(97)
     void everythingCreatedThroughTheAppCarriesAccountIdsAlongsideTheOldSubjects() {
