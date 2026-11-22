@@ -151,7 +151,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -176,7 +176,7 @@ export default function AdminPage() {
             aria-selected={tab === item.id}
             onClick={() => { setTab(item.id); setNotice(null) }}
             className={`px-4 py-2 text-sm font-medium -mb-px border-b-2 transition ${
-              tab === item.id ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
+              tab === item.id ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
           >
             {item.label}
           </button>

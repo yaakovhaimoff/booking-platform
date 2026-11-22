@@ -35,7 +35,7 @@ export default function ShopsTab({ shops, onToggle, onDelete }) {
               <tr key={shop.id} className="hover:bg-gray-50 transition">
                 <td className="px-4 py-3 font-medium text-gray-900">{shop.name ?? '–'}</td>
                 <td className="px-4 py-3">
-                  <a href={`/store/${shop.slug}`} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline">/store/{shop.slug}</a>
+                  <a href={`/store/${shop.slug}`} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">/store/{shop.slug}</a>
                 </td>
                 <td className="px-4 py-3 text-gray-600">{shop.ownerEmail ?? '–'}</td>
                 <td className="px-4 py-3 text-gray-600">{formatDate(shop.createdAt)}</td>

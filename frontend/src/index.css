@@ -1,16 +1,30 @@
 @import "tailwindcss";
 
-/* torni theme: fonts only; colours are Tailwind's indigo / pink / gray. */
+/* torni theme: fonts and the brand red taken from the logo (#fb0819); other colours are Tailwind's pink / gray. */
 @theme {
   --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque', 'Figtree', ui-sans-serif, system-ui, sans-serif;
+
+  --font-logo: 'Nunito', 'Figtree', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe0e2;
+  --color-brand-200: #ffc7cb;
+  --color-brand-300: #ff9ea5;
+  --color-brand-400: #ff5b66;
+  --color-brand-500: #fb0819;
+  --color-brand-600: #e00616;
+  --color-brand-700: #b80513;
+  --color-brand-800: #960a14;
+  --color-brand-900: #7a0f17;
+  --color-brand-950: #43040a;
 
 }
 
 @layer base {
   body { font-family: var(--font-sans); color: var(--color-gray-900); -webkit-font-smoothing: antialiased; }
   h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
-  :focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+  :focus-visible { outline: 2px solid #fb0819; outline-offset: 2px; }
 }
 
 @layer utilities {

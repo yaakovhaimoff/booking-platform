@@ -9,7 +9,7 @@ import { useI18n } from '../../i18n'
 import { discardAllStaged, discardStagedImages, uploadStagedImages } from '../../utils/stagedImages'
 
 const inputCls =
-  'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500'
+  'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500'
 
 function Field({ label, hint, children }) {
   return (
@@ -86,7 +86,7 @@ export default function StoreSettingsTab({ tenant }) {
         <div className="flex items-center gap-3">
           <button
             onClick={handleCopy}
-            className="shrink-0 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+            className="shrink-0 px-3 py-1.5 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700 transition"
           >
             {copied ? t('copied') : t('copyLink')}
           </button>
@@ -101,7 +101,7 @@ export default function StoreSettingsTab({ tenant }) {
       <button
         type="button"
         onClick={() => setShowPreview(true)}
-        className="xl:hidden w-full px-4 py-2 text-sm font-medium border border-indigo-200 text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"
+        className="xl:hidden w-full px-4 py-2 text-sm font-medium border border-brand-200 text-brand-700 bg-brand-50 rounded-lg hover:bg-brand-100 transition"
       >
         {t('previewShow')}
       </button>
@@ -161,7 +161,7 @@ export default function StoreSettingsTab({ tenant }) {
         <button
           type="submit"
           disabled={saving}
-          className="px-5 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
+          className="px-5 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition disabled:opacity-60"
         >
           {saving ? t('saving') : t('saveChanges')}
         </button>
@@ -171,7 +171,7 @@ export default function StoreSettingsTab({ tenant }) {
     <aside className="hidden xl:block sticky top-20">
       <div className="flex items-center gap-2 mb-3">
         <h2 className="text-lg font-semibold text-gray-800">{t('previewTitle')}</h2>
-        <button type="button" onClick={() => setShowPreview(true)} className="ml-auto text-sm text-indigo-600 hover:underline">{t('previewDesktop')} ↗</button>
+        <button type="button" onClick={() => setShowPreview(true)} className="ml-auto text-sm text-brand-600 hover:underline">{t('previewDesktop')} ↗</button>
       </div>
       <StorePreviewFrame slug={tenant.slug} draft={draft} device="mobile" />
     </aside>

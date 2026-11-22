@@ -32,10 +32,10 @@ export default function ConsumerHeader() {
       <div className="flex items-center gap-2 sm:gap-3">
         {!signedIn && (
           <>
-            <Link to="/user-flow" className="hidden sm:inline text-sm font-semibold text-gray-900 hover:text-indigo-600 px-2">{t('pLogIn')}</Link>
+            <Link to="/user-flow" className="hidden sm:inline text-sm font-semibold text-gray-900 hover:text-brand-600 px-2">{t('pLogIn')}</Link>
             <Link
               to="/for-business"
-              className="hidden sm:inline-flex h-11 items-center rounded-full border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-indigo-50 hover:border-indigo-200 transition"
+              className="hidden sm:inline-flex h-11 items-center rounded-full border border-gray-200 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-brand-50 hover:border-brand-200 transition"
             >
               {t('pForBusinesses')}
             </Link>

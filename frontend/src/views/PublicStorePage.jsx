@@ -77,7 +77,7 @@ export default function PublicStorePage() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-4 text-center">
         <p className="text-gray-600">{t('timeoutError')}</p>
         <button onClick={() => { setState(s => ({ ...s, loading: true, failed: false })); setAttempt(a => a + 1) }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">{t('retry')}</button>
+          className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">{t('retry')}</button>
       </div>
     )
   }

@@ -8,7 +8,7 @@ const COUNTRIES = [
   { code: '+972', label: 'IL +972' },
 ]
 const altBtn = 'w-full h-12 rounded-xl border border-gray-300 bg-white px-4 flex items-center justify-center gap-3 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition'
-const inputCls = 'w-full h-12 rounded-xl border border-gray-300 bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400'
+const inputCls = 'w-full h-12 rounded-xl border border-gray-300 bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400'
 const STORE = 'demo-accounts'
 
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
@@ -110,7 +110,7 @@ export default function CodeAuthForm({ primary, accountType, onVerified }) {
           <label className="text-sm font-semibold text-gray-900">
             {t('pMobileNumber')}
             <div className="mt-1.5 flex gap-2">
-              <select value={country} onChange={e => setCountry(e.target.value)} aria-label={t('pCountryCode')} className="h-12 rounded-xl border border-gray-300 bg-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+              <select value={country} onChange={e => setCountry(e.target.value)} aria-label={t('pCountryCode')} className="h-12 rounded-xl border border-gray-300 bg-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400">
                 {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
               </select>
               <input value={value} onChange={e => setValue(e.target.value)} type="tel" inputMode="tel" autoComplete="tel-national" placeholder={t('pPhonePlaceholder')} className={inputCls} />

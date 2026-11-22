@@ -80,7 +80,7 @@ export default function ClientsTab({ tenant }) {
           onChange={e => setQuery(e.target.value)}
           placeholder={t('clientsSearch')}
           aria-label={t('clientsSearch')}
-          className="w-full sm:max-w-xs h-11 rounded-xl border border-gray-300 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full sm:max-w-xs h-11 rounded-xl border border-gray-300 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
         />
         <p className="text-sm text-gray-500">{t('clientsCount', { n: shown.length })}</p>
       </div>
@@ -91,7 +91,7 @@ export default function ClientsTab({ tenant }) {
             <button type="button" onClick={() => toggle(c.key)} aria-expanded={open === c.key} className="w-full text-left p-4">
               <p className="font-semibold text-gray-900">{c.name}</p>
               {c.phone && <p className="text-sm text-gray-600">{c.phone}</p>}
-              <p className="mt-2 text-xs font-semibold text-indigo-600">{count(c)} · {fmtDay(c.bookings[0].startTime)}</p>
+              <p className="mt-2 text-xs font-semibold text-brand-600">{count(c)} · {fmtDay(c.bookings[0].startTime)}</p>
             </button>
             {open === c.key && <div className="px-4 pb-3 border-t border-gray-100">{bookingList(c)}</div>}
           </div>
@@ -116,7 +116,7 @@ export default function ClientsTab({ tenant }) {
                     <button type="button" aria-expanded={open === c.key} className="text-left">{c.name}</button>
                   </td>
                   <td className="py-3 pr-4 text-gray-700">{c.phone || '-'}</td>
-                  <td className="py-3 pr-4"><span className="inline-flex min-w-7 justify-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700">{c.bookings.length}</span></td>
+                  <td className="py-3 pr-4"><span className="inline-flex min-w-7 justify-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700">{c.bookings.length}</span></td>
                   <td className="py-3 text-gray-700">{fmtDay(c.bookings[0].startTime)}</td>
                 </tr>
                 {open === c.key && (

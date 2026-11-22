@@ -64,7 +64,7 @@ export default function SearchPage() {
           <div className="text-center">
             <p className="text-red-500 mb-3">{t(error)}</p>
             <button onClick={() => { setLoading(true); setError(null); setAttempt(a => a + 1) }}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">
               {t('retry')}
             </button>
           </div>
@@ -83,7 +83,7 @@ export default function SearchPage() {
                 className="group text-left bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-950 transition-colors"
               >
                 <div
-                  className="h-32 bg-indigo-600 bg-cover bg-center"
+                  className="h-32 bg-brand-600 bg-cover bg-center"
                   style={tenant.coverUrl ? { backgroundImage: `url("${tenant.coverUrl}")` } : undefined}
                 />
                 <div className="p-5 flex items-center justify-between gap-3">
@@ -91,7 +91,7 @@ export default function SearchPage() {
                     <h3 className="text-lg font-semibold text-gray-900 truncate">{tenant.name || tenant.slug}</h3>
                     {tenant.address && <p className="text-sm text-gray-500 truncate">{tenant.address}</p>}
                   </div>
-                  <span className="shrink-0 text-sm font-medium text-indigo-600 group-hover:translate-x-0.5 transition">{t('bookNow')} →</span>
+                  <span className="shrink-0 text-sm font-medium text-brand-600 group-hover:translate-x-0.5 transition">{t('bookNow')} →</span>
                 </div>
               </button>
             ))}

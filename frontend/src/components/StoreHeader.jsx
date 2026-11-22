@@ -70,7 +70,7 @@ export default function StoreHeader({ tenant, hours = null, compact = false, rat
         {logoUrl ? (
           <img src={logoUrl} alt="" className="w-10 h-10 rounded-full object-cover border border-gray-100" />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-brand-100 text-brand-600 font-bold flex items-center justify-center">
             {title.charAt(0).toUpperCase()}
           </div>
         )}
@@ -104,7 +104,7 @@ export default function StoreHeader({ tenant, hours = null, compact = false, rat
               className="w-24 h-24 lg:w-32 lg:h-32 rounded-full border-4 border-white object-cover bg-white shadow"
             />
           ) : (
-            <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full border-4 border-white bg-indigo-100 text-indigo-600 text-3xl font-bold flex items-center justify-center shadow">
+            <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full border-4 border-white bg-brand-100 text-brand-600 text-3xl font-bold flex items-center justify-center shadow">
               {title.charAt(0).toUpperCase()}
             </div>
           )}
@@ -129,7 +129,7 @@ export default function StoreHeader({ tenant, hours = null, compact = false, rat
               </ActionButton>
             )}
             {tel && (
-              <ActionButton href={`tel:${tel}`} label={t('call')} color="bg-indigo-600">
+              <ActionButton href={`tel:${tel}`} label={t('call')} color="bg-brand-600">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.600 10.800a15 15 0 0 0 6.600 6.600l2.200-2.200a1 1 0 0 1 1-.25c1.100.4 2.300.6 3.600.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.500a1 1 0 0 1 1 1c0 1.300.2 2.500.6 3.600a1 1 0 0 1-.25 1z"/></svg>
               </ActionButton>
             )}

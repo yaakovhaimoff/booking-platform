@@ -8,9 +8,9 @@ import { OWNER_TABS, ownerTabId } from './owner/ownerTabs'
 import { usePendingCount } from '../pendingStore'
 
 const linkCls = ({ isActive }) =>
-  `text-sm font-medium transition ${isActive ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600'}`
+  `text-sm font-medium transition ${isActive ? 'text-brand-600' : 'text-gray-700 hover:text-brand-600'}`
 const mobileLinkCls = ({ isActive }) =>
-  `block px-4 py-3 rounded-lg text-base font-medium ${isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-800 hover:bg-gray-50'}`
+  `block px-4 py-3 rounded-lg text-base font-medium ${isActive ? 'bg-brand-50 text-brand-700' : 'text-gray-800 hover:bg-gray-50'}`
 
 export default function NavBar() {
   const { t } = useI18n()
@@ -57,8 +57,8 @@ export default function NavBar() {
             </button>
           ) : (
             <div className="flex items-center gap-3">
-              <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">{t('login')}</Link>
-              <Link to="/signup" className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition">{t('signup')}</Link>
+              <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-brand-600 transition">{t('login')}</Link>
+              <Link to="/signup" className="px-4 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition">{t('signup')}</Link>
             </div>
           )}
         </div>
@@ -110,7 +110,7 @@ export default function NavBar() {
                 </button>
               ) : (
                 <>
-                  <Link to="/signup" onClick={close} className="w-full text-center py-3 bg-indigo-600 text-white text-base font-medium rounded-lg hover:bg-indigo-700">{t('signup')}</Link>
+                  <Link to="/signup" onClick={close} className="w-full text-center py-3 bg-brand-600 text-white text-base font-medium rounded-lg hover:bg-brand-700">{t('signup')}</Link>
                   <Link to="/login" onClick={close} className="w-full text-center py-3 text-base font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">{t('login')}</Link>
                 </>
               )}

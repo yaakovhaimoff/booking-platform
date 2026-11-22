@@ -69,7 +69,7 @@ export default function DatePicker({ serviceId, onSelect }) {
         {weekdays.map(w => <div key={w}>{w}</div>)}
       </div>
 
-      {loading && <p className="text-sm text-indigo-600 text-center mb-2 animate-pulse" role="status">{t('checkingAvail')}</p>}
+      {loading && <p className="text-sm text-brand-600 text-center mb-2 animate-pulse" role="status">{t('checkingAvail')}</p>}
       {!loading && loaded.failed && (
         <p className="text-sm text-red-600 text-center mb-2">
           {t('timeoutError')}{' '}
@@ -93,9 +93,9 @@ export default function DatePicker({ serviceId, onSelect }) {
               onClick={() => onSelect(date)}
               className={`aspect-square rounded-md text-sm transition ${
                 open
-                  ? 'bg-indigo-50 text-indigo-700 font-medium hover:bg-indigo-600 hover:text-white'
+                  ? 'bg-brand-50 text-brand-700 font-medium hover:bg-brand-600 hover:text-white'
                   : 'text-gray-300 cursor-not-allowed'
-              } ${date === todayIso ? 'ring-1 ring-indigo-300' : ''}`}
+              } ${date === todayIso ? 'ring-1 ring-brand-300' : ''}`}
             >
               {day}
             </button>

@@ -26,12 +26,12 @@ export default function PartnerLoginPage() {
           <CodeAuthForm primary="email" accountType="business" onVerified={done} />
           <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm">
             <p className="font-semibold text-gray-900">{t('pAreCustomer')}</p>
-            <Link to="/" className="text-indigo-700 font-semibold hover:underline">{t('pGoCustomers')}</Link>
+            <Link to="/" className="text-brand-700 font-semibold hover:underline">{t('pGoCustomers')}</Link>
           </div>
         </div>
         <p className="text-center text-xs text-gray-400">{t('pRecaptcha')}</p>
       </div>
-      <div className="hidden lg:flex relative bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 items-end p-12">
+      <div className="hidden lg:flex relative bg-gradient-to-br from-brand-700 via-brand-800 to-pink-600 items-end p-12">
         <div className="text-white">
           <p className="font-display text-[9rem] leading-[0.85] font-extrabold tracking-[-0.04em] text-white">torni</p>
           <p className="mt-4 text-lg text-white/80">{t('pBusinessTag')}</p>

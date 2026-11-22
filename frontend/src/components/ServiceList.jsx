@@ -31,7 +31,7 @@ export default function ServiceList({ currency, onSelect }) {
       <div className="text-center py-8">
         <p className="text-red-600 mb-3">{t(error)}</p>
         <button onClick={() => { setError(null); setLoading(true); setAttempt(a => a + 1) }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">{t('retry')}</button>
+          className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">{t('retry')}</button>
       </div>
     )
   }

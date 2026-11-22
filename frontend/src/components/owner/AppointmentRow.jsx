@@ -16,7 +16,7 @@ export default function AppointmentRow({ appointment, serviceName, onApprove, on
       <td className="py-3 pr-4 text-sm text-gray-800">
         <div className="font-medium">{appointment.clientName}</div>
         {appointment.clientPhone && (
-          <a href={`tel:${appointment.clientPhone}`} className="text-xs text-indigo-600 hover:underline">
+          <a href={`tel:${appointment.clientPhone}`} className="text-xs text-brand-600 hover:underline">
             {appointment.clientPhone}
           </a>
         )}

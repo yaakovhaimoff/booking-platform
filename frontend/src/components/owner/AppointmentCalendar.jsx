@@ -74,15 +74,15 @@ export default function AppointmentCalendar({ appointments, serviceNames, onAppr
                 aria-pressed={isSelected}
                 className={`relative aspect-square rounded-md text-sm transition ${
                   isSelected
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : count > 0
-                      ? 'bg-indigo-50 text-indigo-700 font-medium hover:bg-indigo-100'
+                      ? 'bg-brand-50 text-brand-700 font-medium hover:bg-brand-100'
                       : 'text-gray-500 hover:bg-gray-100'
-                } ${date === todayIso && !isSelected ? 'ring-1 ring-indigo-300' : ''}`}
+                } ${date === todayIso && !isSelected ? 'ring-1 ring-brand-300' : ''}`}
               >
                 {day}
                 {count > 0 && (
-                  <span className={`absolute top-0.5 right-1 text-[10px] leading-none font-bold ${isSelected ? 'text-indigo-100' : 'text-indigo-500'}`}>
+                  <span className={`absolute top-0.5 right-1 text-[10px] leading-none font-bold ${isSelected ? 'text-brand-100' : 'text-brand-500'}`}>
                     {count}
                   </span>
                 )}

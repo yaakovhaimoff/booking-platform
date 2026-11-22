@@ -31,7 +31,7 @@ export default function HomePage() {
             <h2 className="text-3xl sm:text-4xl font-extrabold">{t('pBizPromoTitle')}</h2>
             <p className="mt-2 text-gray-700 max-w-md">{t('pBizPromoSub')}</p>
           </div>
-          <Link to="/for-business" className="inline-flex items-center gap-2 rounded-xl bg-gray-950 px-6 py-3.5 text-sm font-bold text-white hover:bg-indigo-600 transition">
+          <Link to="/for-business" className="inline-flex items-center gap-2 rounded-xl bg-gray-950 px-6 py-3.5 text-sm font-bold text-white hover:bg-brand-600 transition">
             {t('pListBusiness')} <ArrowRightIcon size={16} />
           </Link>
         </div>

@@ -17,23 +17,23 @@ export default function ConsumerFooter() {
         <div>
           <h3 className={h}>{t('pForCustomers')}</h3>
           <ul className={col}>
-            <li><Link to="/user-flow" className="hover:text-indigo-600">{t('pLogInOrSignUp')}</Link></li>
-            <li><Link to="/help" className="hover:text-indigo-600">{t('pHelp')}</Link></li>
+            <li><Link to="/user-flow" className="hover:text-brand-600">{t('pLogInOrSignUp')}</Link></li>
+            <li><Link to="/help" className="hover:text-brand-600">{t('pHelp')}</Link></li>
           </ul>
         </div>
         <div>
           <h3 className={h}>{t('pCompany')}</h3>
           <ul className={col}>
-            <li><Link to="/about" className="hover:text-indigo-600">{t('pAbout')}</Link></li>
-            <li><Link to="/privacy" className="hover:text-indigo-600">{t('pPrivacy')}</Link></li>
-            <li><Link to="/terms" className="hover:text-indigo-600">{t('pTerms')}</Link></li>
+            <li><Link to="/about" className="hover:text-brand-600">{t('pAbout')}</Link></li>
+            <li><Link to="/privacy" className="hover:text-brand-600">{t('pPrivacy')}</Link></li>
+            <li><Link to="/terms" className="hover:text-brand-600">{t('pTerms')}</Link></li>
           </ul>
         </div>
         <div>
           <h3 className={h}>{t('pForPartners')}</h3>
           <ul className={col}>
-            <li><Link to="/for-business" className="hover:text-indigo-600">{t('pListBusiness')}</Link></li>
-            <li><Link to="/partner" className="hover:text-indigo-600">{t('pPartnerLogin')}</Link></li>
+            <li><Link to="/for-business" className="hover:text-brand-600">{t('pListBusiness')}</Link></li>
+            <li><Link to="/partner" className="hover:text-brand-600">{t('pPartnerLogin')}</Link></li>
           </ul>
         </div>
       </div>

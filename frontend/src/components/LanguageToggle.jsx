@@ -14,7 +14,7 @@ export default function LanguageToggle() {
           onClick={() => setLang(l)}
           aria-pressed={l === lang}
           className={`px-3 py-1 rounded-full uppercase transition ${
-            l === lang ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            l === lang ? 'bg-white text-brand-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
           }`}
         >
           {l}

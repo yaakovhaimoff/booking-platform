@@ -18,7 +18,7 @@ export default function AppointmentHistoryRow({ appointment, onCancel }) {
     <tr className="border-b border-gray-100 last:border-0">
       <td className="py-3 px-4 text-sm text-gray-900 font-medium">
         {appointment.shopSlug
-          ? <Link to={`/store/${appointment.shopSlug}`} className="hover:text-indigo-600 hover:underline">{appointment.shopName}</Link>
+          ? <Link to={`/store/${appointment.shopSlug}`} className="hover:text-brand-600 hover:underline">{appointment.shopName}</Link>
           : (appointment.shopName ?? `#${appointment.serviceId}`)}
       </td>
       <td className="py-3 pr-4 text-sm text-gray-600">{formatted}</td>

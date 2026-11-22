@@ -14,7 +14,7 @@ export default function SideNav({ items, active, onSelect, onLogout, logoutLabel
             onClick={() => onSelect(item.id)}
             aria-current={active === item.id ? 'page' : undefined}
             className={`text-left px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-              active === item.id ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              active === item.id ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
           >
             {item.label}

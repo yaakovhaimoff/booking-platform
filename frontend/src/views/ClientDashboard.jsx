@@ -35,7 +35,7 @@ export default function ClientDashboard() {
         />
         <div className="flex-1 min-w-0 px-4 md:px-8 py-10">
           <div className="flex items-center gap-4 mb-6">
-            <span className="w-14 h-14 rounded-full bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold font-display" aria-hidden="true">
+            <span className="w-14 h-14 rounded-full bg-brand-600 text-white flex items-center justify-center text-2xl font-bold font-display" aria-hidden="true">
               {(user?.name || user?.login || '?').charAt(0).toUpperCase()}
             </span>
             <div className="min-w-0">
@@ -132,7 +132,7 @@ function ProfileTab() {
   const [phone, setPhone] = useState(user?.phone || '')
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
-  const inputCls = 'w-full h-12 rounded-xl border border-gray-300 bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400'
+  const inputCls = 'w-full h-12 rounded-xl border border-gray-300 bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400'
 
   async function submit(e) {
     e.preventDefault()

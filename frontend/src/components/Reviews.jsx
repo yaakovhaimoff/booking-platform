@@ -109,7 +109,7 @@ export default function Reviews({ data, failed, onSubmitted }) {
                 value={name}
                 maxLength={100}
                 onChange={e => setName(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
             </div>
           )}
@@ -122,7 +122,7 @@ export default function Reviews({ data, failed, onSubmitted }) {
             onChange={e => setComment(e.target.value)}
             maxLength={1000}
             rows={3}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400"
           />
         </div>
         {formError && <p className="text-red-600 text-sm">{formError}</p>}
@@ -130,7 +130,7 @@ export default function Reviews({ data, failed, onSubmitted }) {
         <button
           type="submit"
           disabled={submitting}
-          className="bg-indigo-600 text-white rounded-lg py-2.5 font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="bg-brand-600 text-white rounded-lg py-2.5 font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
         >
           {submitting ? t('sending') : t('submitReview')}
         </button>

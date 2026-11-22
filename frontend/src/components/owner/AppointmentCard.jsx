@@ -25,7 +25,7 @@ export default function AppointmentCard({ appointment, serviceName, onApprove, o
         <div className="font-medium text-gray-900">{appointment.clientName}</div>
         <div className="text-sm text-gray-600">{serviceName || `#${appointment.serviceId}`}</div>
         {appointment.clientPhone && (
-          <a href={`tel:${appointment.clientPhone}`} className="inline-block mt-1 text-sm text-indigo-600">
+          <a href={`tel:${appointment.clientPhone}`} className="inline-block mt-1 text-sm text-brand-600">
             {appointment.clientPhone}
           </a>
         )}

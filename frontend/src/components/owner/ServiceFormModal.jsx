@@ -42,7 +42,7 @@ export default function ServiceFormModal({ service, currency, onSave, onClose })
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
           </div>
@@ -54,7 +54,7 @@ export default function ServiceFormModal({ service, currency, onSave, onClose })
               min="1"
               value={durationMinutes}
               onChange={e => setDurationMinutes(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
           </div>
@@ -67,7 +67,7 @@ export default function ServiceFormModal({ service, currency, onSave, onClose })
               step="0.01"
               value={price}
               onChange={e => setPrice(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
           </div>
@@ -85,7 +85,7 @@ export default function ServiceFormModal({ service, currency, onSave, onClose })
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition disabled:opacity-60"
+              className="flex-1 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 transition disabled:opacity-60"
             >
               {saving ? t('saving') : t('save')}
             </button>

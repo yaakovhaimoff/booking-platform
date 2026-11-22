@@ -61,7 +61,7 @@ export default function ServiceManagementTab({ tenant }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -77,7 +77,7 @@ export default function ServiceManagementTab({ tenant }) {
       <div className="flex justify-end items-center mb-4">
         <button
           onClick={openCreate}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition"
+          className="px-4 py-2 bg-brand-600 text-white text-sm rounded-lg hover:bg-brand-700 transition"
         >
           {t('addService')}
         </button>

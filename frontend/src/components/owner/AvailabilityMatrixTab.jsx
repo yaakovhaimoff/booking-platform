@@ -66,7 +66,7 @@ export default function AvailabilityMatrixTab({ tenant }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -95,7 +95,7 @@ export default function AvailabilityMatrixTab({ tenant }) {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition disabled:opacity-60"
+        className="px-6 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 transition disabled:opacity-60"
       >
         {saving ? t('saving') : saved ? t('saved') : t('save')}
       </button>

@@ -22,7 +22,7 @@ function DeviceMenu({ value, onChange, options }) {
         onClick={() => setOpen(o => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-2 pl-3 pr-2 py-1.5 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className="flex items-center gap-2 pl-3 pr-2 py-1.5 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
       >
         {current.label}
         <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" className={`text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true">
@@ -36,7 +36,7 @@ function DeviceMenu({ value, onChange, options }) {
               <button
                 type="button"
                 onClick={() => { onChange(o.id); setOpen(false) }}
-                className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-md text-left ${o.id === value ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}
+                className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-md text-left ${o.id === value ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}
               >
                 {o.label}
                 {o.id === value && <span aria-hidden="true">✓</span>}

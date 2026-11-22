@@ -49,7 +49,7 @@ export default function OwnerOnboardingPage() {
               placeholder="Mike's Barbershop"
               maxLength={100}
               required
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
 
@@ -60,7 +60,7 @@ export default function OwnerOnboardingPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed text-sm font-medium"
+            className="w-full py-2 px-4 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition disabled:opacity-60 disabled:cursor-not-allowed text-sm font-medium"
           >
             {submitting ? t('creating') : t('createStore')}
           </button>

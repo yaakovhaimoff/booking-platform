@@ -12,7 +12,7 @@ export function MenuGroup({ title, children }) {
 }
 
 export function MenuItem({ to, onClick, icon, active, children, href }) {
-  const cls = `flex items-center justify-between gap-3 py-2.5 text-sm ${active ? 'text-indigo-600 font-medium' : 'text-gray-800 hover:text-indigo-600'} max-[480px]:text-base max-[480px]:py-3`
+  const cls = `flex items-center justify-between gap-3 py-2.5 text-sm ${active ? 'text-brand-600 font-medium' : 'text-gray-800 hover:text-brand-600'} max-[480px]:text-base max-[480px]:py-3`
   const inner = (
     <>
       <span className="flex items-center gap-3">{icon}{children}</span>
@@ -36,7 +36,7 @@ export function MenuSwitchRow({ to, onClick, children }) {
     <Link
       to={to}
       onClick={onClick}
-      className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-sm font-semibold text-gray-900 hover:text-indigo-600
+      className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-sm font-semibold text-gray-900 hover:text-brand-600
         max-[480px]:mt-0 max-[480px]:pt-0 max-[480px]:border-0 max-[480px]:rounded-2xl max-[480px]:bg-white max-[480px]:border-gray-100 max-[480px]:p-4 max-[480px]:pt-4 max-[480px]:pb-4 max-[480px]:text-base"
     >
       {children}

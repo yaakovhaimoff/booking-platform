@@ -6,11 +6,11 @@ import { BookingSlotsMockup, RequestCard, RequestStack, ReviewsMockup, TomorrowM
 const SCENE_VISUALS = [RequestStack, () => <RequestCard name={0} svc={0} tapping />, BookingSlotsMockup, ReviewsMockup, TomorrowMockup]
 
 const SKIES = [
-  'linear-gradient(180deg,#e0e7ff 0%,#fbcfe8 55%,#fde7c8 100%)',
+  'linear-gradient(180deg,#ffe0e2 0%,#fbcfe8 55%,#fde7c8 100%)',
   'linear-gradient(180deg,#c7d9ff 0%,#e0ecff 60%,#fff1e0 100%)',
   'linear-gradient(180deg,#8fb8ff 0%,#cfe2ff 70%,#f0f6ff 100%)',
-  'linear-gradient(180deg,#7c6fd6 0%,#f19bb5 60%,#ffc58f 100%)',
-  'linear-gradient(180deg,#1e1b4b 0%,#4338ca 70%,#7c6fd6 100%)',
+  'linear-gradient(180deg,#e0606b 0%,#f19bb5 60%,#ffc58f 100%)',
+  'linear-gradient(180deg,#1c0a0d 0%,#7a0f17 70%,#e0606b 100%)',
 ]
 
 const SCROLL_PER_ITEM = 70
@@ -30,7 +30,7 @@ function Heading({ light, bold, className = '' }) {
 
 function StackedDay({ scenes, light, bold }) {
   return (
-    <section id="day" className="mx-3 sm:mx-6 mt-24 rounded-[32px] bg-indigo-50/70 py-20 sm:py-28">
+    <section id="day" className="mx-3 sm:mx-6 mt-24 rounded-[32px] bg-brand-50/70 py-20 sm:py-28">
       <div className="max-w-[1100px] mx-auto px-5 sm:px-10">
         <Heading light={light} bold={bold} className="text-center" />
         <div className="mt-16 flex flex-col gap-20">
@@ -39,11 +39,11 @@ function StackedDay({ scenes, light, bold }) {
             return (
               <div key={scene.time} className={`grid items-center gap-8 md:grid-cols-2 md:gap-16 ${index % 2 ? 'md:[&>:first-child]:order-2' : ''}`}>
                 <Reveal>
-                  <span className="inline-flex rounded-2xl bg-white px-5 py-2 font-display text-3xl font-extrabold tracking-tight text-indigo-600 shadow-sm">{scene.time}</span>
+                  <span className="inline-flex rounded-2xl bg-white px-5 py-2 font-display text-3xl font-extrabold tracking-tight text-brand-600 shadow-sm">{scene.time}</span>
                   <h3 className="mt-5 text-3xl font-extrabold leading-tight text-gray-950 sm:text-4xl">{scene.title}</h3>
                   <p className="mt-3 max-w-md text-lg text-gray-600">{scene.body}</p>
                 </Reveal>
-                <Reveal delay={150} className="rounded-3xl bg-gradient-to-br from-white/70 to-indigo-100/60 p-5 sm:p-8"><Visual /></Reveal>
+                <Reveal delay={150} className="rounded-3xl bg-gradient-to-br from-white/70 to-brand-100/60 p-5 sm:p-8"><Visual /></Reveal>
               </div>
             )
           })}
@@ -130,7 +130,7 @@ function ScrollingDay({ scenes, light, bold }) {
             return (
               <article key={scene.time} className="w-[min(82vw,400px)] shrink-0 rounded-3xl bg-white/75 p-5 shadow-xl backdrop-blur-md sm:p-6">
                 <Visual />
-                <p className="mt-5 text-sm font-bold text-indigo-600">{scene.time}</p>
+                <p className="mt-5 text-sm font-bold text-brand-600">{scene.time}</p>
                 <h3 className="mt-1 text-2xl font-extrabold leading-tight text-gray-950">{scene.title}</h3>
                 <p className="mt-2 text-gray-600">{scene.body}</p>
               </article>

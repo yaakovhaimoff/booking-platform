@@ -22,7 +22,7 @@ export default function ConsumerAuthPage() {
       <CodeAuthForm primary="phone" accountType="consumer" onVerified={done} />
       <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm">
         <p className="font-semibold text-gray-900">{t('pHaveBusiness')}</p>
-        <Link to="/partner" className="text-indigo-700 font-semibold hover:underline">{t('pGoPros')}</Link>
+        <Link to="/partner" className="text-brand-700 font-semibold hover:underline">{t('pGoPros')}</Link>
       </div>
     </div>
   )

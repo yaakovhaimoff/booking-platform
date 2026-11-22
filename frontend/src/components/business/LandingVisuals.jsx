@@ -54,7 +54,7 @@ function MockAppointment({ client = 0, service = 0, time = '10:00', status = 'PE
       <div className="mt-3">
         <div className="font-medium text-gray-900">{CLIENTS[client].name}</div>
         <div className="text-sm text-gray-600">{services[service]}</div>
-        <span className="inline-block mt-1 text-sm text-indigo-600">{CLIENTS[client].phone}</span>
+        <span className="inline-block mt-1 text-sm text-brand-600">{CLIENTS[client].phone}</span>
       </div>
       <div className="flex gap-3 mt-4">
         {status === 'PENDING' && (
@@ -75,7 +75,7 @@ function SideNavMock() {
   return (
     <div className="hidden w-48 shrink-0 flex-col gap-1 border-e border-gray-200 bg-white p-3 sm:flex">
       {OWNER_TABS.map(tab => (
-        <span key={tab.id} className={`text-left px-4 py-2.5 rounded-lg text-sm font-medium ${tab.id === 'queue' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'}`}>
+        <span key={tab.id} className={`text-left px-4 py-2.5 rounded-lg text-sm font-medium ${tab.id === 'queue' ? 'bg-brand-50 text-brand-700' : 'text-gray-600'}`}>
           {t(tab.label)}
           {tab.id === 'queue' && <span className="ml-2 inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">2</span>}
         </span>
@@ -112,9 +112,9 @@ function MonthCalendarMock() {
           const count = bookedDays[day] || 0
           const isSelected = day === today
           return (
-            <span key={day} className={`relative aspect-square rounded-md text-sm flex items-center justify-center ${isSelected ? 'bg-indigo-600 text-white' : count > 0 ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-500'}`}>
+            <span key={day} className={`relative aspect-square rounded-md text-sm flex items-center justify-center ${isSelected ? 'bg-brand-600 text-white' : count > 0 ? 'bg-brand-50 text-brand-700 font-medium' : 'text-gray-500'}`}>
               {day}
-              {count > 0 && <span className={`absolute top-0.5 right-1 text-[10px] leading-none font-bold ${isSelected ? 'text-indigo-100' : 'text-indigo-500'}`}>{count}</span>}
+              {count > 0 && <span className={`absolute top-0.5 right-1 text-[10px] leading-none font-bold ${isSelected ? 'text-brand-100' : 'text-brand-500'}`}>{count}</span>}
               {pendingDays.includes(day) && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true" />}
             </span>
           )
@@ -152,7 +152,7 @@ function DashboardMock() {
 
 function PhoneMockup() {
   return (
-    <div className="w-[min(100%,230px)] rounded-[28px] bg-gray-950 p-2 shadow-2xl shadow-indigo-900/20">
+    <div className="w-[min(100%,230px)] rounded-[28px] bg-gray-950 p-2 shadow-2xl shadow-brand-900/20">
       <div className="rounded-[22px] bg-gray-50 p-3">
         <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-gray-300" />
         <MockAppointment client={2} service={0} time="15:00" tapping />
@@ -192,12 +192,12 @@ export function BookingSlotsMockup() {
   const services = t('bzMockServices')
   return (
     <div className="rounded-2xl bg-gray-50 p-4 text-left ring-1 ring-gray-100" aria-hidden="true">
-      <div className="flex gap-1.5">{steps.map((step, index) => <div key={step} className={`h-1.5 flex-1 rounded-full ${index <= 2 ? 'bg-indigo-600' : 'bg-gray-200'}`} />)}</div>
+      <div className="flex gap-1.5">{steps.map((step, index) => <div key={step} className={`h-1.5 flex-1 rounded-full ${index <= 2 ? 'bg-brand-600' : 'bg-gray-200'}`} />)}</div>
       <p className="mt-1.5 text-xs text-gray-500">{t('step', { n: 3 })} · {steps[2]}</p>
       <p className="mb-4 mt-4 text-sm text-gray-500">{t('serviceLabel')} <span className="font-medium text-gray-700">{services[0]}</span></p>
       <div className="grid grid-cols-3 gap-3">
         {SLOTS.map((slot, index) => (
-          <Reveal key={slot} delay={index * 70} className={`bg-white border rounded-md py-2 text-center text-sm font-medium ${index === 3 ? 'border-indigo-400 text-indigo-600 shadow-sm' : 'border-gray-200 text-gray-700'}`}>{slot}</Reveal>
+          <Reveal key={slot} delay={index * 70} className={`bg-white border rounded-md py-2 text-center text-sm font-medium ${index === 3 ? 'border-brand-400 text-brand-600 shadow-sm' : 'border-gray-200 text-gray-700'}`}>{slot}</Reveal>
         ))}
       </div>
     </div>
@@ -257,14 +257,14 @@ export function BentoPageMockup() {
   const { t } = useI18n()
   const actions = [
     { label: t('whatsapp'), color: 'bg-green-500', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M4 5h16v11H9l-5 4z" /></svg> },
-    { label: t('call'), color: 'bg-indigo-600', icon: <PhoneIcon size={20} /> },
+    { label: t('call'), color: 'bg-brand-600', icon: <PhoneIcon size={20} /> },
     { label: t('maps'), color: 'bg-sky-500', icon: <PinIcon size={20} /> },
   ]
   return (
     <div className="overflow-hidden rounded-2xl bg-white text-left shadow-sm" aria-hidden="true">
       <div className="h-24" style={{ background: 'linear-gradient(135deg, #c7d2fe, #fbcfe8)' }} />
       <div className="flex flex-wrap items-start gap-x-5 gap-y-4 px-5 pb-5">
-        <div className="-mt-8 flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-white bg-indigo-100 text-2xl font-bold text-indigo-600 shadow">S</div>
+        <div className="-mt-8 flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-white bg-brand-100 text-2xl font-bold text-brand-600 shadow">S</div>
         <div className="min-w-0 flex-1 pt-2">
           <p className="text-xl font-bold text-gray-900">Studio Marco</p>
           <p className="mt-0.5 text-sm text-gray-500">Via Roma 12</p>
@@ -295,7 +295,7 @@ export function BentoServicesMockup() {
             <h3 className="text-base font-semibold text-gray-800">{services[index]}</h3>
             <p className="mt-1 text-sm text-gray-500">{minutes} {t('min')}</p>
           </div>
-          <span className="text-base font-medium text-indigo-600">{fmtPrice(price, 'EUR')}</span>
+          <span className="text-base font-medium text-brand-600">{fmtPrice(price, 'EUR')}</span>
         </div>
       ))}
     </div>
@@ -314,7 +314,7 @@ export function BentoHoursMockup() {
       {rows.map(row => (
         <div key={row.day} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-gray-100 py-3 last:border-0">
           <span className="w-12 text-sm font-medium text-gray-700">{row.day}</span>
-          <span className="flex items-center gap-1.5 text-sm text-gray-600"><span className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.closed ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-300'}`}>{row.closed ? '✓' : ''}</span>{t('closed')}</span>
+          <span className="flex items-center gap-1.5 text-sm text-gray-600"><span className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.closed ? 'border-brand-600 bg-brand-600 text-white' : 'border-gray-300'}`}>{row.closed ? '✓' : ''}</span>{t('closed')}</span>
           <span className={`rounded border border-gray-300 px-2 py-1 text-sm text-gray-700 ${row.closed ? 'opacity-40' : ''}`}>09:00</span>
           <span className={`rounded border border-gray-300 px-2 py-1 text-sm text-gray-700 ${row.closed ? 'opacity-40' : ''}`}>19:00</span>
         </div>
@@ -335,7 +335,7 @@ export function BentoClientsMockup() {
               <p className="truncate font-medium text-gray-900">{CLIENTS[client].name}</p>
               <p className="truncate text-sm text-gray-700">{CLIENTS[client].phone}</p>
             </div>
-            <span className="inline-flex min-w-7 justify-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700">{visits}</span>
+            <span className="inline-flex min-w-7 justify-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700">{visits}</span>
           </div>
         ))}
       </div>
@@ -362,13 +362,13 @@ export function BentoMarketMockup() {
     <div className="flex flex-col gap-6 sm:flex-row sm:items-center" aria-hidden="true">
       <div className="flex flex-1 items-center gap-2 rounded-2xl bg-white p-1.5 text-gray-900 shadow-lg ring-1 ring-black/5">
         <span className="flex min-w-0 flex-1 items-center gap-2 px-3">
-          <SearchIcon size={18} className="shrink-0 text-indigo-600" />
+          <SearchIcon size={18} className="shrink-0 text-brand-600" />
           <span className="truncate text-sm text-gray-400">{t('pSearchService')}</span>
         </span>
         <span className="rounded-xl bg-gray-950 px-6 py-3 text-sm font-bold text-white">{t('pSearch')}</span>
       </div>
       <div className="w-36 shrink-0 text-left">
-        <div className="flex aspect-[4/5] items-end rounded-xl bg-indigo-200 p-4 font-display text-7xl font-extrabold leading-none text-indigo-700">s</div>
+        <div className="flex aspect-[4/5] items-end rounded-xl bg-brand-200 p-4 font-display text-7xl font-extrabold leading-none text-brand-700">s</div>
         <p className="mt-3 truncate font-display text-lg font-bold text-gray-950">Studio Marco</p>
         <p className="truncate text-sm text-gray-600">Via Roma 12</p>
       </div>

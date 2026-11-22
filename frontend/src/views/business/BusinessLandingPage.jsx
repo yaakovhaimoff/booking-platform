@@ -8,12 +8,12 @@ import {
 } from '../../components/business/LandingVisuals'
 
 const BENTO = [
-  { id: 'page', span: 'md:col-span-4', Visual: BentoPageMockup, tone: 'bg-indigo-50' },
+  { id: 'page', span: 'md:col-span-4', Visual: BentoPageMockup, tone: 'bg-brand-50' },
   { id: 'services', span: 'md:col-span-2', Visual: BentoServicesMockup, tone: 'bg-pink-50' },
   { id: 'hours', span: 'md:col-span-2', Visual: BentoHoursMockup, tone: 'bg-amber-50' },
   { id: 'clients', span: 'md:col-span-2', Visual: BentoClientsMockup, tone: 'bg-emerald-50' },
   { id: 'reviews', span: 'md:col-span-2', Visual: BentoReviewsMockup, tone: 'bg-sky-50' },
-  { id: 'market', span: 'md:col-span-6', Visual: BentoMarketMockup, tone: 'bg-violet-50' },
+  { id: 'market', span: 'md:col-span-6', Visual: BentoMarketMockup, tone: 'bg-brand-50' },
 ]
 
 function SectionHeading({ light, bold, className = '' }) {
@@ -26,7 +26,7 @@ function SectionHeading({ light, bold, className = '' }) {
 }
 
 function PrimaryButton({ children }) {
-  return <Link to="/partner" className="inline-flex h-13 items-center rounded-full bg-gray-950 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-indigo-900/20 transition hover:-translate-y-0.5 hover:bg-gray-800">{children}</Link>
+  return <Link to="/partner" className="inline-flex h-13 items-center rounded-full bg-gray-950 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-brand-900/20 transition hover:-translate-y-0.5 hover:bg-gray-800">{children}</Link>
 }
 
 export default function BusinessLandingPage() {
@@ -37,7 +37,7 @@ export default function BusinessLandingPage() {
 
   return (
     <>
-      <section className="relative mx-3 sm:mx-6 overflow-hidden rounded-[32px] bg-gradient-to-b from-indigo-100 via-pink-50 to-white">
+      <section className="relative mx-3 sm:mx-6 overflow-hidden rounded-[32px] bg-gradient-to-b from-brand-100 via-pink-50 to-white">
         <div className="pointer-events-none absolute -top-24 start-[-10%] h-80 w-80 rounded-full bg-pink-200/60 blur-3xl" aria-hidden="true" />
         <div className="pointer-events-none absolute top-20 end-[-8%] h-96 w-96 rounded-full bg-sky-200/60 blur-3xl" aria-hidden="true" />
         <div className="relative max-w-[1200px] mx-auto px-5 sm:px-10 pt-16 pb-24 sm:pt-24 sm:pb-32 text-center">
@@ -48,7 +48,7 @@ export default function BusinessLandingPage() {
           <Reveal as="p" delay={120} className="mx-auto mt-6 max-w-xl text-lg text-gray-700">{t('pLandSub')}</Reveal>
           <Reveal delay={240} className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <PrimaryButton>{t('pGetStarted')}</PrimaryButton>
-            <a href="#day" className="inline-flex h-13 items-center rounded-full bg-white px-8 py-4 text-sm font-bold text-gray-950 shadow-lg shadow-indigo-900/10 transition hover:-translate-y-0.5">{t('bzSeeHow')}</a>
+            <a href="#day" className="inline-flex h-13 items-center rounded-full bg-white px-8 py-4 text-sm font-bold text-gray-950 shadow-lg shadow-brand-900/10 transition hover:-translate-y-0.5">{t('bzSeeHow')}</a>
           </Reveal>
           <Reveal as="p" delay={320} className="mt-4 text-sm text-gray-500">{t('bzHeroNote')}</Reveal>
           <HeroMockup />
@@ -59,7 +59,7 @@ export default function BusinessLandingPage() {
         <div className="bz-marquee">
           {[0, 1].map(copy => (
             <ul key={copy} className="flex shrink-0 items-center gap-10 pe-10" aria-hidden={copy ? 'true' : undefined}>
-              {types.map(type => <li key={type} className="flex items-center gap-10 whitespace-nowrap text-xl font-bold text-gray-800 sm:text-2xl">{type}<span className="h-2.5 w-2.5 rotate-45 rounded-sm bg-indigo-400" aria-hidden="true" /></li>)}
+              {types.map(type => <li key={type} className="flex items-center gap-10 whitespace-nowrap text-xl font-bold text-gray-800 sm:text-2xl">{type}<span className="h-2.5 w-2.5 rotate-45 rounded-sm bg-brand-400" aria-hidden="true" /></li>)}
             </ul>
           ))}
         </div>
@@ -86,10 +86,10 @@ export default function BusinessLandingPage() {
         <div className="grid gap-12 md:grid-cols-[1fr_1.1fr] md:gap-20">
           <Reveal><SectionHeading light={t('bzStepsLight')} bold={t('bzStepsBold')} /></Reveal>
           <Reveal as="ol" className="relative flex flex-col gap-10 ps-2">
-            <span className="absolute start-[27px] top-4 bottom-4 w-0.5 bg-gray-100" aria-hidden="true"><span className="bz-fill block h-full w-full bg-indigo-500" /></span>
+            <span className="absolute start-[27px] top-4 bottom-4 w-0.5 bg-gray-100" aria-hidden="true"><span className="bz-fill block h-full w-full bg-brand-500" /></span>
             {steps.map((step, i) => (
               <li key={step.t} className="relative flex gap-5">
-                <span className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white font-display text-lg font-extrabold text-indigo-600 ring-2 ring-indigo-200">{i + 1}</span>
+                <span className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white font-display text-lg font-extrabold text-brand-600 ring-2 ring-brand-200">{i + 1}</span>
                 <div className="pt-1.5"><h3 className="text-xl font-extrabold text-gray-950">{step.t}</h3><p className="mt-1 text-gray-600">{step.d}</p></div>
               </li>
             ))}
@@ -115,7 +115,7 @@ export default function BusinessLandingPage() {
         <Reveal>
           <h2 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-extrabold leading-[1.05] tracking-[-0.03em] text-white">{t('bzCtaTitle')}</h2>
           <p className="mx-auto mt-4 max-w-md text-lg text-gray-300">{t('bzCtaSub')}</p>
-          <Link to="/partner" className="mt-9 inline-flex h-13 items-center rounded-full bg-white px-8 py-4 text-sm font-bold text-gray-950 transition hover:-translate-y-0.5 hover:bg-indigo-100">{t('pGetStarted')}</Link>
+          <Link to="/partner" className="mt-9 inline-flex h-13 items-center rounded-full bg-white px-8 py-4 text-sm font-bold text-gray-950 transition hover:-translate-y-0.5 hover:bg-brand-100">{t('pGetStarted')}</Link>
         </Reveal>
       </section>
     </>

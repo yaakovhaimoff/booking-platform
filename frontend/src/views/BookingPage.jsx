@@ -123,7 +123,7 @@ export default function BookingPage({ tenant }) {
           <div className="mb-5" aria-label={t('step', { n: stepIndex + 1 })}>
             <div className="flex gap-1.5">
               {STEPS.map((s, i) => (
-                <div key={s} className={`h-1.5 flex-1 rounded-full ${i <= stepIndex ? 'bg-indigo-600' : 'bg-gray-200'}`} />
+                <div key={s} className={`h-1.5 flex-1 rounded-full ${i <= stepIndex ? 'bg-brand-600' : 'bg-gray-200'}`} />
               ))}
             </div>
             <p className="text-xs text-gray-500 mt-1.5">
@@ -135,7 +135,7 @@ export default function BookingPage({ tenant }) {
         {showBack && (
           <button
             onClick={goBack}
-            className="mb-4 text-sm text-indigo-600 hover:text-indigo-800 transition"
+            className="mb-4 text-sm text-brand-600 hover:text-brand-800 transition"
           >
             {t('back')}
           </button>

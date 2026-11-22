@@ -7,7 +7,7 @@ export default function ListFilters({ label, search, onSearch, placeholder, filt
         value={search}
         onChange={event => onSearch(event.target.value)}
         placeholder={placeholder}
-        className="w-full sm:w-72 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full sm:w-72 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
       {filterOptions && (
         <select

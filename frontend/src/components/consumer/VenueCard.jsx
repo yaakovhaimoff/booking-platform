@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 // Flat soft tones (no gradients) for shops without a profile photo; the initial does the work.
-const TONES = ['bg-indigo-200 text-indigo-700', 'bg-pink-200 text-pink-700', 'bg-indigo-100 text-indigo-600', 'bg-pink-100 text-pink-600', 'bg-indigo-600 text-indigo-100']
+const TONES = ['bg-brand-200 text-brand-700', 'bg-pink-200 text-pink-700', 'bg-brand-100 text-brand-600', 'bg-pink-100 text-pink-600', 'bg-brand-600 text-brand-100']
 
 export default function VenueCard({ venue }) {
   const label = venue.name || venue.slug || ''
@@ -15,7 +15,7 @@ export default function VenueCard({ venue }) {
           {label.charAt(0).toLowerCase()}
         </div>
       )}
-      <h3 className="mt-3 font-display text-lg font-bold text-gray-950 group-hover:text-indigo-600 truncate">{label}</h3>
+      <h3 className="mt-3 font-display text-lg font-bold text-gray-950 group-hover:text-brand-600 truncate">{label}</h3>
       {venue.address && <p className="text-sm text-gray-600 truncate">{venue.address}</p>}
     </Link>
   )
