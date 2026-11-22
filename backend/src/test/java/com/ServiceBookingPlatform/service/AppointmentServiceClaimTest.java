@@ -64,6 +64,18 @@ class AppointmentServiceClaimTest {
     }
 
     @Test
+    void aFirstNameOnlyGuestBookingIsLinkedWhenThePhoneMatches() {
+        AppointmentEntity firstNameOnly = guest("Anna", "3331112222");
+        AppointmentEntity firstNameOtherNumber = guest("Anna", "3339998888");
+        candidates(firstNameOnly, firstNameOtherNumber);
+
+        service.getMyAppointments(me("Anna Bianchi"), "3331112222");
+
+        assertEquals(ME, firstNameOnly.getClientAuth0Sub());
+        assertNull(firstNameOtherNumber.getClientAuth0Sub());
+    }
+
+    @Test
     void onlyTheMatchingBookingsAreLinkedWhenOthersShareAPhoneOrAName() {
         AppointmentEntity mine = guest("Anna Bianchi", "3331112222");
         AppointmentEntity sameNumberOtherPerson = guest("Marta Rossi", "3331112222");

@@ -1,7 +1,10 @@
 package com.ServiceBookingPlatform.service;
 
 import java.text.Normalizer;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Decides whether a booking made as a guest belongs to a customer account, from the phone and name typed
@@ -40,8 +43,22 @@ public final class GuestBookingMatcher {
         return !a.isEmpty() && a.equals(normalizeName(second));
     }
 
+    /**
+     * The name typed at checkout may be shorter than the profile name: "Anna" belongs to "Anna Bianchi". Every word
+     * of the booking name must appear in the account name, in any order. The reverse does not hold, so a booking
+     * for "Anna Bianchi" is not claimed by an account called just "Anna".
+     */
+    public static boolean nameCoveredBy(String bookingName, String accountName) {
+        String booking = normalizeName(bookingName);
+        if (booking.isEmpty()) {
+            return false;
+        }
+        Set<String> accountWords = new HashSet<>(Arrays.asList(normalizeName(accountName).split(" ")));
+        return Arrays.stream(booking.split(" ")).allMatch(accountWords::contains);
+    }
+
     public static boolean matches(String bookingName, String bookingPhone, String accountName, String accountPhone) {
-        return samePhone(bookingPhone, accountPhone) && sameName(bookingName, accountName);
+        return samePhone(bookingPhone, accountPhone) && nameCoveredBy(bookingName, accountName);
     }
 
     /** The tail of a phone used to narrow the database lookup before the exact rules above are applied. */

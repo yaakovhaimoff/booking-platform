@@ -66,6 +66,30 @@ class GuestBookingMatcherTest {
     }
 
     @Test
+    void aShorterBookingNameIsCoveredByTheFullProfileName() {
+        assertTrue(GuestBookingMatcher.nameCoveredBy("Anna", "Anna Bianchi"));
+        assertTrue(GuestBookingMatcher.nameCoveredBy("bianchi anna", "Anna Bianchi"));
+        assertTrue(GuestBookingMatcher.nameCoveredBy("  JOSÉ ", "Jose Garcia"));
+        assertTrue(GuestBookingMatcher.nameCoveredBy("Anna Bianchi", "Anna Bianchi"));
+    }
+
+    @Test
+    void aBookingNameWithAnUnknownWordOrNoWordsIsNotCovered() {
+        assertFalse(GuestBookingMatcher.nameCoveredBy("Anna Bianchi", "Anna"), "the profile name is shorter");
+        assertFalse(GuestBookingMatcher.nameCoveredBy("Anna Rossi", "Anna Bianchi"));
+        assertFalse(GuestBookingMatcher.nameCoveredBy("Ann", "Anna Bianchi"), "whole words only, not prefixes");
+        assertFalse(GuestBookingMatcher.nameCoveredBy(null, "Anna Bianchi"));
+        assertFalse(GuestBookingMatcher.nameCoveredBy("  ", "Anna Bianchi"));
+        assertFalse(GuestBookingMatcher.nameCoveredBy("Anna", null));
+    }
+
+    @Test
+    void aFirstNameOnlyBookingStillNeedsTheSamePhone() {
+        assertTrue(GuestBookingMatcher.matches("Anna", "3331112222", "Anna Bianchi", "393331112222"));
+        assertFalse(GuestBookingMatcher.matches("Anna", "3339998888", "Anna Bianchi", "3331112222"));
+    }
+
+    @Test
     void aBookingMatchesOnlyWhenPhoneAndNameBothMatch() {
         assertTrue(GuestBookingMatcher.matches("Anna Bianchi", "3331112222", "anna bianchi", "393331112222"));
         assertFalse(GuestBookingMatcher.matches("Anna Bianchi", "3331112222", "Marta Rossi", "3331112222"),
