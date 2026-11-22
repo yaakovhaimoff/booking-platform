@@ -47,8 +47,8 @@ export const PUBLIC = {
     bzHeroLight: 'Run your whole shop', bzHeroBold: 'from one calendar',
     bzNavDay: 'A day with torni', bzNavSteps: 'Get started', bzNavFaq: 'FAQ',
     bzSeeHow: 'See how it works', bzHeroNote: 'Set up in minutes',
-    bzMockWeek: 'This week', bzMockServices: ['Haircut', 'Beard trim', 'Colour', 'Manicure', 'Massage'],
-    bzNewRequest: 'New request: {name}', bzApprove: 'Approve', bzDecline: 'Decline', bzTomorrow: 'Tomorrow',
+    bzMockServices: ['Haircut', 'Beard trim', 'Colour', 'Manicure', 'Massage'],
+    bzMockReviews: [{ n: 'Marco R.', c: 'Great cut and an easy booking. See you next month!' }, { n: 'Sara B.', c: 'Booked at night, confirmed in the morning. Perfect.' }],
     bzTypes: ['Barbershops', 'Hair salons', 'Nail studios', 'Spas and massage', 'Brow and lash bars', 'Beauty studios', 'Wellness studios'],
     bzDayLight: 'This is what a day', bzDayBold: 'with torni looks like',
     bzScenes: [
@@ -67,7 +67,7 @@ export const PUBLIC = {
       reviews: { t: 'Reviews that build trust', d: 'Clients rate their visit and the stars show on your page.' },
       market: { t: 'Found by new clients', d: 'List your shop in the torni marketplace and let people near you find and book you.' },
     },
-    bzMockSearch: 'Barber near me', bzMockOpen: 'Open now',
+
     bzStepsLight: 'Open an account,', bzStepsBold: 'start taking bookings',
     bzSteps: [
       { t: 'Sign up', d: 'Create your account with your phone or email.' },
@@ -127,8 +127,8 @@ export const PUBLIC = {
     bzHeroLight: 'Gestisci tutto il negozio', bzHeroBold: 'da un solo calendario',
     bzNavDay: 'Una giornata con torni', bzNavSteps: 'Come iniziare', bzNavFaq: 'Domande',
     bzSeeHow: 'Scopri come funziona', bzHeroNote: 'Pronto in pochi minuti',
-    bzMockWeek: 'Questa settimana', bzMockServices: ['Taglio', 'Barba', 'Colore', 'Manicure', 'Massaggio'],
-    bzNewRequest: 'Nuova richiesta: {name}', bzApprove: 'Approva', bzDecline: 'Rifiuta', bzTomorrow: 'Domani',
+    bzMockServices: ['Taglio', 'Barba', 'Colore', 'Manicure', 'Massaggio'],
+    bzMockReviews: [{ n: 'Marco R.', c: 'Taglio perfetto e prenotazione facilissima. A presto!' }, { n: 'Sara B.', c: 'Ho prenotato di notte, confermata al mattino. Ottimo.' }],
     bzTypes: ['Barberie', 'Saloni di parrucchieri', 'Nail studio', 'Spa e massaggi', 'Brow e lash bar', 'Centri estetici', 'Centri benessere'],
     bzDayLight: 'Ecco come è una giornata', bzDayBold: 'con torni',
     bzScenes: [
@@ -147,7 +147,7 @@ export const PUBLIC = {
       reviews: { t: 'Recensioni che creano fiducia', d: 'I clienti valutano la visita e le stelle compaiono sulla tua pagina.' },
       market: { t: 'Trovato da nuovi clienti', d: 'Inserisci il tuo negozio nel marketplace di torni e fatti trovare e prenotare da chi è vicino a te.' },
     },
-    bzMockSearch: 'Barbiere vicino a me', bzMockOpen: 'Aperto ora',
+
     bzStepsLight: 'Apri un account,', bzStepsBold: 'inizia a ricevere prenotazioni',
     bzSteps: [
       { t: 'Registrati', d: 'Crea il tuo account con telefono o email.' },

@@ -1,73 +1,150 @@
 import { useI18n } from '../../i18n'
-import { StarIcon, SearchIcon, PinIcon, ChevronRightIcon } from '../shared/icons'
+import { SearchIcon, PinIcon, PhoneIcon } from '../shared/icons'
+import { OWNER_TABS } from '../owner/ownerTabs'
+import { STATUS_STYLES } from '../owner/statusStyles'
 import Reveal from './Reveal'
 import { useInView } from '../../utils/useInView'
 
-const NAMES = ['Marco', 'Sara', 'Luca', 'Giulia', 'Elena', 'Paolo']
-const INITIAL_TONES = ['bg-indigo-100 text-indigo-700', 'bg-pink-100 text-pink-700', 'bg-amber-100 text-amber-700', 'bg-emerald-100 text-emerald-700', 'bg-sky-100 text-sky-700', 'bg-violet-100 text-violet-700']
-const BLOCK_TONES = ['bg-indigo-100 text-indigo-900', 'bg-pink-100 text-pink-900', 'bg-amber-100 text-amber-900', 'bg-emerald-100 text-emerald-900', 'bg-sky-100 text-sky-900', 'bg-violet-100 text-violet-900']
-
-const CALENDAR_COLUMNS = [
-  [{ name: 0, svc: 0, top: 0, height: 1, tone: 0 }, { name: 2, svc: 2, top: 2.5, height: 1.5, tone: 1 }],
-  [{ name: 1, svc: 1, top: 0.5, height: 1.5, tone: 2 }, { name: 3, svc: 0, top: 3, height: 1, tone: 3 }],
-  [{ name: 4, svc: 3, top: 1, height: 1, tone: 4 }, { name: 5, svc: 4, top: 2.5, height: 1.5, tone: 5 }],
+// Sample data only. The markup and classes below mirror the real owner dashboard and public shop pages
+// (AppointmentCard, AppointmentCalendar, SideNav, ServiceCard, SlotGrid, Reviews, StoreHeader, ClientsTab,
+// HoursRowInput, VenueCard) so the landing page shows what the product really looks like.
+const CLIENTS = [
+  { name: 'Marco Rossi', phone: '+39 333 123 4567' },
+  { name: 'Sara Bianchi', phone: '+39 347 555 0198' },
+  { name: 'Luca Ferri', phone: '+39 320 555 0142' },
+  { name: 'Giulia Conti', phone: '+39 339 555 0107' },
 ]
-const HOURS = ['09:00', '10:00', '11:00', '12:00']
-const ROW_HEIGHT = 52
+const BOOKED_OFFSETS = { '-14': 1, '-12': 2, '-9': 1, '-7': 3, '-5': 2, '-2': 1, 0: 3, 2: 2, 5: 1, 7: 2, 9: 1 }
+const PENDING_OFFSETS = [0, 2, 7]
+const SLOTS = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '14:00']
 
-export function Avatar({ index, size = 'h-9 w-9' }) {
-  return <span className={`inline-flex ${size} shrink-0 items-center justify-center rounded-full text-xs font-bold ${INITIAL_TONES[index % INITIAL_TONES.length]}`}>{NAMES[index % NAMES.length][0]}</span>
+function daysFromNow(offset) {
+  const day = new Date()
+  day.setDate(day.getDate() + offset)
+  return day
 }
 
-function CalendarMockup() {
-  const { t, weekdays } = useI18n()
-  const services = t('bzMockServices')
+function Stars({ value, size = 'text-sm' }) {
   return (
-    <div className="rounded-2xl bg-white p-4 sm:p-5 text-left">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-bold text-gray-950">{t('bzMockWeek')}</p>
-        <div className="flex gap-1.5" aria-hidden="true"><span className="h-2.5 w-2.5 rounded-full bg-gray-200" /><span className="h-2.5 w-2.5 rounded-full bg-gray-200" /><span className="h-2.5 w-2.5 rounded-full bg-gray-200" /></div>
-      </div>
-      <div className="mt-4 grid grid-cols-[44px_repeat(3,1fr)] gap-x-2">
-        <span />
-        {weekdays.slice(0, 3).map(day => <p key={day} className="pb-2 text-center text-xs font-semibold text-gray-500">{day}</p>)}
-        <div className="relative" style={{ height: ROW_HEIGHT * HOURS.length }}>
-          {HOURS.map((hour, i) => <span key={hour} className="absolute text-[11px] text-gray-400" style={{ top: i * ROW_HEIGHT }}>{hour}</span>)}
+    <span className={`${size} tracking-tight text-amber-400`} aria-label={`${value}/5`}>
+      {[1, 2, 3, 4, 5].map(n => <span key={n} className={n <= Math.round(value) ? '' : 'text-gray-300'}>★</span>)}
+    </span>
+  )
+}
+
+function StatusPill({ status }) {
+  const { t } = useI18n()
+  return <span className={`px-2.5 py-1 text-xs rounded-full font-medium ${STATUS_STYLES[status] || ''}`}>{t('status_' + status)}</span>
+}
+
+function MockAppointment({ client = 0, service = 0, time = '10:00', status = 'PENDING', dayOffset = 1, tapping = false }) {
+  const { t, locale } = useI18n()
+  const [ref, inView] = useInView()
+  const services = t('bzMockServices')
+  const date = daysFromNow(dayOffset).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })
+  return (
+    <div ref={ref} className="border border-gray-200 rounded-xl p-4 bg-white text-left">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-2xl font-bold text-gray-900 leading-none">{time}</div>
+          <div className="text-xs text-gray-500 mt-1">{date}</div>
         </div>
-        {CALENDAR_COLUMNS.map((column, columnIndex) => (
-          <div key={columnIndex} className="relative border-s border-gray-100" style={{ height: ROW_HEIGHT * HOURS.length }}>
-            {HOURS.map((hour, i) => <span key={hour} className="absolute inset-x-0 border-t border-gray-100" style={{ top: i * ROW_HEIGHT }} />)}
-            {column.map((event, eventIndex) => (
-              <Reveal key={event.name} delay={400 + (columnIndex * 2 + eventIndex) * 120}
-                className={`absolute inset-x-1 overflow-hidden rounded-lg px-2 py-1 ${BLOCK_TONES[event.tone]}`}
-                style={{ top: event.top * ROW_HEIGHT + 2, height: event.height * ROW_HEIGHT - 4 }}>
-                <p className="truncate text-xs font-bold">{NAMES[event.name]}</p>
-                <p className="truncate text-[11px] opacity-80">{services[event.svc]}</p>
-              </Reveal>
-            ))}
-          </div>
-        ))}
+        <StatusPill status={status} />
+      </div>
+      <div className="mt-3">
+        <div className="font-medium text-gray-900">{CLIENTS[client].name}</div>
+        <div className="text-sm text-gray-600">{services[service]}</div>
+        <span className="inline-block mt-1 text-sm text-indigo-600">{CLIENTS[client].phone}</span>
+      </div>
+      <div className="flex gap-3 mt-4">
+        {status === 'PENDING' && (
+          <span data-in={tapping && inView ? '' : undefined} className="bz-tap flex-1 py-2.5 text-center text-sm font-semibold bg-green-600 text-white rounded-lg">{t('approve')}</span>
+        )}
+        <span className="flex-1 py-2.5 text-center text-sm font-semibold border border-red-200 text-red-600 rounded-lg">{t('cancel')}</span>
       </div>
     </div>
   )
 }
 
 export function RequestCard({ name = 0, svc = 1, tapping = false }) {
+  return <MockAppointment client={name} service={svc} tapping={tapping} />
+}
+
+function SideNavMock() {
   const { t } = useI18n()
-  const services = t('bzMockServices')
-  const [ref, inView] = useInView()
   return (
-    <div ref={ref} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-      <div className="flex items-center gap-3">
-        <Avatar index={name} />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-gray-950">{t('bzNewRequest', { name: NAMES[name] })}</p>
-          <p className="truncate text-xs text-gray-500">{services[svc]} · {t('bzTomorrow')} 10:00</p>
-        </div>
+    <div className="hidden w-48 shrink-0 flex-col gap-1 border-e border-gray-200 bg-white p-3 sm:flex">
+      {OWNER_TABS.map(tab => (
+        <span key={tab.id} className={`text-left px-4 py-2.5 rounded-lg text-sm font-medium ${tab.id === 'queue' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600'}`}>
+          {t(tab.label)}
+          {tab.id === 'queue' && <span className="ml-2 inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-red-600 text-white text-xs font-semibold">2</span>}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function MonthCalendarMock() {
+  const { locale, weekStart, weekdays } = useI18n()
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const firstWeekday = (new Date(year, month, 1).getDay() - weekStart + 7) % 7
+  const cells = [...Array(firstWeekday).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
+  const today = now.getDate()
+  const bookedDays = {}
+  for (const [offset, count] of Object.entries(BOOKED_OFFSETS)) bookedDays[today + Number(offset)] = count
+  const pendingDays = PENDING_OFFSETS.map(offset => today + offset)
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <span className="px-2 py-1 text-gray-600">←</span>
+        <h3 className="font-semibold text-gray-800">{new Date(year, month, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' })}</h3>
+        <span className="px-2 py-1 text-gray-600">→</span>
       </div>
-      <div className="mt-3 flex gap-2">
-        <span data-in={tapping && inView ? '' : undefined} className="bz-tap inline-flex h-8 items-center rounded-lg bg-gray-950 px-4 text-xs font-bold text-white">{t('bzApprove')}</span>
-        <span className="inline-flex h-8 items-center rounded-lg bg-gray-100 px-4 text-xs font-semibold text-gray-700">{t('bzDecline')}</span>
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 mb-1">
+        {weekdays.map(weekday => <div key={weekday}>{weekday}</div>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((day, index) => {
+          if (day === null) return <div key={`empty-${index}`} />
+          const count = bookedDays[day] || 0
+          const isSelected = day === today
+          return (
+            <span key={day} className={`relative aspect-square rounded-md text-sm flex items-center justify-center ${isSelected ? 'bg-indigo-600 text-white' : count > 0 ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-500'}`}>
+              {day}
+              {count > 0 && <span className={`absolute top-0.5 right-1 text-[10px] leading-none font-bold ${isSelected ? 'text-indigo-100' : 'text-indigo-500'}`}>{count}</span>}
+              {pendingDays.includes(day) && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true" />}
+            </span>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function DashboardMock() {
+  const { t, locale } = useI18n()
+  const selectedLabel = daysFromNow(0).toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })
+  return (
+    <div className="flex overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-1 ring-gray-200">
+      <SideNavMock />
+      <div className="grid min-w-0 flex-1 gap-6 p-4 sm:p-5 lg:grid-cols-[17rem_1fr]">
+        <MonthCalendarMock />
+        <div className="min-w-0">
+          <h3 className="mb-3 text-base font-semibold text-gray-900 capitalize">{selectedLabel}</h3>
+          <div className="flex flex-col gap-4">
+            <section>
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">{t('status_PENDING')} · 1</h4>
+              <MockAppointment client={1} service={1} time="10:00" dayOffset={0} />
+            </section>
+            <section className="hidden sm:block">
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">{t('status_CONFIRMED')} · 1</h4>
+              <MockAppointment client={0} service={0} time="11:30" status="CONFIRMED" dayOffset={0} />
+            </section>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -75,14 +152,10 @@ export function RequestCard({ name = 0, svc = 1, tapping = false }) {
 
 function PhoneMockup() {
   return (
-    <div className="w-[min(100%,210px)] rounded-[28px] bg-gray-950 p-2 shadow-2xl shadow-indigo-900/20">
-      <div className="rounded-[22px] bg-gradient-to-b from-indigo-50 to-white p-3">
+    <div className="w-[min(100%,230px)] rounded-[28px] bg-gray-950 p-2 shadow-2xl shadow-indigo-900/20">
+      <div className="rounded-[22px] bg-gray-50 p-3">
         <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-gray-300" />
-        <RequestCard name={1} svc={0} tapping />
-        <div className="mt-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
-          <div className="flex items-center gap-2"><Avatar index={3} size="h-7 w-7" /><span className="h-2 w-20 rounded bg-gray-200" /></div>
-          <div className="mt-2 h-2 w-28 rounded bg-gray-100" />
-        </div>
+        <MockAppointment client={2} service={0} time="15:00" tapping />
       </div>
     </div>
   )
@@ -90,11 +163,11 @@ function PhoneMockup() {
 
 export function HeroMockup() {
   return (
-    <div className="relative mx-auto mt-14 max-w-[880px] sm:mt-20" aria-hidden="true">
+    <div className="relative mx-auto mt-14 max-w-[900px] sm:mt-20" aria-hidden="true">
       <Reveal className="rounded-[28px] bg-white/50 p-2.5 shadow-[0_40px_80px_-30px_rgb(79_70_229/.45)] ring-1 ring-white/80 backdrop-blur sm:p-3.5">
-        <CalendarMockup />
+        <DashboardMock />
       </Reveal>
-      <Reveal delay={350} className="absolute -bottom-10 end-[-6px] sm:end-[-28px]">
+      <Reveal delay={350} className="absolute -bottom-10 end-[-6px] hidden sm:block sm:end-[-28px]">
         <div className="bz-float"><PhoneMockup /></div>
       </Reveal>
     </div>
@@ -102,18 +175,11 @@ export function HeroMockup() {
 }
 
 export function RequestStack() {
-  const { t } = useI18n()
-  const services = t('bzMockServices')
   return (
     <div className="flex flex-col gap-3" aria-hidden="true">
-      {[0, 1, 2].map(i => (
-        <Reveal key={i} variant="slide" delay={i * 160} className="flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-gray-100">
-          <Avatar index={i + 2} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold text-gray-950">{t('bzNewRequest', { name: NAMES[i + 2] })}</p>
-            <p className="truncate text-xs text-gray-500">{services[i]} · {t('bzTomorrow')} {['09:00', '11:30', '15:00'][i]}</p>
-          </div>
-          <span className="text-[11px] text-gray-400">{['23:04', '23:31', '06:48'][i]}</span>
+      {[0, 1].map(index => (
+        <Reveal key={index} variant="slide" delay={index * 160}>
+          <MockAppointment client={index + 1} service={index} time={['09:00', '11:30'][index]} />
         </Reveal>
       ))}
     </div>
@@ -121,15 +187,17 @@ export function RequestStack() {
 }
 
 export function BookingSlotsMockup() {
-  const slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30']
   const { t } = useI18n()
   const steps = t('steps')
+  const services = t('bzMockServices')
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100" aria-hidden="true">
-      <div className="flex gap-1.5">{steps.slice(0, 3).map((step, i) => <span key={step} className={`rounded-full px-3 py-1 text-xs font-semibold ${i === 2 ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-600'}`}>{step}</span>)}</div>
-      <div className="mt-4 grid grid-cols-4 gap-2">
-        {slots.map((slot, i) => (
-          <Reveal key={slot} delay={i * 70} className={`rounded-lg py-2 text-center text-xs font-semibold ${i === 3 ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-700'}`}>{slot}</Reveal>
+    <div className="rounded-2xl bg-gray-50 p-4 text-left ring-1 ring-gray-100" aria-hidden="true">
+      <div className="flex gap-1.5">{steps.map((step, index) => <div key={step} className={`h-1.5 flex-1 rounded-full ${index <= 2 ? 'bg-indigo-600' : 'bg-gray-200'}`} />)}</div>
+      <p className="mt-1.5 text-xs text-gray-500">{t('step', { n: 3 })} · {steps[2]}</p>
+      <p className="mb-4 mt-4 text-sm text-gray-500">{t('serviceLabel')} <span className="font-medium text-gray-700">{services[0]}</span></p>
+      <div className="grid grid-cols-3 gap-3">
+        {SLOTS.map((slot, index) => (
+          <Reveal key={slot} delay={index * 70} className={`bg-white border rounded-md py-2 text-center text-sm font-medium ${index === 3 ? 'border-indigo-400 text-indigo-600 shadow-sm' : 'border-gray-200 text-gray-700'}`}>{slot}</Reveal>
         ))}
       </div>
     </div>
@@ -137,65 +205,97 @@ export function BookingSlotsMockup() {
 }
 
 export function ReviewsMockup() {
+  const { t, fmtDate } = useI18n()
+  const reviews = t('bzMockReviews')
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100" aria-hidden="true">
-      {[0, 1, 2].map(i => (
-        <Reveal key={i} delay={i * 150} className={`flex items-center gap-3 ${i ? 'mt-3 border-t border-gray-100 pt-3' : ''}`}>
-          <Avatar index={i + 1} size="h-8 w-8" />
-          <div className="flex-1">
-            <div className="flex text-amber-400">{[0, 1, 2, 3, 4].map(n => <StarIcon key={n} size={14} />)}</div>
-            <span className="mt-1.5 block h-2 rounded bg-gray-100" style={{ width: `${88 - i * 18}%` }} />
-          </div>
-        </Reveal>
-      ))}
+    <div className="text-left" aria-hidden="true">
+      <div className="mb-3 flex items-baseline justify-between">
+        <h4 className="text-lg font-semibold text-gray-900">{t('reviews')}</h4>
+        <p className="text-sm text-gray-600"><Stars value={5} /> <span className="font-semibold text-gray-900">4.9</span> · {t('reviewCount', { n: 12 })}</p>
+      </div>
+      <ul className="flex flex-col gap-3">
+        {reviews.map((review, index) => (
+          <Reveal as="li" key={review.n} delay={index * 150} className="rounded-lg border border-gray-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="truncate font-medium text-gray-900">{review.n}</p>
+              <Stars value={5} />
+            </div>
+            <p className="mt-1 text-sm text-gray-700">{review.c}</p>
+            <p className="mt-2 text-xs text-gray-400">{fmtDate(daysFromNow(-(index + 1)).toLocaleDateString('sv-SE'))}</p>
+          </Reveal>
+        ))}
+      </ul>
     </div>
   )
 }
 
 export function TomorrowMockup() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const services = t('bzMockServices')
+  const label = daysFromNow(1).toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100" aria-hidden="true">
-      <p className="text-xs font-bold uppercase tracking-wide text-gray-400">{t('bzTomorrow')}</p>
-      {['09:00', '10:30', '12:00'].map((time, i) => (
-        <Reveal key={time} delay={i * 140} className="mt-3 flex items-center gap-3">
-          <span className="w-12 text-sm font-bold text-indigo-600">{time}</span>
-          <span className={`flex flex-1 items-center gap-2 rounded-xl px-3 py-2 ${BLOCK_TONES[i * 2]}`}>
-            <span className="text-sm font-bold">{NAMES[i]}</span><span className="text-xs opacity-75">{services[i]}</span>
-          </span>
-        </Reveal>
-      ))}
+    <div className="text-left" aria-hidden="true">
+      <h4 className="mb-1 text-base font-semibold text-gray-900 capitalize">{label}</h4>
+      <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-500">{t('status_CONFIRMED')} · 3</p>
+      <div className="flex flex-col gap-2">
+        {['09:00', '10:30', '12:00'].map((time, index) => (
+          <Reveal key={time} delay={index * 140} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3">
+            <span className="w-14 text-xl font-bold leading-none text-gray-900">{time}</span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-medium text-gray-900">{CLIENTS[index].name}</div>
+              <div className="truncate text-sm text-gray-600">{services[index]}</div>
+            </div>
+            <StatusPill status="CONFIRMED" />
+          </Reveal>
+        ))}
+      </div>
     </div>
   )
 }
 
 export function BentoPageMockup() {
   const { t } = useI18n()
+  const actions = [
+    { label: t('whatsapp'), color: 'bg-green-500', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M4 5h16v11H9l-5 4z" /></svg> },
+    { label: t('call'), color: 'bg-indigo-600', icon: <PhoneIcon size={20} /> },
+    { label: t('maps'), color: 'bg-sky-500', icon: <PinIcon size={20} /> },
+  ]
   return (
-    <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100" aria-hidden="true">
-      <div className="grid grid-cols-3 gap-2">
-        <span className="h-20 rounded-xl bg-gradient-to-br from-indigo-300 to-indigo-500" />
-        <span className="h-20 rounded-xl bg-gradient-to-br from-pink-200 to-pink-400" />
-        <span className="h-20 rounded-xl bg-gradient-to-br from-amber-200 to-orange-300" />
+    <div className="overflow-hidden rounded-2xl bg-white text-left shadow-sm" aria-hidden="true">
+      <div className="h-24" style={{ background: 'linear-gradient(135deg, #c7d2fe, #fbcfe8)' }} />
+      <div className="flex flex-wrap items-start gap-x-5 gap-y-4 px-5 pb-5">
+        <div className="-mt-8 flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-4 border-white bg-indigo-100 text-2xl font-bold text-indigo-600 shadow">S</div>
+        <div className="min-w-0 flex-1 pt-2">
+          <p className="text-xl font-bold text-gray-900">Studio Marco</p>
+          <p className="mt-0.5 text-sm text-gray-500">Via Roma 12</p>
+          <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-gray-600"><span className="text-amber-400">★</span><span className="font-semibold text-gray-900">4.9</span></p>
+          <p className="mt-2 flex w-fit items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-sm font-semibold text-green-700"><span className="h-2 w-2 rounded-full bg-green-500" />{t('openNowUntil', { time: '19:00' })}</p>
+        </div>
+        <div className="flex gap-4 pt-1">
+          {actions.map(action => (
+            <span key={action.label} className="flex flex-col items-center gap-1.5">
+              <span className={`flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-sm ${action.color}`}>{action.icon}</span>
+              <span className="text-xs text-gray-600">{action.label}</span>
+            </span>
+          ))}
+        </div>
       </div>
-      <div className="mt-3 flex items-center justify-between">
-        <span className="h-3 w-28 rounded bg-gray-200" />
-        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">{t('bzMockOpen')}</span>
-      </div>
-      <div className="mt-2 flex gap-2"><span className="h-8 flex-1 rounded-lg bg-emerald-500" /><span className="h-8 flex-1 rounded-lg bg-gray-100" /></div>
     </div>
   )
 }
 
 export function BentoServicesMockup() {
-  const { t } = useI18n()
+  const { t, fmtPrice } = useI18n()
   const services = t('bzMockServices')
   return (
-    <div className="flex flex-col gap-2" aria-hidden="true">
-      {[['30 min', '€18'], ['20 min', '€10'], ['60 min', '€55']].map(([duration, price], i) => (
-        <div key={price} className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-xs shadow-sm ring-1 ring-gray-100">
-          <span className="font-bold text-gray-900">{services[i]}</span><span className="text-gray-500">{duration} · {price}</span>
+    <div className="flex flex-col gap-2.5" aria-hidden="true">
+      {[[18, 30], [10, 20], [55, 60]].map(([price, minutes], index) => (
+        <div key={price} className="flex items-start justify-between rounded-lg border border-gray-200 bg-white p-4 text-left">
+          <div>
+            <h3 className="text-base font-semibold text-gray-800">{services[index]}</h3>
+            <p className="mt-1 text-sm text-gray-500">{minutes} {t('min')}</p>
+          </div>
+          <span className="text-base font-medium text-indigo-600">{fmtPrice(price, 'EUR')}</span>
         </div>
       ))}
     </div>
@@ -203,28 +303,55 @@ export function BentoServicesMockup() {
 }
 
 export function BentoHoursMockup() {
-  const { weekdays } = useI18n()
+  const { t, weekdays } = useI18n()
+  const rows = [
+    { day: weekdays[0], closed: false },
+    { day: weekdays[1], closed: false },
+    { day: weekdays[6], closed: true },
+  ]
   return (
-    <div className="flex flex-wrap gap-1.5" aria-hidden="true">
-      {weekdays.map((day, i) => <span key={day} className={`rounded-full px-3 py-1.5 text-xs font-bold ${i === 6 ? 'bg-gray-100 text-gray-400 line-through' : 'bg-indigo-100 text-indigo-700'}`}>{day}</span>)}
+    <div className="rounded-xl bg-white px-4 text-left shadow-sm ring-1 ring-gray-100" aria-hidden="true">
+      {rows.map(row => (
+        <div key={row.day} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-gray-100 py-3 last:border-0">
+          <span className="w-12 text-sm font-medium text-gray-700">{row.day}</span>
+          <span className="flex items-center gap-1.5 text-sm text-gray-600"><span className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${row.closed ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-300'}`}>{row.closed ? '✓' : ''}</span>{t('closed')}</span>
+          <span className={`rounded border border-gray-300 px-2 py-1 text-sm text-gray-700 ${row.closed ? 'opacity-40' : ''}`}>09:00</span>
+          <span className={`rounded border border-gray-300 px-2 py-1 text-sm text-gray-700 ${row.closed ? 'opacity-40' : ''}`}>19:00</span>
+        </div>
+      ))}
     </div>
   )
 }
 
 export function BentoClientsMockup() {
+  const { t } = useI18n()
   return (
-    <div className="flex items-center" aria-hidden="true">
-      {[0, 1, 2, 3, 4].map(i => <span key={i} className="-me-2 rounded-full ring-2 ring-white"><Avatar index={i} size="h-10 w-10" /></span>)}
-      <span className="ms-4 text-sm font-bold text-gray-500">+120</span>
+    <div className="text-left" aria-hidden="true">
+      <div className="mb-3 flex h-11 items-center rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-400">{t('clientsSearch')}</div>
+      <div className="rounded-xl bg-white px-4 shadow-sm ring-1 ring-gray-100">
+        {[[0, 7], [1, 4], [2, 2]].map(([client, visits]) => (
+          <div key={client} className="flex items-center justify-between gap-3 border-b border-gray-100 py-3 last:border-0">
+            <div className="min-w-0">
+              <p className="truncate font-medium text-gray-900">{CLIENTS[client].name}</p>
+              <p className="truncate text-sm text-gray-700">{CLIENTS[client].phone}</p>
+            </div>
+            <span className="inline-flex min-w-7 justify-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700">{visits}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
 
 export function BentoReviewsMockup() {
+  const { t } = useI18n()
   return (
-    <div className="flex items-center gap-2" aria-hidden="true">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1" aria-hidden="true">
       <span className="font-display text-4xl font-extrabold text-gray-950">4.9</span>
-      <div className="flex text-amber-400">{[0, 1, 2, 3, 4].map(n => <StarIcon key={n} size={18} />)}</div>
+      <div>
+        <Stars value={5} size="text-xl" />
+        <p className="text-sm text-gray-600">{t('reviewCount', { n: 12 })}</p>
+      </div>
     </div>
   )
 }
@@ -232,12 +359,18 @@ export function BentoReviewsMockup() {
 export function BentoMarketMockup() {
   const { t } = useI18n()
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center" aria-hidden="true">
-      <div className="flex h-11 flex-1 items-center gap-2 rounded-xl bg-white px-4 text-sm text-gray-500 shadow-sm ring-1 ring-gray-100"><SearchIcon size={16} />{t('bzMockSearch')}</div>
-      <div className="flex flex-1 items-center gap-3 rounded-xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-gray-100">
-        <span className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-400 to-pink-400" />
-        <div className="min-w-0 flex-1"><span className="block h-2.5 w-24 rounded bg-gray-200" /><span className="mt-1.5 flex items-center gap-1 text-[11px] text-gray-500"><PinIcon size={12} />1.2 km</span></div>
-        <ChevronRightIcon size={16} className="text-gray-400" />
+    <div className="flex flex-col gap-6 sm:flex-row sm:items-center" aria-hidden="true">
+      <div className="flex flex-1 items-center gap-2 rounded-2xl bg-white p-1.5 text-gray-900 shadow-lg ring-1 ring-black/5">
+        <span className="flex min-w-0 flex-1 items-center gap-2 px-3">
+          <SearchIcon size={18} className="shrink-0 text-indigo-600" />
+          <span className="truncate text-sm text-gray-400">{t('pSearchService')}</span>
+        </span>
+        <span className="rounded-xl bg-gray-950 px-6 py-3 text-sm font-bold text-white">{t('pSearch')}</span>
+      </div>
+      <div className="w-36 shrink-0 text-left">
+        <div className="flex aspect-[4/5] items-end rounded-xl bg-indigo-200 p-4 font-display text-7xl font-extrabold leading-none text-indigo-700">s</div>
+        <p className="mt-3 truncate font-display text-lg font-bold text-gray-950">Studio Marco</p>
+        <p className="truncate text-sm text-gray-600">Via Roma 12</p>
       </div>
     </div>
   )
