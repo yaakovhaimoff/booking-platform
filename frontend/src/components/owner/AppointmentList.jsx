@@ -3,7 +3,7 @@ import AppointmentCard from './AppointmentCard'
 import { useI18n } from '../../i18n'
 
 // Cards on phones, table from the sm breakpoint up.
-export default function AppointmentList({ appointments, serviceNames, onApprove, onCancel, showHeader = true }) {
+export default function AppointmentList({ appointments, serviceNames, onApprove, onCancel, showHeader = true, showDate = true }) {
   const { t } = useI18n()
   return (
     <>
@@ -15,6 +15,7 @@ export default function AppointmentList({ appointments, serviceNames, onApprove,
             serviceName={serviceNames[a.serviceId]}
             onApprove={onApprove}
             onCancel={onCancel}
+            showDate={showDate}
           />
         ))}
       </div>
@@ -40,6 +41,7 @@ export default function AppointmentList({ appointments, serviceNames, onApprove,
                 serviceName={serviceNames[a.serviceId]}
                 onApprove={onApprove}
                 onCancel={onCancel}
+                showDate={showDate}
               />
             ))}
           </tbody>

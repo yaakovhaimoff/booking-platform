@@ -113,6 +113,7 @@ export default function AppointmentCalendar({ appointments, serviceNames, onAppr
                     onApprove={onApprove}
                     onCancel={onCancel}
                     showHeader={false}
+                    showDate={false}
                   />
                 </section>
               )

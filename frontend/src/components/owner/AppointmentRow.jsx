@@ -2,13 +2,12 @@ import { useI18n } from '../../i18n'
 import { STATUS_STYLES } from './statusStyles'
 
 
-export default function AppointmentRow({ appointment, serviceName, onApprove, onCancel }) {
+export default function AppointmentRow({ appointment, serviceName, onApprove, onCancel, showDate = true }) {
   const { t, locale } = useI18n()
   const start = new Date(appointment.startTime)
-  const formatted = start.toLocaleString(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
+  const formatted = showDate
+    ? start.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
+    : start.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
   const { status } = appointment
 
   return (

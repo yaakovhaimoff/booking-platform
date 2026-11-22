@@ -67,7 +67,7 @@ function BookingsTab() {
         if (cancelled) return
         const all = results.flatMap((r, i) =>
           r.status === 'fulfilled'
-            ? r.value.map(a => ({ ...a, tenantId: tenants[i].id, shopName: tenants[i].name || tenants[i].slug, shopSlug: tenants[i].slug }))
+            ? r.value.map(a => ({ ...a, tenantId: tenants[i].id, shopName: tenants[i].name || tenants[i].slug, shopSlug: tenants[i].slug, shopAddress: tenants[i].address }))
             : [])
         all.sort((a, b) => b.startTime.localeCompare(a.startTime))
         setAppointments(all)
@@ -103,6 +103,10 @@ function BookingsTab() {
           <Link to="/search" className="mt-4 inline-flex h-11 items-center rounded-xl bg-gray-950 px-6 text-sm font-bold text-white hover:bg-gray-800">{t('pBrowse')}</Link>
         </div>
       ) : (
+        <>
+        <div className="mb-4 flex justify-end">
+          <Link to="/search" className="inline-flex h-11 items-center rounded-xl bg-brand-600 px-6 text-sm font-bold text-white hover:bg-brand-700">{t('pBook')}</Link>
+        </div>
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full text-sm text-left">
             <thead>
@@ -110,6 +114,7 @@ function BookingsTab() {
                 <th className="px-4 py-3">{t('colShop')}</th>
                 <th className="px-4 py-3">{t('colStart')}</th>
                 <th className="px-4 py-3">{t('colStatus')}</th>
+                <th className="px-4 py-3">{t('colCalendar')}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -120,6 +125,7 @@ function BookingsTab() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </>
   )

@@ -2,7 +2,7 @@ import { useI18n } from '../../i18n'
 import { STATUS_STYLES } from './statusStyles'
 
 // Phone-friendly version of AppointmentRow: one card per appointment, big tap targets.
-export default function AppointmentCard({ appointment, serviceName, onApprove, onCancel }) {
+export default function AppointmentCard({ appointment, serviceName, onApprove, onCancel, showDate = true }) {
   const { t, locale } = useI18n()
   const start = new Date(appointment.startTime)
   const time = start.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
@@ -14,7 +14,7 @@ export default function AppointmentCard({ appointment, serviceName, onApprove, o
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-2xl font-bold text-gray-900 leading-none">{time}</div>
-          <div className="text-xs text-gray-500 mt-1">{date}</div>
+          {showDate && <div className="text-xs text-gray-500 mt-1">{date}</div>}
         </div>
         <span className={`px-2.5 py-1 text-xs rounded-full font-medium ${STATUS_STYLES[status] || ''}`}>
           {t('status_' + status)}
