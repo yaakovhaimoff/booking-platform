@@ -5,6 +5,7 @@ import { listTenants } from '../api/tenantApi'
 import { getMyAppointments, cancelMyAppointment } from '../api/clientApi'
 import { useI18n } from '../i18n'
 import AppointmentHistoryRow from '../components/client/AppointmentHistoryRow'
+import AppointmentHistoryCard from '../components/client/AppointmentHistoryCard'
 import SideNav from '../components/shared/SideNav'
 
 const TABS = [
@@ -107,7 +108,12 @@ function BookingsTab() {
         <div className="mb-4 flex justify-end">
           <Link to="/search" className="inline-flex h-11 items-center rounded-xl bg-brand-600 px-6 text-sm font-bold text-white hover:bg-brand-700">{t('pBook')}</Link>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="sm:hidden flex flex-col gap-3">
+          {appointments.map(a => (
+            <AppointmentHistoryCard key={`${a.tenantId}-${a.id}`} appointment={a} onCancel={() => handleCancel(a)} />
+          ))}
+        </div>
+        <div className="hidden sm:block bg-white rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full text-sm text-left">
             <thead>
               <tr className="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">

@@ -37,7 +37,7 @@ function StatusPill({ status }) {
   return <span className={`px-2.5 py-1 text-xs rounded-full font-medium ${STATUS_STYLES[status] || ''}`}>{t('status_' + status)}</span>
 }
 
-function MockAppointment({ client = 0, service = 0, time = '10:00', status = 'PENDING', dayOffset = 1, tapping = false }) {
+function MockAppointment({ client = 0, service = 0, time = '10:00', status = 'PENDING', dayOffset = 1, tapping = false, showDate = true }) {
   const { t, locale } = useI18n()
   const [ref, inView] = useInView()
   const services = t('bzMockServices')
@@ -47,7 +47,7 @@ function MockAppointment({ client = 0, service = 0, time = '10:00', status = 'PE
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-2xl font-bold text-gray-900 leading-none">{time}</div>
-          <div className="text-xs text-gray-500 mt-1">{date}</div>
+          {showDate && <div className="text-xs text-gray-500 mt-1">{date}</div>}
         </div>
         <StatusPill status={status} />
       </div>
@@ -137,11 +137,11 @@ function DashboardMock() {
           <div className="flex flex-col gap-4">
             <section>
               <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">{t('status_PENDING')} · 1</h4>
-              <MockAppointment client={1} service={1} time="10:00" dayOffset={0} />
+              <MockAppointment client={1} service={1} time="10:00" dayOffset={0} showDate={false} />
             </section>
             <section className="hidden sm:block">
               <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">{t('status_CONFIRMED')} · 1</h4>
-              <MockAppointment client={0} service={0} time="11:30" status="CONFIRMED" dayOffset={0} />
+              <MockAppointment client={0} service={0} time="11:30" status="CONFIRMED" dayOffset={0} showDate={false} />
             </section>
           </div>
         </div>

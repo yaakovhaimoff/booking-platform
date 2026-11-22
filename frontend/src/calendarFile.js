@@ -28,3 +28,14 @@ export function downloadIcsFile(content, fileName = 'appointment.ics') {
   link.remove()
   setTimeout(() => URL.revokeObjectURL(blobUrl), 10000)
 }
+
+export function downloadAppointmentCalendar(appointment) {
+  downloadIcsFile(buildIcsContent({
+    uid: `${appointment.tenantId}-${appointment.id}`,
+    title: appointment.shopName,
+    start: appointment.startTime,
+    end: appointment.endTime,
+    location: appointment.shopAddress,
+    description: appointment.shopName,
+  }))
+}

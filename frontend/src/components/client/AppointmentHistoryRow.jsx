@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useI18n } from '../../i18n'
-import { buildIcsContent, downloadIcsFile } from '../../calendarFile'
+import { downloadAppointmentCalendar } from '../../calendarFile'
 
 const STATUS_STYLES = {
   PENDING:   'bg-yellow-100 text-yellow-700',
@@ -14,17 +14,6 @@ export default function AppointmentHistoryRow({ appointment, onCancel }) {
   const formatted = start.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
   const isFuture = start > new Date()
   const canCancel = appointment.status !== 'CANCELLED' && isFuture
-
-  function addToCalendar() {
-    downloadIcsFile(buildIcsContent({
-      uid: `${appointment.tenantId}-${appointment.id}`,
-      title: appointment.shopName,
-      start: appointment.startTime,
-      end: appointment.endTime,
-      location: appointment.shopAddress,
-      description: appointment.shopName,
-    }))
-  }
 
   return (
     <tr className="border-b border-gray-100 last:border-0">
@@ -42,7 +31,7 @@ export default function AppointmentHistoryRow({ appointment, onCancel }) {
       <td className="py-3 pr-4">
         {canCancel && (
           <button
-            onClick={addToCalendar}
+            onClick={() => downloadAppointmentCalendar(appointment)}
             className="px-3 py-1 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 rounded transition whitespace-nowrap"
           >
             {t('addToCalendar')}
