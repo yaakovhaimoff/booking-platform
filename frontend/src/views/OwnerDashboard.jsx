@@ -11,6 +11,7 @@ import AppointmentQueueTab from '../components/owner/AppointmentQueueTab'
 import ClientsTab from '../components/owner/ClientsTab'
 import ServiceManagementTab from '../components/owner/ServiceManagementTab'
 import AvailabilityMatrixTab from '../components/owner/AvailabilityMatrixTab'
+import AnalyticsTab from '../components/owner/AnalyticsTab'
 
 export default function OwnerDashboard() {
   const { getAccessTokenSilently } = useAuth0()
@@ -83,6 +84,7 @@ export default function OwnerDashboard() {
               {activeTab === 'clients'  && tenant && <ClientsTab tenant={tenant} />}
               {activeTab === 'services' && tenant && <ServiceManagementTab tenant={tenant} />}
               {activeTab === 'hours'    && tenant && <AvailabilityMatrixTab tenant={tenant} />}
+              {activeTab === 'analytics' && tenant && <AnalyticsTab tenant={tenant} />}
             </div>
           </div>
         </div>
