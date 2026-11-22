@@ -60,6 +60,8 @@ export default function AppointmentQueueTab({ tenant, pending }) {
     if (!loading) setPendingCount(appointments.filter(a => a.status === 'PENDING').length)
   }, [appointments, loading])
 
+  const waiting = useMemo(() => appointments.filter(a => a.status === 'PENDING').length, [appointments])
+
   const live = useMemo(() => appointments.filter(a => a.status !== 'CANCELLED'), [appointments])
 
   // Bottom list for the selected tab. Soonest first.
@@ -104,6 +106,15 @@ export default function AppointmentQueueTab({ tenant, pending }) {
         </div>
       ) : (
         <>
+          {waiting > 0 && (
+            <div className="mb-4 flex items-center justify-between gap-3 px-4 py-3 bg-cta-50 border border-cta-200 text-cta-800 text-sm rounded-lg">
+              <span className="font-medium">{waiting === 1 ? t('queueWaitingOne') : t('queueWaitingMany', { n: waiting })}</span>
+              <button type="button" onClick={() => setFilter('PENDING')}
+                className="shrink-0 px-3 py-1.5 rounded-lg bg-cta-600 text-white text-xs font-medium hover:bg-cta-700">
+                {t('queueReview')}
+              </button>
+            </div>
+          )}
           <AppointmentCalendar
             appointments={live}
             serviceNames={serviceNames}

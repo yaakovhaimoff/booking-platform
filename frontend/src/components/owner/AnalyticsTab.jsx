@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Link } from 'react-router-dom'
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useAuth0 } from '../../auth'
 import { getAppointments, getServices } from '../../api/ownerApi'
 import { useI18n } from '../../i18n'
-import { computeAnalytics, currentMonthKey, shiftMonth } from '../../utils/analytics'
+import { addDays, bestMonth, computeAnalytics, currentMonthKey, mondayOf, monthlyBuckets, monthRange, shiftMonth, weekRange, yearRange } from '../../utils/analytics'
 
-const REVENUE_COLOR = '#0099ff'
-const APPOINTMENTS_COLOR = '#ec5230'
+const CONFIRMED_COLOR = '#0099ff'
+const PENDING_COLOR = '#f5a524'
 
-function StatCard({ label, value, detail }) {
+function StatCard({ label, value, detail, hint }) {
   return (
     <div className="border border-gray-200 rounded-xl p-4">
       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
       <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
       {detail && <p className="text-xs text-gray-500 mt-1">{detail}</p>}
+      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
     </div>
   )
 }
@@ -34,7 +36,10 @@ export default function AnalyticsTab({ tenant }) {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [view, setView] = useState('month')
   const [monthKey, setMonthKey] = useState(() => currentMonthKey())
+  const [weekStart, setWeekStart] = useState(() => mondayOf())
+  const [year, setYear] = useState(() => new Date().getFullYear())
 
   useEffect(() => {
     let cancelled = false
@@ -48,58 +53,101 @@ export default function AnalyticsTab({ tenant }) {
     return () => { cancelled = true }
   }, [tenant.id, getAccessTokenSilently])
 
-  const analytics = useMemo(() => computeAnalytics(appointments, services, monthKey), [appointments, services, monthKey])
-  const [year, month] = monthKey.split('-').map(Number)
-  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+  const isWeek = view === 'week'
+  const isYear = view === 'year'
+  const range = useMemo(
+    () => (isYear ? yearRange(year) : isWeek ? weekRange(weekStart) : monthRange(monthKey)),
+    [isYear, isWeek, year, weekStart, monthKey],
+  )
+  const analytics = useMemo(() => computeAnalytics(appointments, services, range), [appointments, services, range])
+
+  const parseDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d) }
+  const chartData = useMemo(() => (isYear ? monthlyBuckets(analytics.daily) : analytics.daily), [isYear, analytics.daily])
+  const best = isYear ? bestMonth(chartData) : null
+  const monthName = date => parseDate(date).toLocaleDateString(locale, { month: 'long' })
+  const periodLabel = isYear ? String(year) : isWeek
+    ? `${parseDate(range.from).toLocaleDateString(locale, { day: 'numeric', month: 'short' })} – ${parseDate(addDays(range.from, 6)).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}`
+    : parseDate(range.from).toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+  const tickLabel = date => (isYear ? parseDate(date).toLocaleDateString(locale, { month: 'short' }) : isWeek ? parseDate(date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric' }) : String(Number(date.slice(8, 10))))
+  const tooltipLabel = date => isYear ? monthName(date) : parseDate(date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'long' })
   const money = amount => fmtPrice(amount, tenant.currency)
   const serviceRows = analytics.byService.map(row => ({ ...row, name: row.name ?? t('analyticsDeletedService') }))
+  const step = delta => (isYear ? setYear(year + delta) : isWeek ? setWeekStart(addDays(weekStart, delta * 7)) : setMonthKey(shiftMonth(monthKey, delta)))
 
   if (loading) return <p className="text-sm text-gray-400">…</p>
   if (error) return <p className="text-sm text-red-600">{t('loadApptsFailed')}</p>
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3">
-        <button type="button" onClick={() => setMonthKey(shiftMonth(monthKey, -1))} aria-label={t('prevMonth')}
-          className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">←</button>
-        <p className="font-semibold text-gray-900 capitalize">{monthLabel}</p>
-        <button type="button" onClick={() => setMonthKey(shiftMonth(monthKey, 1))} aria-label={t('nextMonth')}
-          className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">→</button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          {['year', 'month', 'week'].map(option => (
+            <button key={option} type="button" onClick={() => setView(option)} aria-pressed={view === option}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${view === option ? 'bg-white text-brand-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+              {t({ month: 'analyticsViewMonth', week: 'analyticsViewWeek', year: 'analyticsViewYear' }[option])}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={() => step(-1)} aria-label={t(isYear ? 'prevYear' : isWeek ? 'prevWeek' : 'prevMonth')}
+            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">←</button>
+          <p className="font-semibold text-gray-900 capitalize min-w-36 text-center">{periodLabel}</p>
+          <button type="button" onClick={() => step(1)} aria-label={t(isYear ? 'nextYear' : isWeek ? 'nextWeek' : 'nextMonth')}
+            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">→</button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label={t('analyticsExpected')} value={money(analytics.expectedRevenue)}
-          detail={t('analyticsEarnedDetail', { amount: money(analytics.earnedRevenue) })} />
-        <StatCard label={t('analyticsBookings')} value={analytics.bookings} />
+          detail={t('analyticsExpectedDetail', { confirmed: money(analytics.confirmedRevenue), pending: money(analytics.pendingRevenue) })} />
+        <div className="border border-gray-200 rounded-xl p-4">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t('analyticsBookings')}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{analytics.bookings}</p>
+          <p className="text-xs text-gray-500 mt-1">
+            {analytics.pendingBookings > 0
+              ? <Link to="?tab=queue" className="font-medium text-brand-600 hover:underline">{t('analyticsPendingLink', { n: analytics.pendingBookings })}</Link>
+              : t('analyticsPendingLink', { n: 0 })}
+          </p>
+        </div>
         <StatCard label={t('analyticsClients')} value={analytics.clients}
-          detail={t('analyticsClientsDetail', { newClients: analytics.newClients, returningClients: analytics.returningClients })} />
-        <StatCard label={t('analyticsAllTimeClients')} value={analytics.allTimeClients} />
+          detail={t('analyticsClientsDetail', { firstTimeClients: analytics.firstTimeClients, repeatClients: analytics.repeatClients })}
+          hint={t('analyticsClientsHint')} />
+        <StatCard label={t('analyticsAllTimeClients')} value={analytics.allTimeClients}
+          detail={t('analyticsEarnedDetail', { amount: money(analytics.earnedRevenue) })} />
       </div>
+
+      {best && (
+        <p className="text-sm text-gray-600">{t('analyticsBestMonth', { month: monthName(best.date), amount: money(best.revenue) })}</p>
+      )}
 
       {analytics.bookings === 0 ? (
         <p className="text-sm text-gray-500">{t('analyticsEmpty')}</p>
       ) : (
         <>
-          <ChartCard title={t('analyticsRevenueChart')}>
+          <ChartCard title={t(isYear ? 'analyticsRevenueChartYear' : 'analyticsRevenueChart')}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.daily}>
+              <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                <XAxis dataKey="date" tickFormatter={tickLabel} tick={{ fontSize: 11 }} interval={0} />
                 <YAxis tick={{ fontSize: 11 }} width={44} />
-                <Tooltip formatter={value => money(value)} labelFormatter={day => `${day} ${monthLabel}`} />
-                <Bar dataKey="revenue" name={t('analyticsExpected')} fill={REVENUE_COLOR} radius={[3, 3, 0, 0]} />
+                <Tooltip formatter={value => money(value)} labelFormatter={tooltipLabel} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="confirmedRevenue" stackId="revenue" name={t('analyticsConfirmed')} fill={CONFIRMED_COLOR} />
+                <Bar dataKey="pendingRevenue" stackId="revenue" name={t('analyticsPending')} fill={PENDING_COLOR} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
 
-          <ChartCard title={t('analyticsAppointmentsChart')}>
+          <ChartCard title={t(isYear ? 'analyticsAppointmentsChartYear' : 'analyticsAppointmentsChart')}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.daily}>
+              <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                <XAxis dataKey="date" tickFormatter={tickLabel} tick={{ fontSize: 11 }} interval={0} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={44} />
-                <Tooltip labelFormatter={day => `${day} ${monthLabel}`} />
-                <Bar dataKey="appointments" name={t('analyticsBookings')} fill={APPOINTMENTS_COLOR} radius={[3, 3, 0, 0]} />
+                <Tooltip labelFormatter={tooltipLabel} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="confirmedAppointments" stackId="appointments" name={t('analyticsConfirmed')} fill={CONFIRMED_COLOR} />
+                <Bar dataKey="pendingAppointments" stackId="appointments" name={t('analyticsPending')} fill={PENDING_COLOR} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -113,7 +161,7 @@ export default function AnalyticsTab({ tenant }) {
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
                   <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="bookings" name={t('analyticsBookings')} fill={REVENUE_COLOR} radius={[0, 3, 3, 0]} />
+                  <Bar dataKey="bookings" name={t('analyticsBookings')} fill={CONFIRMED_COLOR} radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

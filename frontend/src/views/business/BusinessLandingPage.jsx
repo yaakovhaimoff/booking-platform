@@ -4,7 +4,7 @@ import { ChevronDownIcon } from '../../components/shared/icons'
 import Reveal from '../../components/business/Reveal'
 import DayTimeline from '../../components/business/DayTimeline'
 import {
-  BentoClientsMockup, BentoHoursMockup, BentoMarketMockup, BentoPageMockup, BentoReviewsMockup, BentoServicesMockup, HeroMockup,
+  BentoAnalyticsMockup, BentoClientsMockup, BentoHoursMockup, BentoMarketMockup, BentoPageMockup, BentoReviewsMockup, BentoServicesMockup, HeroMockup,
 } from '../../components/business/LandingVisuals'
 
 const BENTO = [
@@ -13,6 +13,7 @@ const BENTO = [
   { id: 'hours', span: 'md:col-span-2', Visual: BentoHoursMockup, tone: 'bg-amber-50' },
   { id: 'clients', span: 'md:col-span-2', Visual: BentoClientsMockup, tone: 'bg-emerald-50' },
   { id: 'reviews', span: 'md:col-span-2', Visual: BentoReviewsMockup, tone: 'bg-sky-50' },
+  { id: 'analytics', span: 'md:col-span-6', Visual: BentoAnalyticsMockup, tone: 'bg-emerald-50' },
   { id: 'market', span: 'md:col-span-6', Visual: BentoMarketMockup, tone: 'bg-brand-50' },
 ]
 

@@ -375,3 +375,35 @@ export function BentoMarketMockup() {
     </div>
   )
 }
+
+const ANALYTICS_MONTHS = [7, 8, 11, 11, 13, 16, 16, 18, 18, 20, 21, 23]
+
+export function BentoAnalyticsMockup() {
+  const { t, fmtPrice } = useI18n()
+  const tallest = Math.max(...ANALYTICS_MONTHS)
+  return (
+    <div className="grid gap-4 text-left sm:grid-cols-[1fr_1.4fr]" aria-hidden="true">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{t('analyticsExpected')}</p>
+          <p className="mt-1 text-2xl font-bold text-gray-900">{fmtPrice(2480, 'EUR')}</p>
+        </div>
+        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{t('analyticsBookings')}</p>
+          <p className="mt-1 text-2xl font-bold text-gray-900">96</p>
+        </div>
+        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{t('analyticsClients')}</p>
+          <p className="mt-1 text-2xl font-bold text-gray-900">58</p>
+        </div>
+      </div>
+      <div className="flex min-h-48 items-end gap-1.5 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 sm:gap-2">
+        {ANALYTICS_MONTHS.map((value, index) => (
+          <div key={index} className="flex h-full flex-1 flex-col justify-end">
+            <div className="rounded-t bg-brand-500" style={{ height: `${(value / tallest) * 100}%` }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

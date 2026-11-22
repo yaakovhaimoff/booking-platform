@@ -7,4 +7,4 @@ export const OWNER_TABS = [
   { id: 'analytics', label: 'tabAnalytics' },
 ]
 
-export const ownerTabId = value => (OWNER_TABS.some(x => x.id === value) ? value : 'store')
+export const ownerTabId = value => (OWNER_TABS.some(x => x.id === value) ? value : 'queue')

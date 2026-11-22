@@ -12,7 +12,7 @@ const renderPage = () => render(<MemoryRouter><BusinessLandingPage /></MemoryRou
 describe('BusinessLandingPage', () => {
   it('shows the headline and sends both call-to-action buttons to partner sign-up', () => {
     renderPage()
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(PUBLIC.en.bzHeroBold)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Run your businessthe right way')
     const links = screen.getAllByRole('link', { name: PUBLIC.en.pGetStarted })
     expect(links).toHaveLength(2)
     links.forEach(link => expect(link).toHaveAttribute('href', '/partner'))
