@@ -127,7 +127,7 @@ export default function CodeAuthForm({ primary, accountType, onVerified }) {
           <input value={password} onChange={e => setPassword(e.target.value)} type="password" autoComplete={isSignup ? 'new-password' : 'current-password'} className={`${inputCls} mt-1.5`} />
         </label>
         {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-        <button type="submit" disabled={busy} className="h-12 rounded-xl bg-gray-950 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-60">{t(isSignup ? 'pSignUpTab' : 'pLogInTab')}</button>
+        <button type="submit" disabled={busy} className="h-12 rounded-xl bg-cta-600 text-sm font-bold text-white hover:bg-cta-700 disabled:opacity-60">{t(isSignup ? 'pSignUpTab' : 'pLogInTab')}</button>
       </form>
 
       <div className="flex items-center gap-3 text-xs text-gray-400" aria-hidden="true">

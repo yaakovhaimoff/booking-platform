@@ -101,12 +101,12 @@ function BookingsTab() {
       ) : appointments.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
           <p className="text-gray-600">{t('pNoBookings')}</p>
-          <Link to="/search" className="mt-4 inline-flex h-11 items-center rounded-xl bg-gray-950 px-6 text-sm font-bold text-white hover:bg-gray-800">{t('pBrowse')}</Link>
+          <Link to="/search" className="mt-4 inline-flex h-11 items-center rounded-xl bg-cta-600 px-6 text-sm font-bold text-white hover:bg-cta-700">{t('pBrowse')}</Link>
         </div>
       ) : (
         <>
         <div className="mb-4 flex justify-end">
-          <Link to="/search" className="inline-flex h-11 items-center rounded-xl bg-brand-600 px-6 text-sm font-bold text-white hover:bg-brand-700">{t('pBook')}</Link>
+          <Link to="/search" className="inline-flex h-11 items-center rounded-xl bg-cta-600 px-6 text-sm font-bold text-white hover:bg-cta-700">{t('pBook')}</Link>
         </div>
         <div className="sm:hidden flex flex-col gap-3">
           {appointments.map(a => (
@@ -176,7 +176,7 @@ function ProfileTab() {
       </div>
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
       <div className="flex items-center gap-4">
-        <button type="submit" className="h-12 rounded-xl bg-gray-950 px-6 text-sm font-bold text-white hover:bg-gray-800">{t('pSaveProfile')}</button>
+        <button type="submit" className="h-12 rounded-xl bg-cta-600 px-6 text-sm font-bold text-white hover:bg-cta-700">{t('pSaveProfile')}</button>
         {saved && <span role="status" className="text-sm font-semibold text-green-700">{t('pProfileSaved')}</span>}
       </div>
     </form>

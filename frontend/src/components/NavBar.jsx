@@ -58,7 +58,7 @@ export default function NavBar() {
           ) : (
             <div className="flex items-center gap-3">
               <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-brand-600 transition">{t('login')}</Link>
-              <Link to="/signup" className="px-4 py-1.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition">{t('signup')}</Link>
+              <Link to="/signup" className="px-4 py-1.5 bg-cta-600 text-white text-sm font-medium rounded-lg hover:bg-cta-700 transition">{t('signup')}</Link>
             </div>
           )}
         </div>
@@ -110,7 +110,7 @@ export default function NavBar() {
                 </button>
               ) : (
                 <>
-                  <Link to="/signup" onClick={close} className="w-full text-center py-3 bg-brand-600 text-white text-base font-medium rounded-lg hover:bg-brand-700">{t('signup')}</Link>
+                  <Link to="/signup" onClick={close} className="w-full text-center py-3 bg-cta-600 text-white text-base font-medium rounded-lg hover:bg-cta-700">{t('signup')}</Link>
                   <Link to="/login" onClick={close} className="w-full text-center py-3 text-base font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">{t('login')}</Link>
                 </>
               )}

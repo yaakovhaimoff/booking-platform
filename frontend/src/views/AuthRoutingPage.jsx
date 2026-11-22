@@ -47,7 +47,7 @@ export default function AuthRoutingPage() {
       {failed ? (
         <>
           <p className="text-gray-600">{t('timeoutError')}</p>
-          <button onClick={() => { setFailed(false); setAttempt(a => a + 1) }} className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">
+          <button onClick={() => { setFailed(false); setAttempt(a => a + 1) }} className="px-4 py-2 bg-cta-600 text-white rounded-lg hover:bg-cta-700">
             {t('retry')}
           </button>
         </>

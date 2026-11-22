@@ -86,7 +86,7 @@ export default function StoreSettingsTab({ tenant }) {
         <div className="flex items-center gap-3">
           <button
             onClick={handleCopy}
-            className="shrink-0 px-3 py-1.5 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700 transition"
+            className="shrink-0 px-3 py-1.5 text-sm bg-cta-600 text-white rounded-md hover:bg-cta-700 transition"
           >
             {copied ? t('copied') : t('copyLink')}
           </button>
@@ -161,7 +161,7 @@ export default function StoreSettingsTab({ tenant }) {
         <button
           type="submit"
           disabled={saving}
-          className="px-5 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition disabled:opacity-60"
+          className="px-5 py-2 bg-cta-600 text-white text-sm font-medium rounded-lg hover:bg-cta-700 transition disabled:opacity-60"
         >
           {saving ? t('saving') : t('saveChanges')}
         </button>

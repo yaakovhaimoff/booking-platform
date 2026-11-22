@@ -85,7 +85,7 @@ export default function ServiceFormModal({ service, currency, onSave, onClose })
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 transition disabled:opacity-60"
+              className="flex-1 py-2 bg-cta-600 text-white rounded-lg text-sm hover:bg-cta-700 transition disabled:opacity-60"
             >
               {saving ? t('saving') : t('save')}
             </button>

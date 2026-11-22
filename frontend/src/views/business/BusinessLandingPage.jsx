@@ -9,7 +9,7 @@ import {
 
 const BENTO = [
   { id: 'page', span: 'md:col-span-4', Visual: BentoPageMockup, tone: 'bg-brand-50' },
-  { id: 'services', span: 'md:col-span-2', Visual: BentoServicesMockup, tone: 'bg-pink-50' },
+  { id: 'services', span: 'md:col-span-2', Visual: BentoServicesMockup, tone: 'bg-cta-50' },
   { id: 'hours', span: 'md:col-span-2', Visual: BentoHoursMockup, tone: 'bg-amber-50' },
   { id: 'clients', span: 'md:col-span-2', Visual: BentoClientsMockup, tone: 'bg-emerald-50' },
   { id: 'reviews', span: 'md:col-span-2', Visual: BentoReviewsMockup, tone: 'bg-sky-50' },
@@ -26,7 +26,7 @@ function SectionHeading({ light, bold, className = '' }) {
 }
 
 function PrimaryButton({ children }) {
-  return <Link to="/partner" className="inline-flex h-13 items-center rounded-full bg-gray-950 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-brand-900/20 transition hover:-translate-y-0.5 hover:bg-gray-800">{children}</Link>
+  return <Link to="/partner" className="inline-flex h-13 items-center rounded-full bg-cta-600 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-cta-900/20 transition hover:-translate-y-0.5 hover:bg-cta-700">{children}</Link>
 }
 
 export default function BusinessLandingPage() {
@@ -37,20 +37,20 @@ export default function BusinessLandingPage() {
 
   return (
     <>
-      <section className="relative mx-3 sm:mx-6 overflow-hidden rounded-[32px] bg-gradient-to-b from-brand-100 via-pink-50 to-white">
-        <div className="pointer-events-none absolute -top-24 start-[-10%] h-80 w-80 rounded-full bg-pink-200/60 blur-3xl" aria-hidden="true" />
-        <div className="pointer-events-none absolute top-20 end-[-8%] h-96 w-96 rounded-full bg-sky-200/60 blur-3xl" aria-hidden="true" />
+      <section className="relative mx-3 sm:mx-6 overflow-hidden rounded-[32px] bg-sky-hero-tall">
+        <div className="pointer-events-none absolute -top-24 start-[-10%] h-80 w-80 rounded-full bg-white/25 blur-3xl" aria-hidden="true" />
+        <div className="pointer-events-none absolute top-20 end-[-8%] h-96 w-96 rounded-full bg-white/20 blur-3xl" aria-hidden="true" />
         <div className="relative max-w-[1200px] mx-auto px-5 sm:px-10 pt-16 pb-24 sm:pt-24 sm:pb-32 text-center">
-          <Reveal as="h1" className="font-display text-[clamp(2.4rem,6.5vw,5rem)] leading-[1.02] tracking-[-0.03em] text-gray-950">
+          <Reveal as="h1" className="font-display text-[clamp(2.4rem,6.5vw,5rem)] leading-[1.02] tracking-[-0.03em] text-white">
             <span className="block font-normal">{t('bzHeroLight')}</span>
             <span className="block font-extrabold">{t('bzHeroBold')}</span>
           </Reveal>
-          <Reveal as="p" delay={120} className="mx-auto mt-6 max-w-xl text-lg text-gray-700">{t('pLandSub')}</Reveal>
+          <Reveal as="p" delay={120} className="mx-auto mt-6 max-w-xl text-lg font-medium text-white/95">{t('pLandSub')}</Reveal>
           <Reveal delay={240} className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <PrimaryButton>{t('pGetStarted')}</PrimaryButton>
             <a href="#day" className="inline-flex h-13 items-center rounded-full bg-white px-8 py-4 text-sm font-bold text-gray-950 shadow-lg shadow-brand-900/10 transition hover:-translate-y-0.5">{t('bzSeeHow')}</a>
           </Reveal>
-          <Reveal as="p" delay={320} className="mt-4 text-sm text-gray-500">{t('bzHeroNote')}</Reveal>
+          <Reveal as="p" delay={320} className="mt-4 text-sm font-medium text-white/90">{t('bzHeroNote')}</Reveal>
           <HeroMockup />
         </div>
       </section>
@@ -111,11 +111,11 @@ export default function BusinessLandingPage() {
         </div>
       </section>
 
-      <section className="mx-3 sm:mx-6 mb-6 overflow-hidden rounded-[32px] bg-gray-950 px-5 py-20 text-center sm:py-28">
+      <section className="mx-3 sm:mx-6 mb-6 overflow-hidden rounded-[32px] bg-brand-500 px-5 py-20 text-center sm:py-28">
         <Reveal>
           <h2 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-extrabold leading-[1.05] tracking-[-0.03em] text-white">{t('bzCtaTitle')}</h2>
-          <p className="mx-auto mt-4 max-w-md text-lg text-gray-300">{t('bzCtaSub')}</p>
-          <Link to="/partner" className="mt-9 inline-flex h-13 items-center rounded-full bg-white px-8 py-4 text-sm font-bold text-gray-950 transition hover:-translate-y-0.5 hover:bg-brand-100">{t('pGetStarted')}</Link>
+          <p className="mx-auto mt-4 max-w-md text-lg font-medium text-white/95">{t('bzCtaSub')}</p>
+          <Link to="/partner" className="mt-9 inline-flex h-13 items-center rounded-full bg-cta-600 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-brand-900/20 transition hover:-translate-y-0.5 hover:bg-cta-700">{t('pGetStarted')}</Link>
         </Reveal>
       </section>
     </>

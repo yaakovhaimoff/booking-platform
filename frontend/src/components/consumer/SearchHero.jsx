@@ -22,10 +22,10 @@ export default function SearchHero() {
   }
 
   return (
-    <section className="mx-3 sm:mx-6 rounded-[28px] bg-gradient-to-br from-brand-100 via-white to-pink-100 text-gray-950 overflow-hidden relative">
+    <section className="mx-3 sm:mx-6 rounded-[28px] bg-sky-hero text-white overflow-hidden relative">
       <div className="max-w-[1200px] mx-auto px-5 sm:px-10 pt-14 pb-12 sm:pt-24 sm:pb-20">
         <h1 className="font-display font-extrabold leading-[0.95] tracking-[-0.03em] text-[clamp(3rem,10vw,7.5rem)] max-w-[12ch]">{t('pHeroTitle')}</h1>
-        <p className="mt-6 text-lg sm:text-xl text-gray-700 max-w-md">{t('pHeroSub')}</p>
+        <p className="mt-6 text-lg sm:text-xl font-medium text-white/95 max-w-md">{t('pHeroSub')}</p>
 
         <form
           onSubmit={submit}
@@ -40,7 +40,7 @@ export default function SearchHero() {
             <PinIcon size={18} className="text-brand-600 shrink-0" />
             <input value={location} onChange={e => setLocation(e.target.value)} placeholder={t('pSearchLocation')} aria-label={t('pSearchLocationLabel')} className={input} />
           </label>
-          <button type="submit" className="h-12 sm:h-auto rounded-xl bg-gray-950 px-8 text-sm font-bold text-white hover:bg-gray-800 transition max-sm:mt-1.5">
+          <button type="submit" className="h-12 sm:h-auto rounded-xl bg-cta-600 px-8 text-sm font-bold text-white hover:bg-cta-700 transition max-sm:mt-1.5">
             {t('pSearch')}
           </button>
         </form>

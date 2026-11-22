@@ -26,12 +26,12 @@ export default function HomePage() {
       {shops.length > 0 && <VenueCarousel title={t('pBookNow')} venues={shops} />}
 
       <section className="max-w-[1200px] mx-auto px-4 sm:px-6 mt-20 mb-4">
-        <div className="rounded-2xl border-2 border-gray-950 px-6 py-10 sm:px-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="rounded-3xl bg-brand-500 text-white px-6 py-10 sm:px-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
             <h2 className="text-3xl sm:text-4xl font-extrabold">{t('pBizPromoTitle')}</h2>
-            <p className="mt-2 text-gray-700 max-w-md">{t('pBizPromoSub')}</p>
+            <p className="mt-2 text-white/95 font-medium max-w-md">{t('pBizPromoSub')}</p>
           </div>
-          <Link to="/for-business" className="inline-flex items-center gap-2 rounded-xl bg-gray-950 px-6 py-3.5 text-sm font-bold text-white hover:bg-brand-600 transition">
+          <Link to="/for-business" className="inline-flex items-center gap-2 rounded-xl bg-cta-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-cta-700 transition">
             {t('pListBusiness')} <ArrowRightIcon size={16} />
           </Link>
         </div>

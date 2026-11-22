@@ -1,35 +1,51 @@
 @import "tailwindcss";
 
-/* torni theme: fonts and the brand red taken from the logo (#fb0819); other colours are Tailwind's pink / gray. */
+/* torni theme: sky blue brand (links, accents, focus), amber red call-to-action buttons and logo, cloud white surfaces. */
 @theme {
   --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque', 'Figtree', ui-sans-serif, system-ui, sans-serif;
 
   --font-logo: 'Nunito', 'Figtree', ui-sans-serif, system-ui, sans-serif;
 
-  --color-brand-50: #fff1f2;
-  --color-brand-100: #ffe0e2;
-  --color-brand-200: #ffc7cb;
-  --color-brand-300: #ff9ea5;
-  --color-brand-400: #ff5b66;
-  --color-brand-500: #fb0819;
-  --color-brand-600: #e00616;
-  --color-brand-700: #b80513;
-  --color-brand-800: #960a14;
-  --color-brand-900: #7a0f17;
-  --color-brand-950: #43040a;
+  --color-brand-50: #f0f8ff;
+  --color-brand-100: #dff0ff;
+  --color-brand-200: #b8dfff;
+  --color-brand-300: #7cc6ff;
+  --color-brand-400: #33a9ff;
+  --color-brand-500: #0099ff;
+  --color-brand-600: #0070c0;
+  --color-brand-700: #005a9e;
+  --color-brand-800: #004680;
+  --color-brand-900: #003a66;
+  --color-brand-950: #00223d;
 
+  --color-cta-50: #fff3ef;
+  --color-cta-100: #ffe1d8;
+  --color-cta-200: #ffc2b0;
+  --color-cta-300: #ff9a80;
+  --color-cta-400: #f46e48;
+  --color-cta-500: #ec5230;
+  --color-cta-600: #e64126;
+  --color-cta-700: #c8341c;
+  --color-cta-800: #962711;
+  --color-cta-900: #7a2312;
+  --color-cta-950: #430f06;
+
+  --color-gray-50: #f2f8fd;
 }
 
 @layer base {
-  body { font-family: var(--font-sans); color: var(--color-gray-900); -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--font-sans); color: var(--color-gray-900); background-color: #fdfdfe; -webkit-font-smoothing: antialiased; }
   h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
-  :focus-visible { outline: 2px solid #fb0819; outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
 }
 
 @layer utilities {
   .font-display { font-family: var(--font-display); }
 }
+
+.bg-sky-hero { background-image: linear-gradient(180deg, #0099ff 0%, #1fa3ff 60%, #8fcfff 100%); }
+.bg-sky-hero-tall { background-image: linear-gradient(180deg, #0099ff 0%, #1fa3ff 45%, #cfe9ff 80%, #fdfdfe 100%); }
 
 .bz-reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); transition-delay: var(--delay, 0ms); }
 .bz-reveal[data-in] { opacity: 1; transform: none; }
@@ -42,7 +58,7 @@
 .bz-fill { transform: scaleY(0); transform-origin: top; transition: transform 1.6s cubic-bezier(.4,0,.2,1) .2s; }
 [data-in] .bz-fill, .bz-fill[data-in] { transform: scaleY(1); }
 .bz-bento { transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease; }
-.bz-bento:hover { transform: translateY(-4px); box-shadow: 0 24px 48px -24px rgb(79 70 229 / .35); }
+.bz-bento:hover { transform: translateY(-4px); box-shadow: 0 24px 48px -24px rgb(0 153 255 / .30); }
 .bz-faq summary { list-style: none; cursor: pointer; }
 .bz-faq summary::-webkit-details-marker { display: none; }
 .bz-faq[open] .bz-faq-chevron { transform: rotate(180deg); }
@@ -50,7 +66,7 @@
 
 @keyframes bz-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes bz-marquee { to { transform: translateX(-50%); } }
-@keyframes bz-tap { 0%, 70%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(99 102 241 / 0); } 80% { transform: scale(.94); } 90% { transform: scale(1); box-shadow: 0 0 0 10px rgb(99 102 241 / .18); } }
+@keyframes bz-tap { 0%, 70%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(230 65 38 / 0); } 80% { transform: scale(.94); } 90% { transform: scale(1); box-shadow: 0 0 0 10px rgb(230 65 38 / .18); } }
 
 @media (prefers-reduced-motion: reduce) {
   .bz-reveal, .bz-slide { opacity: 1; transform: none; transition: none; }

@@ -64,7 +64,7 @@ export default function SearchPage() {
           <div className="text-center">
             <p className="text-red-500 mb-3">{t(error)}</p>
             <button onClick={() => { setLoading(true); setError(null); setAttempt(a => a + 1) }}
-              className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">
+              className="px-4 py-2 bg-cta-600 text-white rounded-lg hover:bg-cta-700">
               {t('retry')}
             </button>
           </div>

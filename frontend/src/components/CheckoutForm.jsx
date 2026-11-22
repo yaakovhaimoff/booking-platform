@@ -93,7 +93,7 @@ export default function CheckoutForm({ onSubmit, error, knownName = '', knownPho
         <button
           type="submit"
           disabled={submitting}
-          className="bg-brand-600 text-white rounded-lg py-3 font-medium hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="bg-cta-600 text-white rounded-lg py-3 font-medium hover:bg-cta-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? t('booking') : t('confirmBooking')}
         </button>

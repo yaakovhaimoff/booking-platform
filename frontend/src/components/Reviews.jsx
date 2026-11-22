@@ -130,7 +130,7 @@ export default function Reviews({ data, failed, onSubmitted }) {
         <button
           type="submit"
           disabled={submitting}
-          className="bg-brand-600 text-white rounded-lg py-2.5 font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
+          className="bg-cta-600 text-white rounded-lg py-2.5 font-medium hover:bg-cta-700 disabled:opacity-50 transition-colors"
         >
           {submitting ? t('sending') : t('submitReview')}
         </button>

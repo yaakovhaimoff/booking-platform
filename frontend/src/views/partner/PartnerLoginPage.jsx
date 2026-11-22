@@ -31,7 +31,7 @@ export default function PartnerLoginPage() {
         </div>
         <p className="text-center text-xs text-gray-400">{t('pRecaptcha')}</p>
       </div>
-      <div className="hidden lg:flex relative bg-gradient-to-br from-brand-700 via-brand-800 to-pink-600 items-end p-12">
+      <div className="hidden lg:flex relative bg-gradient-to-br from-brand-500 via-brand-500 to-brand-300 items-end p-12">
         <div className="text-white">
           <p className="font-display text-[9rem] leading-[0.85] font-extrabold tracking-[-0.04em] text-white">torni</p>
           <p className="mt-4 text-lg text-white/80">{t('pBusinessTag')}</p>

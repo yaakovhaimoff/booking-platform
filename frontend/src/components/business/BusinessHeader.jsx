@@ -36,7 +36,7 @@ export default function BusinessHeader() {
         <Link to="/" className="hidden xl:inline-flex h-11 items-center gap-2 rounded-full border border-gray-200 px-5 text-sm font-semibold text-gray-900 hover:bg-gray-50">
           <StoreIcon size={18} />{t('pMarketplace')}
         </Link>
-        <Link to="/partner" className="inline-flex h-11 items-center rounded-full bg-gray-950 px-5 text-sm font-semibold text-white hover:bg-gray-800 transition">{t('pSignUp')}</Link>
+        <Link to="/partner" className="inline-flex h-11 items-center rounded-full bg-cta-600 px-5 text-sm font-semibold text-white hover:bg-cta-700 transition">{t('pSignUp')}</Link>
         <HeaderMenu logoTo="/for-business">
           {close => (
             <>

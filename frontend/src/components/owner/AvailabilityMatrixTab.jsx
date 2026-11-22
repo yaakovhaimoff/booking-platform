@@ -95,7 +95,7 @@ export default function AvailabilityMatrixTab({ tenant }) {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="px-6 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700 transition disabled:opacity-60"
+        className="px-6 py-2 bg-cta-600 text-white rounded-lg text-sm hover:bg-cta-700 transition disabled:opacity-60"
       >
         {saving ? t('saving') : saved ? t('saved') : t('save')}
       </button>

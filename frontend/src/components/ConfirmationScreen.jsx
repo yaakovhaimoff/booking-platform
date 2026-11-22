@@ -86,7 +86,7 @@ export default function ConfirmationScreen({ appointment, service, tenant, onBoo
         )}
         <button
           onClick={onBookAnother}
-          className="bg-brand-600 text-white rounded-md py-2 font-medium hover:bg-brand-700 transition-colors"
+          className="bg-cta-600 text-white rounded-md py-2 font-medium hover:bg-cta-700 transition-colors"
         >
           {t('bookAnother')}
         </button>

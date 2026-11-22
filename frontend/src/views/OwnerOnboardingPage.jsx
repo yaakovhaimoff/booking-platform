@@ -60,7 +60,7 @@ export default function OwnerOnboardingPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2 px-4 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition disabled:opacity-60 disabled:cursor-not-allowed text-sm font-medium"
+            className="w-full py-2 px-4 bg-cta-600 text-white rounded-lg hover:bg-cta-700 transition disabled:opacity-60 disabled:cursor-not-allowed text-sm font-medium"
           >
             {submitting ? t('creating') : t('createStore')}
           </button>
