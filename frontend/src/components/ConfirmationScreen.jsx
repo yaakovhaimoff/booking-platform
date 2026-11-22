@@ -1,25 +1,9 @@
 import { useI18n } from '../i18n'
+import { buildIcsContent, downloadIcsFile } from '../calendarFile'
 
 function splitIso(iso) {
   const [date, time] = iso.split('T')
   return { date, time: time.substring(0, 5) }
-}
-
-const icsStamp = iso => iso.replace(/[-:]/g, '').substring(0, 15) // 20261105T140000 (floating local time)
-
-function buildIcsHref({ title, start, end, location, description }) {
-  const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/[,;]/g, m => '\\' + m).replace(/\n/g, '\\n')
-  const lines = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Booking//EN', 'BEGIN:VEVENT',
-    `UID:${Date.now()}@booking`,
-    `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').substring(0, 15)}Z`,
-    `DTSTART:${icsStamp(start)}`, `DTEND:${icsStamp(end)}`,
-    `SUMMARY:${esc(title)}`,
-    location ? `LOCATION:${esc(location)}` : null,
-    description ? `DESCRIPTION:${esc(description)}` : null,
-    'END:VEVENT', 'END:VCALENDAR',
-  ].filter(Boolean)
-  return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\r\n'))
 }
 
 function waNumber(v) {
@@ -43,7 +27,8 @@ export default function ConfirmationScreen({ appointment, service, tenant, onBoo
   const shopName = tenant.name || tenant.slug
   const wa = waNumber(tenant.whatsappNumber)
 
-  const icsHref = buildIcsHref({
+  const icsContent = buildIcsContent({
+    uid: appointment.id,
     title: t('icsTitle', { service: service.name, shop: shopName }),
     start: appointment.startTime,
     end: appointment.endTime,
@@ -82,13 +67,13 @@ export default function ConfirmationScreen({ appointment, service, tenant, onBoo
       </dl>
 
       <div className="flex flex-col gap-3">
-        <a
-          href={icsHref}
-          download="appointment.ics"
+        <button
+          type="button"
+          onClick={() => downloadIcsFile(icsContent)}
           className="text-center border border-gray-300 text-gray-700 rounded-md py-2 font-medium hover:bg-gray-50 transition-colors"
         >
           {t('addToCalendar')}
-        </a>
+        </button>
         {waHref && (
           <a
             href={waHref}
