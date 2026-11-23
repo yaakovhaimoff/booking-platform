@@ -43,9 +43,14 @@ public class DefaultNotificationService implements NotificationService {
         log.info("[NOTIFY] new booking tenant={} appt={} -> owner", tenant.getId(), a.getId());
         boolean it = isItalian(tenant);
         String when = a.getStartTime().format(WHEN);
-        String subject = it ? "Nuova richiesta di prenotazione" : "New booking request";
-        String body = (it ? "<p>Hai una nuova richiesta in attesa di approvazione.</p>"
-                          : "<p>You have a new request waiting for your approval.</p>")
+        boolean confirmed = a.getStatus() == AppointmentStatus.CONFIRMED;
+        String subject = confirmed ? (it ? "Nuova prenotazione confermata" : "New booking confirmed")
+                : (it ? "Nuova richiesta di prenotazione" : "New booking request");
+        String intro = confirmed ? (it ? "<p>Hai una nuova prenotazione, confermata automaticamente.</p>"
+                                       : "<p>You have a new booking, confirmed automatically.</p>")
+                : (it ? "<p>Hai una nuova richiesta in attesa di approvazione.</p>"
+                      : "<p>You have a new request waiting for your approval.</p>");
+        String body = intro
                 + "<p><b>" + esc(a.getClientName()) + "</b> · " + esc(a.getClientPhone()) + "<br>"
                 + esc(service.getName()) + " · " + esc(when)
                 + (a.getNotes() == null ? "" : "<br><i>" + esc(a.getNotes()) + "</i>") + "</p>"

@@ -162,6 +162,9 @@ public class TenantService {
         t.setDefaultLanguage(blankToNull(r.getDefaultLanguage()));
         t.setCurrency(blankToNull(r.getCurrency()));
         t.setAbout(blankToNull(r.getAbout()));
+        if (r.getAutoConfirmBookings() != null) {
+            t.setAutoConfirmBookings(r.getAutoConfirmBookings());
+        }
         if (r.getGalleryUrls() != null) {
             String joined = r.getGalleryUrls().stream().map(String::trim).filter(u -> !u.isEmpty())
                     .collect(java.util.stream.Collectors.joining("\n"));

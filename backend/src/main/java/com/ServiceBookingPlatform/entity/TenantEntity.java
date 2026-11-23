@@ -67,6 +67,11 @@ public class TenantEntity {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean enabled = true;
 
+    // True: a customer's booking is confirmed straight away. False: it waits as PENDING for the owner.
+    @Builder.Default
+    @Column(name = "auto_confirm_bookings", nullable = false, columnDefinition = "boolean default false")
+    private boolean autoConfirmBookings = false;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 }

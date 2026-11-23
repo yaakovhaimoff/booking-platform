@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useI18n } from '../i18n'
 
 // knownName / knownPhone: a signed-in customer is not asked again.
-export default function CheckoutForm({ onSubmit, error, knownName = '', knownPhone = '' }) {
+export default function CheckoutForm({ onSubmit, error, knownName = '', knownPhone = '', instant = false }) {
   const { t } = useI18n()
   const [clientName, setClientName] = useState(knownName)
   const [clientPhone, setClientPhone] = useState(knownPhone)
@@ -89,13 +89,13 @@ export default function CheckoutForm({ onSubmit, error, knownName = '', knownPho
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 bg-white/95 backdrop-blur border-t border-gray-100 rounded-b-lg flex flex-col gap-2">
-        <p className="text-xs text-gray-500 text-center">{t('approvalNote')}</p>
+        <p className="text-xs text-gray-500 text-center">{t(instant ? 'instantNote' : 'approvalNote')}</p>
         <button
           type="submit"
           disabled={submitting}
           className="bg-cta-600 text-white rounded-lg py-3 font-medium hover:bg-cta-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting ? t('booking') : t('confirmBooking')}
+          {submitting ? t(instant ? 'bookingNow' : 'booking') : t(instant ? 'bookAppointment' : 'confirmBooking')}
         </button>
       </div>
     </form>

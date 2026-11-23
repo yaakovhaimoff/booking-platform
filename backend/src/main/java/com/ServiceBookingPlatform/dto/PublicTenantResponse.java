@@ -17,12 +17,13 @@ public class PublicTenantResponse {
     private String defaultLanguage;
     private String currency;
     private String about;
+    private boolean autoConfirmBookings;
     private java.util.List<String> galleryUrls;
 
     public static PublicTenantResponse from(TenantEntity e) {
         return builder().id(e.getId()).slug(e.getSlug()).name(e.getName())
                 .address(e.getAddress()).phone(e.getPhone()).whatsappNumber(e.getWhatsappNumber())
-                .logoUrl(e.getLogoUrl()).coverUrl(e.getCoverUrl()).defaultLanguage(e.getDefaultLanguage()).currency(e.getCurrency()).about(e.getAbout())
+                .logoUrl(e.getLogoUrl()).coverUrl(e.getCoverUrl()).defaultLanguage(e.getDefaultLanguage()).currency(e.getCurrency()).about(e.getAbout()).autoConfirmBookings(e.isAutoConfirmBookings())
                 .galleryUrls(TenantResponse.splitGallery(e.getGalleryUrls())).build();
     }
 }

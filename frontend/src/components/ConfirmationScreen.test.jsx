@@ -46,3 +46,20 @@ describe('add to calendar button', () => {
     expect(click).toHaveBeenCalledOnce()
   })
 })
+
+describe('confirmation wording', () => {
+  it('says the booking is confirmed when the shop confirmed it straight away', () => {
+    render(<ConfirmationScreen appointment={{ ...appointment, status: 'CONFIRMED' }} service={service} tenant={tenant} onBookAnother={() => {}} />)
+
+    expect(screen.getByText('Booking confirmed!')).toBeInTheDocument()
+    expect(screen.getByText('Confirmed')).toBeInTheDocument()
+    expect(screen.queryByText('Waiting for approval')).not.toBeInTheDocument()
+  })
+
+  it('says the request is waiting when the booking is pending', () => {
+    render(<ConfirmationScreen appointment={{ ...appointment, status: 'PENDING' }} service={service} tenant={tenant} onBookAnother={() => {}} />)
+
+    expect(screen.getByText('Request sent!')).toBeInTheDocument()
+    expect(screen.getByText('Waiting for approval')).toBeInTheDocument()
+  })
+})

@@ -227,6 +227,25 @@ class AccessRulesTest {
     }
 
     @Test
+    void theBookingApprovalSettingNeedsALoginAndIsReturnedToTheOwnerAndTheStorePage() throws Exception {
+        String body = "{\"name\":\"Shop\",\"autoConfirmBookings\":true}";
+        TenantEntity tenant = TenantEntity.builder().id(5L).slug("shop").name("Shop").schemaName("tenant_5")
+                .ownerAuth0Id("local|7").autoConfirmBookings(true).createdAt(LocalDateTime.now()).build();
+        when(tenantService.updateProfile(callerWithAccount(7), argThat(
+                request -> Boolean.TRUE.equals(request.getAutoConfirmBookings())))).thenReturn(tenant);
+        when(tenantService.getTenantBySlug("shop")).thenReturn(tenant);
+
+        mockMvc.perform(put("/api/v1/tenants/me").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(put("/api/v1/tenants/me").header("Authorization", owner())
+                .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.autoConfirmBookings").value(true));
+        mockMvc.perform(get("/api/v1/tenants/shop")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.autoConfirmBookings").value(true));
+    }
+
+    @Test
     void uploadLinksAreRefusedForAccountsWithoutAStore() throws Exception {
         when(tenantService.getTenantByOwner(callerWithAccount(9)))
                 .thenThrow(new com.ServiceBookingPlatform.exception.TenantNotFoundException("local|9"));

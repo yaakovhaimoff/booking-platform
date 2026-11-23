@@ -84,3 +84,19 @@ describe('analytics tab', () => {
     expect(await screen.findByText('Failed to load appointments.')).toBeInTheDocument()
   })
 })
+
+describe('analytics tab without pending bookings', () => {
+  it('hides every pending part when all bookings in the period are confirmed', async () => {
+    getAppointments.mockResolvedValue([
+      { id: 1, serviceId: 1, status: 'CONFIRMED', clientName: 'Ann', clientPhone: '111', startTime: `${month}-02T10:00:00` },
+      { id: 2, serviceId: 1, status: 'CONFIRMED', clientName: 'Bob', clientPhone: '222', startTime: `${month}-03T10:00:00` },
+    ])
+    renderTab()
+
+    const expected = (await screen.findByText('Expected revenue')).nextSibling
+    expect(expected).toHaveTextContent(/40/)
+    expect(expected.nextSibling?.textContent ?? '').not.toMatch(/pending/)
+    expect(screen.queryByText(/pending/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /pending/ })).not.toBeInTheDocument()
+  })
+})

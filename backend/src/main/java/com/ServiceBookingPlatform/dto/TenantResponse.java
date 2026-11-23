@@ -17,6 +17,7 @@ public class TenantResponse {
     private String defaultLanguage;
     private String currency;
     private String about;
+    private boolean autoConfirmBookings;
     private java.util.List<String> galleryUrls;
 
     public static TenantResponse from(TenantEntity entity) {
@@ -32,6 +33,7 @@ public class TenantResponse {
                 .defaultLanguage(entity.getDefaultLanguage())
                 .currency(entity.getCurrency())
                 .about(entity.getAbout())
+                .autoConfirmBookings(entity.isAutoConfirmBookings())
                 .galleryUrls(splitGallery(entity.getGalleryUrls()))
                 .build();
     }

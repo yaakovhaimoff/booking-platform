@@ -174,7 +174,7 @@ export default function BookingPage({ tenant }) {
             <p className="text-sm text-gray-500 mb-4">
               {serviceSummary} &mdash; {selectedSlot.substring(11, 16)} &middot; {fmtDate(selectedDate)}
             </p>
-            <CheckoutForm onSubmit={handleFormSubmit} error={error} knownName={signedIn ? user.name || '' : ''} knownPhone={signedIn ? user.phone || '' : ''} />
+            <CheckoutForm onSubmit={handleFormSubmit} error={error} instant={Boolean(tenant.autoConfirmBookings)} knownName={signedIn ? user.name || '' : ''} knownPhone={signedIn ? user.phone || '' : ''} />
           </div>
         )}
 

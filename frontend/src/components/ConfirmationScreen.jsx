@@ -26,6 +26,7 @@ export default function ConfirmationScreen({ appointment, service, tenant, onBoo
   const end = splitIso(appointment.endTime)
   const shopName = tenant.name || tenant.slug
   const wa = waNumber(tenant.whatsappNumber)
+  const confirmed = appointment.status === 'CONFIRMED'
 
   const icsContent = buildIcsContent({
     uid: appointment.id,
@@ -42,16 +43,17 @@ export default function ConfirmationScreen({ appointment, service, tenant, onBoo
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 sm:p-8">
       <div className="text-center mb-6">
-        <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-          <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <div className={`w-12 h-12 ${confirmed ? 'bg-green-100' : 'bg-amber-100'} rounded-xl flex items-center justify-center mx-auto mb-4`}>
+          <svg className={`w-6 h-6 ${confirmed ? 'text-green-600' : 'text-amber-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d={confirmed ? 'M5 13l4 4L19 7' : 'M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z'} />
           </svg>
         </div>
-        <h2 className="text-2xl font-semibold text-gray-800">{t('requestSent')}</h2>
-        <span className="inline-block mt-2 bg-amber-100 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-          {t('waiting')}
+        <h2 className="text-2xl font-semibold text-gray-800">{t(confirmed ? 'bookingConfirmed' : 'requestSent')}</h2>
+        <span className={`inline-block mt-2 ${confirmed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'} text-xs font-semibold px-2.5 py-1 rounded-full`}>
+          {t(confirmed ? 'confirmedBadge' : 'waiting')}
         </span>
-        <p className="text-sm text-gray-500 mt-3">{t('willConfirm', { shop: shopName })}</p>
+        <p className="text-sm text-gray-500 mt-3">{t(confirmed ? 'seeYouSoon' : 'willConfirm', { shop: shopName })}</p>
       </div>
 
       <dl className="space-y-3 mb-6 border-t border-gray-100 pt-5">

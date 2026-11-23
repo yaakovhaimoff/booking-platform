@@ -113,3 +113,22 @@ describe('StoreSettingsTab photos', () => {
     expect(uploadBlob).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('StoreSettingsTab booking approval', () => {
+  it('defaults to approving each booking and saves instant booking when chosen', async () => {
+    const user = userEvent.setup()
+    render(<StoreSettingsTab tenant={tenant} />)
+
+    expect(screen.getByRole('radio', { name: /Approve each booking/ })).toBeChecked()
+    await user.click(screen.getByRole('radio', { name: /Instant booking/ }))
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() => expect(updateMyTenant).toHaveBeenCalledWith('token-1', expect.objectContaining({ autoConfirmBookings: true })))
+  })
+
+  it('shows instant booking as selected when the shop already uses it', () => {
+    render(<StoreSettingsTab tenant={{ ...tenant, autoConfirmBookings: true }} />)
+
+    expect(screen.getByRole('radio', { name: /Instant booking/ })).toBeChecked()
+  })
+})

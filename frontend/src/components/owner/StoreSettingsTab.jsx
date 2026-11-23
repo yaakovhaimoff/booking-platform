@@ -38,6 +38,7 @@ export default function StoreSettingsTab({ tenant }) {
     galleryUrls: tenant.galleryUrls || [],
     defaultLanguage: tenant.defaultLanguage || 'it',
     currency: tenant.currency || 'EUR',
+    autoConfirmBookings: Boolean(tenant.autoConfirmBookings),
   })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null) // { type: 'ok' | 'error', text }
@@ -153,6 +154,27 @@ export default function StoreSettingsTab({ tenant }) {
             <option value="ILS">ILS (₪)</option>
           </select>
         </Field>
+
+        <fieldset>
+          <legend className="block text-sm font-medium text-gray-700 mb-2">{t('bookingApproval')}</legend>
+          <div className="space-y-2">
+            {[
+              { value: true, label: 'bookingApprovalInstant', hint: 'bookingApprovalInstantHint' },
+              { value: false, label: 'bookingApprovalManual', hint: 'bookingApprovalManualHint' },
+            ].map(option => (
+              <label key={option.label}
+                className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer ${form.autoConfirmBookings === option.value ? 'border-brand-500 bg-brand-50' : 'border-gray-300'}`}>
+                <input type="radio" name="bookingApproval" className="mt-1"
+                  checked={form.autoConfirmBookings === option.value}
+                  onChange={() => setForm(f => ({ ...f, autoConfirmBookings: option.value }))} />
+                <span>
+                  <span className="block text-sm font-medium text-gray-800">{t(option.label)}</span>
+                  <span className="block text-xs text-gray-500">{t(option.hint)}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         {message && (
           <p className={`text-sm ${message.type === 'ok' ? 'text-green-600' : 'text-red-600'}`}>{message.text}</p>

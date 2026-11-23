@@ -620,6 +620,31 @@ class TenantIsolationIntegrationTest {
     }
 
     @Test
+    @Order(96)
+    void instantBookingConfirmsOnlyInTheShopThatTurnedItOnAndOnlyTheOwnerCanChangeIt() throws Exception {
+        send(put("/api/v1/tenants/me"), null, null, "{\"name\":\"Shop Beta\",\"autoConfirmBookings\":true}")
+                .andExpect(status().isUnauthorized());
+        send(put("/api/v1/tenants/me"), ownerBToken, null, "{\"name\":\"Shop Beta\",\"autoConfirmBookings\":true}")
+                .andExpect(status().isOk()).andExpect(jsonPath("$.autoConfirmBookings").value(true));
+
+        long instantInB = book(null, shopB, serviceB, "Instant Guest", "11:00:00");
+        long waitingInA = book(null, shopA, serviceA, "Waiting Guest", "15:00:00");
+
+        assertEquals("CONFIRMED", publicJdbcTemplate.queryForObject(
+                "SELECT status FROM " + ("tenant_" + shopB) + ".appointments WHERE id = ?", String.class, instantInB));
+        assertEquals("PENDING", publicJdbcTemplate.queryForObject(
+                "SELECT status FROM " + ("tenant_" + shopA) + ".appointments WHERE id = ?", String.class, waitingInA));
+        send(get("/api/v1/tenants/me"), ownerAToken, null, null).andExpect(jsonPath("$.autoConfirmBookings").value(false));
+
+        send(patch("/api/v1/appointments/" + instantInB + "/status"), ownerBToken, shopB, "{\"status\":\"CANCELLED\"}")
+                .andExpect(status().isOk());
+        send(patch("/api/v1/appointments/" + waitingInA + "/status"), ownerAToken, shopA, "{\"status\":\"CANCELLED\"}")
+                .andExpect(status().isOk());
+        send(put("/api/v1/tenants/me"), ownerBToken, null, "{\"name\":\"Shop Beta\",\"autoConfirmBookings\":false}")
+                .andExpect(status().isOk());
+    }
+
+    @Test
     @Order(97)
     void everythingCreatedThroughTheAppCarriesAccountIdsAlongsideTheOldSubjects() {
         assertEquals(0, publicJdbcTemplate.queryForObject("SELECT COUNT(*) FROM accounts WHERE auth_subject IS DISTINCT FROM 'local|' || id", Integer.class));

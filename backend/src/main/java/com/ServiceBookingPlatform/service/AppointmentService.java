@@ -53,6 +53,9 @@ public class AppointmentService {
             throw new InvalidDateException("Invalid start time: " + request.getStartTime());
         }
         LocalDateTime endTime = startTime.plusMinutes(service.getDurationMinutes());
+        TenantEntity tenant = tenantRepository.findById(TenantContextHolder.getTenantId()).orElse(null);
+        AppointmentStatus initialStatus = tenant != null && tenant.isAutoConfirmBookings()
+                ? AppointmentStatus.CONFIRMED : AppointmentStatus.PENDING;
 
         // Check and insert under a per-tenant lock so two simultaneous requests for overlapping
         // times cannot both pass the check. The lock is held until this transaction commits.
@@ -70,7 +73,7 @@ public class AppointmentService {
                     .clientPhone(request.getClientPhone())
                     .startTime(startTime)
                     .endTime(endTime)
-                    .status(AppointmentStatus.PENDING)
+                    .status(initialStatus)
                     .notes(request.getNotes() == null || request.getNotes().isBlank() ? null : request.getNotes().trim())
                     .clientAuth0Sub(client == null ? null : client.subject())
                     .clientAccountId(client == null ? null : client.accountId())
@@ -79,8 +82,9 @@ public class AppointmentService {
 
         log.info("Appointment booked: id={} service={} start={} tenant={}",
                 saved.getId(), request.getServiceId(), request.getStartTime(), TenantContextHolder.getTenantId());
-        tenantRepository.findById(TenantContextHolder.getTenantId())
-                .ifPresent(t -> notificationService.bookingCreated(t, saved, service));
+        if (tenant != null) {
+            notificationService.bookingCreated(tenant, saved, service);
+        }
         return AppointmentResponse.from(saved);
     }
 

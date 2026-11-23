@@ -39,6 +39,9 @@ public class TenantProfileRequest {
     @Size(max = 1000)
     private String about;
 
+    // Null leaves the current setting unchanged.
+    private Boolean autoConfirmBookings;
+
     @Size(max = 12, message = "At most 12 gallery images")
     private java.util.List<@Size(max = 1000) @Pattern(regexp = "^https?://.*", message = "Gallery URLs must start with http:// or https://") String> galleryUrls;
 }

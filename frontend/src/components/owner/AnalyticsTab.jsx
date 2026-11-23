@@ -60,6 +60,7 @@ export default function AnalyticsTab({ tenant }) {
     [isYear, isWeek, year, weekStart, monthKey],
   )
   const analytics = useMemo(() => computeAnalytics(appointments, services, range), [appointments, services, range])
+  const hasPending = analytics.pendingBookings > 0
 
   const parseDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d) }
   const chartData = useMemo(() => (isYear ? monthlyBuckets(analytics.daily) : analytics.daily), [isYear, analytics.daily])
@@ -99,15 +100,15 @@ export default function AnalyticsTab({ tenant }) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label={t('analyticsExpected')} value={money(analytics.expectedRevenue)}
-          detail={t('analyticsExpectedDetail', { confirmed: money(analytics.confirmedRevenue), pending: money(analytics.pendingRevenue) })} />
+          detail={hasPending ? t('analyticsExpectedDetail', { confirmed: money(analytics.confirmedRevenue), pending: money(analytics.pendingRevenue) }) : null} />
         <div className="border border-gray-200 rounded-xl p-4">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{t('analyticsBookings')}</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{analytics.bookings}</p>
-          <p className="text-xs text-gray-500 mt-1">
-            {analytics.pendingBookings > 0
-              ? <Link to="?tab=queue" className="font-medium text-brand-600 hover:underline">{t('analyticsPendingLink', { n: analytics.pendingBookings })}</Link>
-              : t('analyticsPendingLink', { n: 0 })}
-          </p>
+          {hasPending && (
+            <p className="text-xs text-gray-500 mt-1">
+              <Link to="?tab=queue" className="font-medium text-brand-600 hover:underline">{t('analyticsPendingLink', { n: analytics.pendingBookings })}</Link>
+            </p>
+          )}
         </div>
         <StatCard label={t('analyticsClients')} value={analytics.clients}
           detail={t('analyticsClientsDetail', { firstTimeClients: analytics.firstTimeClients, repeatClients: analytics.repeatClients })}
@@ -131,9 +132,9 @@ export default function AnalyticsTab({ tenant }) {
                 <XAxis dataKey="date" tickFormatter={tickLabel} tick={{ fontSize: 11 }} interval={0} />
                 <YAxis tick={{ fontSize: 11 }} width={44} />
                 <Tooltip formatter={value => money(value)} labelFormatter={tooltipLabel} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="confirmedRevenue" stackId="revenue" name={t('analyticsConfirmed')} fill={CONFIRMED_COLOR} />
-                <Bar dataKey="pendingRevenue" stackId="revenue" name={t('analyticsPending')} fill={PENDING_COLOR} radius={[3, 3, 0, 0]} />
+                {hasPending && <Legend wrapperStyle={{ fontSize: 12 }} />}
+                <Bar dataKey="confirmedRevenue" stackId="revenue" name={t('analyticsConfirmed')} fill={CONFIRMED_COLOR} radius={hasPending ? undefined : [3, 3, 0, 0]} />
+                {hasPending && <Bar dataKey="pendingRevenue" stackId="revenue" name={t('analyticsPending')} fill={PENDING_COLOR} radius={[3, 3, 0, 0]} />}
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -145,9 +146,9 @@ export default function AnalyticsTab({ tenant }) {
                 <XAxis dataKey="date" tickFormatter={tickLabel} tick={{ fontSize: 11 }} interval={0} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={44} />
                 <Tooltip labelFormatter={tooltipLabel} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="confirmedAppointments" stackId="appointments" name={t('analyticsConfirmed')} fill={CONFIRMED_COLOR} />
-                <Bar dataKey="pendingAppointments" stackId="appointments" name={t('analyticsPending')} fill={PENDING_COLOR} radius={[3, 3, 0, 0]} />
+                {hasPending && <Legend wrapperStyle={{ fontSize: 12 }} />}
+                <Bar dataKey="confirmedAppointments" stackId="appointments" name={t('analyticsConfirmed')} fill={CONFIRMED_COLOR} radius={hasPending ? undefined : [3, 3, 0, 0]} />
+                {hasPending && <Bar dataKey="pendingAppointments" stackId="appointments" name={t('analyticsPending')} fill={PENDING_COLOR} radius={[3, 3, 0, 0]} />}
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>

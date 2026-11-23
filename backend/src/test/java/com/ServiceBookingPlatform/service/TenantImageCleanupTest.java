@@ -108,4 +108,20 @@ class TenantImageCleanupTest {
 
         verify(imageUploadService, never()).deleteOwnedImages(any(), anyCollection());
     }
+
+    @Test
+    void theBookingApprovalSettingIsSavedWhenSentAndLeftAloneWhenOmitted() {
+        TenantProfileRequest withSetting = request(LOGO, COVER, null);
+        withSetting.setAutoConfirmBookings(true);
+        service.updateProfile(owner, withSetting);
+        assertEquals(true, shop.isAutoConfirmBookings());
+
+        service.updateProfile(owner, request(LOGO, COVER, null));
+        assertEquals(true, shop.isAutoConfirmBookings());
+
+        TenantProfileRequest turnedOff = request(LOGO, COVER, null);
+        turnedOff.setAutoConfirmBookings(false);
+        service.updateProfile(owner, turnedOff);
+        assertEquals(false, shop.isAutoConfirmBookings());
+    }
 }

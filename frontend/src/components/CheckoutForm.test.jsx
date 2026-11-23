@@ -101,3 +101,18 @@ describe('signed-in customers', () => {
     expect(onSubmit).not.toHaveBeenCalled()
   })
 })
+
+describe('booking approval wording', () => {
+  it('asks for an appointment request when the shop approves each booking', () => {
+    setup()
+    expect(screen.getByRole('button', { name: 'Request appointment' })).toBeInTheDocument()
+    expect(screen.getByText(/This is a request/)).toBeInTheDocument()
+  })
+
+  it('offers a direct booking when the shop uses instant booking', () => {
+    setup({ instant: true })
+    expect(screen.getByRole('button', { name: 'Book appointment' })).toBeInTheDocument()
+    expect(screen.getByText('Your time is confirmed as soon as you book.')).toBeInTheDocument()
+    expect(screen.queryByText(/This is a request/)).not.toBeInTheDocument()
+  })
+})
